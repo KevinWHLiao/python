@@ -1,5 +1,19 @@
+# Python
 __pycache__/
 *.py[cod]
 .venv/
 venv/
+
+# Secrets
 .env
+
+# Build artifacts
+build/
+dist/
+*.exe
+*.zip
+*.msix
+
+# Local logs / editor
+nba_logs/
+.vscode/

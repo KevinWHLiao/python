@@ -1,0 +1,753 @@
+"""Tkinter GUI: pick a slot, then pick an affix to see tiers and item levels."""
+
+from __future__ import annotations
+
+import json
+import threading
+import tkinter as tk
+import webbrowser
+from tkinter import messagebox, ttk
+
+from . import resolve_data_file
+from .catalog import SOURCE_ORDER, SOURCE_TITLES
+from .sync import sync_catalog
+from .theme import apply_theme
+
+ALL = "全部"
+FONT_UI = ("Microsoft JhengHei UI", 10)
+FONT_TITLE = ("Microsoft JhengHei UI", 16, "bold")
+FONT_SECTION = ("Microsoft JhengHei UI", 11, "bold")
+FONT_SMALL = ("Microsoft JhengHei UI", 9)
+
+# PoE-inspired dark palette
+BG = "#101218"
+BG_PANEL = "#171a22"
+BG_RAISED = "#1f2430"
+BG_INPUT = "#141821"
+BG_HEAD = "#2a2418"
+LINE = "#3a3324"
+GOLD = "#e0b15a"
+GOLD_HI = "#ffd37a"
+TEXT = "#ece7da"
+MUTED = "#9b9586"
+PREFIX = "#7ecbff"
+SUFFIX = "#86e0b0"
+CORRUPT = "#d9a5ff"
+T1_BG = "#4a3210"
+T1_FG = "#ffd37a"
+T2_BG = "#322a16"
+T2_FG = "#e8c07a"
+T3_BG = "#1c2738"
+T3_FG = "#9ab8ea"
+TN_FG = "#c9c3b4"
+CORRUPT_BG = "#2c1836"
+CORRUPT_T1_BG = "#4a2048"
+CORRUPT_T1_FG = "#f3c6ff"
+
+
+def load_catalog() -> dict | None:
+    path = resolve_data_file()
+    if not path:
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _tier_number(value) -> int:
+    try:
+        return int(str(value).lstrip("Tt"))
+    except (TypeError, ValueError):
+        return 99
+
+
+def _tier_tag(tier_value, corrupt: bool = False) -> str:
+    number = _tier_number(tier_value)
+    if corrupt and number == 1:
+        return "t1_corrupt"
+    if number == 1:
+        return "t1"
+    if number == 2:
+        return "t2"
+    if number == 3:
+        return "t3"
+    if corrupt:
+        return "corrupt"
+    return "tn"
+
+
+class AffixApp(tk.Toplevel):
+    def __init__(self, master: tk.Misc | None = None, on_back=None) -> None:
+        owns_root = master is None
+        if owns_root:
+            master = tk.Tk()
+            master.withdraw()
+        super().__init__(master)
+        self._owns_root = owns_root
+        self._on_back = on_back
+        self.title("流亡黯道 · 裝備詞綴查詢")
+        self.geometry("1360x820")
+        self.minsize(1080, 680)
+        self.configure(bg=BG)
+        self.option_add("*Font", FONT_UI)
+        apply_theme(self)
+        self.protocol("WM_DELETE_WINDOW", self.go_back)
+
+        self.catalog: dict | None = None
+        self.filtered_groups: list[dict] = []
+        self._syncing = False
+
+        self.slot_var = tk.StringVar(value=ALL)
+        self.affix_var = tk.StringVar(value=ALL)
+        self.source_var = tk.StringVar(value="基底")
+        self.search_var = tk.StringVar()
+        self.status_var = tk.StringVar(value="尚未載入資料")
+        self.summary_var = tk.StringVar(value="請從左側選擇一個詞綴")
+        self.meta_var = tk.StringVar(value="T1 為該部位最難出的最高階詞綴")
+        self.corrupt_title_var = tk.StringVar(value="此部位汙染詞")
+        self.affix_sort_col = "t1"
+        self.affix_sort_desc = True
+        self.affix_headings = {}
+        self.tier_sort_desc = True
+        self.corrupt_sort_desc = True
+
+        self._build()
+        self.search_var.trace_add("write", lambda *_: self.refresh_affix_list())
+        self.after(100, self._startup_load)
+
+    def go_back(self) -> None:
+        self.destroy()
+        if self._on_back:
+            self._on_back()
+        elif self._owns_root:
+            self.master.destroy()
+
+    def _tag_trees(self) -> None:
+        for tree in (self.affix_tree, self.tier_tree, self.corrupt_tree):
+            tree.tag_configure("t1", background=T1_BG, foreground=T1_FG)
+            tree.tag_configure("t2", background=T2_BG, foreground=T2_FG)
+            tree.tag_configure("t3", background=T3_BG, foreground=T3_FG)
+            tree.tag_configure("tn", background=BG_INPUT, foreground=TN_FG)
+            tree.tag_configure("corrupt", background=CORRUPT_BG, foreground=CORRUPT)
+            tree.tag_configure("t1_corrupt", background=CORRUPT_T1_BG, foreground=CORRUPT_T1_FG)
+            tree.tag_configure("prefix", background=BG_INPUT, foreground=PREFIX)
+            tree.tag_configure("suffix", background=BG_INPUT, foreground=SUFFIX)
+            tree.tag_configure("odd", background="#151922", foreground=TEXT)
+
+    def _build(self) -> None:
+        header = tk.Frame(self, bg=BG_HEAD, height=64)
+        header.pack(fill="x")
+        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
+        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=(16, 0), pady=12)
+        ttk.Label(header, text="流亡黯道  ·  裝備詞綴", style="Gold.TLabel", background=BG_HEAD).pack(
+            side="left", padx=16, pady=14
+        )
+        ttk.Label(
+            header,
+            text="金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
+            style="Muted.TLabel",
+            background=BG_HEAD,
+            font=FONT_SMALL,
+        ).pack(side="left", padx=(8, 0), pady=14)
+        ttk.Button(header, text="從 PoEDB 更新資料", command=self.start_sync).pack(side="right", padx=(0, 16), pady=12)
+        ttk.Button(
+            header,
+            text="開啟 PoEDB 詞綴頁",
+            command=lambda: webbrowser.open("https://poedb.tw/tw/Modifiers"),
+        ).pack(side="right", padx=(0, 8), pady=12)
+
+        filters = ttk.Frame(self, padding=(16, 12, 16, 8))
+        filters.pack(fill="x")
+        ttk.Label(filters, text="部位", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, state="readonly", width=22)
+        self.slot_combo.grid(row=0, column=1, padx=(0, 16))
+        self.slot_combo.bind("<<ComboboxSelected>>", lambda _e: self.on_filters_changed())
+
+        ttk.Label(filters, text="前後綴", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
+        self.affix_combo = ttk.Combobox(
+            filters,
+            textvariable=self.affix_var,
+            state="readonly",
+            width=10,
+            values=(ALL, "前綴", "後綴", "汙染"),
+        )
+        self.affix_combo.grid(row=0, column=3, padx=(0, 16))
+        self.affix_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh_affix_list())
+
+        ttk.Label(filters, text="來源", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
+        self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, state="readonly", width=16)
+        self.source_combo.grid(row=0, column=5, padx=(0, 16))
+        self.source_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh_affix_list())
+
+        ttk.Label(filters, text="篩選詞綴", style="Muted.TLabel").grid(row=0, column=6, sticky="w", padx=(0, 6))
+        search = ttk.Entry(filters, textvariable=self.search_var, width=28)
+        search.grid(row=0, column=7, sticky="ew")
+        filters.columnconfigure(7, weight=1)
+
+        legend = ttk.Frame(self, padding=(16, 0, 16, 8))
+        legend.pack(fill="x")
+        for text, color in (
+            ("T1 最難出", T1_FG),
+            ("T2", T2_FG),
+            ("T3", T3_FG),
+            ("汙染詞", CORRUPT),
+            ("前綴", PREFIX),
+            ("後綴", SUFFIX),
+        ):
+            swatch = tk.Label(legend, text="●", fg=color, bg=BG, font=("Segoe UI", 11))
+            swatch.pack(side="left")
+            tk.Label(legend, text=text, fg=MUTED, bg=BG, font=FONT_SMALL).pack(side="left", padx=(2, 14))
+
+        paned = ttk.Panedwindow(self, orient="horizontal")
+        paned.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+
+        left = ttk.Frame(paned, style="Panel.TFrame", padding=10)
+        right = ttk.Frame(paned, style="Panel.TFrame", padding=10)
+        paned.add(left, weight=1)
+        paned.add(right, weight=2)
+
+        ttk.Label(left, text="選擇詞綴　（點欄位標題可排序）", style="Section.TLabel").pack(anchor="w")
+        tk.Frame(left, bg=GOLD, height=2).pack(fill="x", pady=(4, 8))
+        list_wrap = ttk.Frame(left, style="Panel.TFrame")
+        list_wrap.pack(fill="both", expand=True)
+        columns = ("label", "affix", "corrupt", "source", "t1", "weight", "tiers", "slots")
+        self.affix_tree = ttk.Treeview(list_wrap, columns=columns, show="headings", selectmode="browse")
+        self.affix_headings = {
+            "label": "詞綴",
+            "affix": "前後綴",
+            "corrupt": "汙染",
+            "source": "來源",
+            "t1": "T1 物等",
+            "weight": "T1 權重",
+            "tiers": "階層數",
+            "slots": "部位數",
+        }
+        widths = {
+            "label": 220,
+            "affix": 58,
+            "corrupt": 48,
+            "source": 78,
+            "t1": 72,
+            "weight": 72,
+            "tiers": 58,
+            "slots": 58,
+        }
+        for key, title in self.affix_headings.items():
+            self.affix_tree.heading(key, text=title, command=lambda column=key: self.sort_affix_list(column))
+            stretch = key == "label"
+            self.affix_tree.column(key, width=widths[key], stretch=stretch, anchor="center" if key != "label" else "w")
+        yscroll = ttk.Scrollbar(list_wrap, orient="vertical", command=self.affix_tree.yview)
+        self.affix_tree.configure(yscrollcommand=yscroll.set)
+        self.affix_tree.pack(side="left", fill="both", expand=True)
+        yscroll.pack(side="right", fill="y")
+        self.affix_tree.bind("<<TreeviewSelect>>", lambda _e: self.show_selected_affix())
+
+        ttk.Label(right, textvariable=self.summary_var, style="Section.TLabel").pack(anchor="w")
+        tk.Frame(right, bg=GOLD, height=2).pack(fill="x", pady=(4, 6))
+        ttk.Label(right, textvariable=self.meta_var, style="PanelMuted.TLabel").pack(anchor="w", pady=(0, 8))
+
+        ttk.Label(right, text="出現部位", style="PanelMuted.TLabel").pack(anchor="w")
+        slot_wrap = ttk.Frame(right, style="Panel.TFrame")
+        slot_wrap.pack(fill="x", pady=(4, 10))
+        self.slot_list = tk.Listbox(
+            slot_wrap,
+            height=5,
+            exportselection=False,
+            font=FONT_UI,
+            bg=BG_INPUT,
+            fg=TEXT,
+            selectbackground="#5a3e14",
+            selectforeground=GOLD_HI,
+            highlightthickness=0,
+            bd=0,
+            relief="flat",
+            activestyle="none",
+        )
+        slot_scroll = ttk.Scrollbar(slot_wrap, orient="vertical", command=self.slot_list.yview)
+        self.slot_list.configure(yscrollcommand=slot_scroll.set)
+        self.slot_list.pack(side="left", fill="x", expand=True)
+        slot_scroll.pack(side="right", fill="y")
+        self.slot_list.bind("<<ListboxSelect>>", lambda _e: self.show_slot_table())
+
+        ttk.Label(right, text="階層 / 物等　（金色 T1 為最難出；估計占比為同部位同前後綴的權重佔比）", style="PanelMuted.TLabel").pack(anchor="w")
+        table_wrap = ttk.Frame(right, style="Panel.TFrame")
+        table_wrap.pack(fill="both", expand=True, pady=(4, 0))
+        tier_cols = ("tier", "level", "name", "weight", "chance", "corrupt", "text")
+        self.tier_tree = ttk.Treeview(table_wrap, columns=tier_cols, show="headings", selectmode="browse")
+        self.tier_tree.heading("tier", text="Tier", command=lambda: self.sort_detail_tree(self.tier_tree, "tier", True))
+        self.tier_tree.heading("level", text="需要物等", command=lambda: self.sort_detail_tree(self.tier_tree, "level", True))
+        self.tier_tree.heading("name", text="詞綴名稱", command=lambda: self.sort_detail_tree(self.tier_tree, "name", False))
+        self.tier_tree.heading("weight", text="權重", command=lambda: self.sort_detail_tree(self.tier_tree, "weight", True))
+        self.tier_tree.heading("chance", text="估計占比", command=lambda: self.sort_detail_tree(self.tier_tree, "chance", True))
+        self.tier_tree.heading("corrupt", text="汙染")
+        self.tier_tree.heading("text", text="數值", command=lambda: self.sort_detail_tree(self.tier_tree, "text", False))
+        self.tier_tree.column("tier", width=58, stretch=False, anchor="center")
+        self.tier_tree.column("level", width=78, stretch=False, anchor="center")
+        self.tier_tree.column("name", width=120, stretch=False)
+        self.tier_tree.column("weight", width=70, stretch=False, anchor="center")
+        self.tier_tree.column("chance", width=88, stretch=False, anchor="center")
+        self.tier_tree.column("corrupt", width=48, stretch=False, anchor="center")
+        self.tier_tree.column("text", width=300, stretch=True)
+        tier_scroll = ttk.Scrollbar(table_wrap, orient="vertical", command=self.tier_tree.yview)
+        self.tier_tree.configure(yscrollcommand=tier_scroll.set)
+        self.tier_tree.pack(side="left", fill="both", expand=True)
+        tier_scroll.pack(side="right", fill="y")
+
+        ttk.Label(right, textvariable=self.corrupt_title_var, style="Section.TLabel").pack(anchor="w", pady=(12, 0))
+        tk.Frame(right, bg=CORRUPT, height=2).pack(fill="x", pady=(4, 8))
+        corrupt_wrap = ttk.Frame(right, style="Panel.TFrame")
+        corrupt_wrap.pack(fill="both", expand=True)
+        corrupt_cols = ("tier", "level", "weight", "chance", "text")
+        self.corrupt_tree = ttk.Treeview(
+            corrupt_wrap, columns=corrupt_cols, show="headings", selectmode="browse", height=8
+        )
+        self.corrupt_tree.heading("tier", text="Tier", command=lambda: self.sort_detail_tree(self.corrupt_tree, "tier", True))
+        self.corrupt_tree.heading("level", text="需要物等", command=lambda: self.sort_detail_tree(self.corrupt_tree, "level", True))
+        self.corrupt_tree.heading("weight", text="權重", command=lambda: self.sort_detail_tree(self.corrupt_tree, "weight", True))
+        self.corrupt_tree.heading("chance", text="估計占比", command=lambda: self.sort_detail_tree(self.corrupt_tree, "chance", True))
+        self.corrupt_tree.heading("text", text="汙染詞數值", command=lambda: self.sort_detail_tree(self.corrupt_tree, "text", False))
+        self.corrupt_tree.column("tier", width=58, stretch=False, anchor="center")
+        self.corrupt_tree.column("level", width=78, stretch=False, anchor="center")
+        self.corrupt_tree.column("weight", width=70, stretch=False, anchor="center")
+        self.corrupt_tree.column("chance", width=88, stretch=False, anchor="center")
+        self.corrupt_tree.column("text", width=420, stretch=True)
+        corrupt_scroll = ttk.Scrollbar(corrupt_wrap, orient="vertical", command=self.corrupt_tree.yview)
+        self.corrupt_tree.configure(yscrollcommand=corrupt_scroll.set)
+        self.corrupt_tree.pack(side="left", fill="both", expand=True)
+        corrupt_scroll.pack(side="right", fill="y")
+
+        self._tag_trees()
+
+        status = tk.Frame(self, bg=BG_HEAD)
+        status.pack(fill="x")
+        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
+            side="left", padx=16, pady=6
+        )
+        self.progress = ttk.Progressbar(status, mode="determinate", length=220)
+        self.progress.pack(side="right", padx=16, pady=8)
+
+    def _startup_load(self) -> None:
+        catalog = load_catalog()
+        if catalog:
+            self.set_catalog(catalog)
+            return
+        if messagebox.askyesno(
+            "尚未下載詞綴資料",
+            "第一次使用需要從 https://poedb.tw/tw/Modifiers 下載裝備詞綴。\n現在開始更新嗎？",
+        ):
+            self.start_sync()
+        else:
+            self.status_var.set("沒有本地資料，請按「從 PoEDB 更新資料」。")
+
+    def set_catalog(self, catalog: dict) -> None:
+        self.catalog = catalog
+        slots = [ALL] + [slot["name"] for slot in catalog.get("slots", [])]
+        self.slot_combo.configure(values=slots)
+        if self.slot_var.get() not in slots:
+            self.slot_var.set(ALL)
+
+        sources = [ALL, "基底"]
+        seen = {"全部", "基底"}
+        for key in SOURCE_ORDER:
+            title = SOURCE_TITLES.get(key, key)
+            if title not in seen:
+                sources.append(title)
+                seen.add(title)
+        for slot in catalog.get("slots", []):
+            for group in slot.get("groups", []):
+                title = group.get("source") or ""
+                if title and title not in seen:
+                    sources.append(title)
+                    seen.add(title)
+        self.source_combo.configure(values=sources)
+        if self.source_var.get() not in sources:
+            self.source_var.set("基底")
+
+        synced = catalog.get("synced_at", "")
+        self.status_var.set(
+            f"已載入 {catalog.get('slot_count', 0)} 個部位、{catalog.get('group_count', 0)} 組詞綴　更新時間 {synced}"
+        )
+        self.refresh_affix_list()
+
+    def on_filters_changed(self) -> None:
+        self.refresh_affix_list()
+        self.refresh_corrupt_panel()
+
+    @staticmethod
+    def _is_corrupt(group: dict) -> bool:
+        return bool(group.get("is_corrupt")) or group.get("affix") == "汙染" or group.get("source") == "已汙染"
+
+    def _slot_groups(self, slot_name: str) -> list[dict]:
+        if not self.catalog:
+            return []
+        slot = next((item for item in self.catalog.get("slots", []) if item["name"] == slot_name), None)
+        return list((slot or {}).get("groups", []))
+
+    def _pool_chance(self, slot_name: str, group: dict, tier: dict) -> str:
+        try:
+            weight = int(tier.get("weight") or 0)
+        except (TypeError, ValueError):
+            return "—"
+        if weight <= 0:
+            return "—"
+        try:
+            ilvl = int(tier.get("level") or 0)
+        except (TypeError, ValueError):
+            ilvl = 0
+        pool = 0
+        for other in self._slot_groups(slot_name):
+            if other.get("affix") != group.get("affix"):
+                continue
+            if other.get("source") != group.get("source"):
+                continue
+            for row in other.get("tiers", []):
+                try:
+                    required = int(row.get("level") or 0)
+                except (TypeError, ValueError):
+                    required = 0
+                if required <= ilvl:
+                    try:
+                        pool += int(row.get("weight") or 0)
+                    except (TypeError, ValueError):
+                        continue
+        if pool <= 0:
+            return "—"
+        return f"{weight / pool * 100:.2f}%"
+
+    @staticmethod
+    def _weight_value(tier: dict) -> str:
+        weight = tier.get("weight")
+        if weight in (None, ""):
+            return "—"
+        return str(weight)
+
+    def iter_matching_groups(self):
+        if not self.catalog:
+            return
+            yield  # pragma: no cover - keeps this a generator on empty catalog
+        slot_filter = self.slot_var.get()
+        affix_filter = self.affix_var.get()
+        source_filter = self.source_var.get()
+        query = self.search_var.get().strip().lower()
+        tokens = [token for token in query.split() if token]
+        for slot in self.catalog.get("slots", []):
+            if slot_filter != ALL and slot["name"] != slot_filter:
+                continue
+            for group in slot.get("groups", []):
+                corrupt = self._is_corrupt(group)
+                if affix_filter == "汙染":
+                    if not corrupt:
+                        continue
+                elif affix_filter != ALL and group.get("affix") != affix_filter:
+                    continue
+                if affix_filter != "汙染" and source_filter != ALL and group.get("source") != source_filter:
+                    continue
+                haystack = " ".join(
+                    [
+                        group.get("label", ""),
+                        group.get("family", ""),
+                        group.get("affix", ""),
+                        group.get("source", ""),
+                        slot["name"],
+                        *(tier.get("name", "") for tier in group.get("tiers", [])),
+                        *(tier.get("text", "") for tier in group.get("tiers", [])),
+                    ]
+                ).lower()
+                if tokens and not all(token in haystack for token in tokens):
+                    continue
+                yield slot["name"], group
+
+    def current_slot_name(self) -> str | None:
+        slot_filter = self.slot_var.get()
+        if slot_filter and slot_filter != ALL:
+            return slot_filter
+        row = self._selected_row()
+        if not row:
+            return None
+        selection = self.slot_list.curselection()
+        names = list(row["slots"].keys())
+        if selection and selection[0] < len(names):
+            return names[selection[0]]
+        return names[0] if names else None
+
+    def refresh_corrupt_panel(self) -> None:
+        for item in self.corrupt_tree.get_children():
+            self.corrupt_tree.delete(item)
+        if not self.catalog:
+            self.corrupt_title_var.set("此部位汙染詞")
+            return
+        slot_name = self.current_slot_name()
+        if not slot_name:
+            self.corrupt_title_var.set("此部位汙染詞（請先選擇部位）")
+            return
+        slot = next((item for item in self.catalog.get("slots", []) if item["name"] == slot_name), None)
+        groups = [group for group in (slot or {}).get("groups", []) if self._is_corrupt(group)]
+        count = 0
+        for group in groups:
+            for tier in group.get("tiers", []):
+                self.corrupt_tree.insert(
+                    "",
+                    "end",
+                    values=(
+                        f"T{tier.get('tier')}",
+                        tier.get("level"),
+                        self._weight_value(tier),
+                        self._pool_chance(slot_name, group, tier),
+                        tier.get("text"),
+                    ),
+                    tags=(_tier_tag(tier.get("tier"), corrupt=True),),
+                )
+                count += 1
+        self.corrupt_title_var.set(f"{slot_name} 汙染詞（{count} 筆）")
+
+    def refresh_affix_list(self) -> None:
+        for item in self.affix_tree.get_children():
+            self.affix_tree.delete(item)
+        grouped: dict[tuple[str, str, str, str], dict] = {}
+        for slot_name, group in self.iter_matching_groups():
+            key = (
+                group.get("label", ""),
+                group.get("affix", ""),
+                group.get("source", ""),
+                group.get("family", ""),
+            )
+            bucket = grouped.setdefault(
+                key,
+                {
+                    "label": key[0],
+                    "affix": key[1],
+                    "source": key[2],
+                    "family": key[3],
+                    "corrupt": self._is_corrupt(group),
+                    "slots": {},
+                    "max_tiers": 0,
+                    "best_t1": 0,
+                    "t1_weight": 0,
+                },
+            )
+            bucket["slots"][slot_name] = group
+            bucket["max_tiers"] = max(bucket["max_tiers"], len(group.get("tiers", [])))
+            bucket["corrupt"] = bucket["corrupt"] or self._is_corrupt(group)
+            t1 = group["tiers"][0] if group.get("tiers") else {}
+            bucket["best_t1"] = max(bucket["best_t1"], int(t1.get("level") or 0))
+            try:
+                bucket["t1_weight"] = max(bucket["t1_weight"], int(t1.get("weight") or 0))
+            except (TypeError, ValueError):
+                pass
+
+        self.filtered_groups = list(grouped.values())
+        self._render_affix_rows()
+        count = len(self.filtered_groups)
+        self.status_var.set(f"符合 {count} 組詞綴。點欄位標題可排序，目前依 {self._affix_sort_label()}。")
+        self.summary_var.set("請從左側選擇一個詞綴")
+        self.meta_var.set("T1 為該部位最難出的最高階詞綴")
+        self.slot_list.delete(0, "end")
+        for item in self.tier_tree.get_children():
+            self.tier_tree.delete(item)
+        self.refresh_corrupt_panel()
+
+    def _affix_sort_label(self) -> str:
+        name = self.affix_headings.get(self.affix_sort_col, "T1 物等")
+        return f"{name}{'由高到低' if self.affix_sort_desc else '由低到高'}"
+
+    def _affix_sort_key(self, row: dict):
+        column = self.affix_sort_col
+        if column == "t1":
+            return int(row.get("best_t1") or 0)
+        if column == "weight":
+            return int(row.get("t1_weight") or 0)
+        if column == "tiers":
+            return int(row.get("max_tiers") or 0)
+        if column == "slots":
+            return len(row.get("slots") or {})
+        if column == "corrupt":
+            return 1 if row.get("corrupt") else 0
+        if column == "affix":
+            return row.get("affix") or ""
+        if column == "source":
+            return row.get("source") or ""
+        return row.get("label") or ""
+
+    def _update_affix_headings(self) -> None:
+        for key, title in self.affix_headings.items():
+            mark = ""
+            if key == self.affix_sort_col:
+                mark = " ▼" if self.affix_sort_desc else " ▲"
+            self.affix_tree.heading(key, text=f"{title}{mark}")
+
+    def sort_affix_list(self, column: str) -> None:
+        if self.affix_sort_col == column:
+            self.affix_sort_desc = not self.affix_sort_desc
+        else:
+            self.affix_sort_col = column
+            self.affix_sort_desc = column in {"t1", "weight", "tiers", "slots", "corrupt"}
+        self._render_affix_rows()
+        self.status_var.set(f"符合 {len(self.filtered_groups)} 組詞綴。目前依 {self._affix_sort_label()}。")
+
+    def _render_affix_rows(self) -> None:
+        self.filtered_groups.sort(key=self._affix_sort_key, reverse=self.affix_sort_desc)
+        self._update_affix_headings()
+        for item in self.affix_tree.get_children():
+            self.affix_tree.delete(item)
+        for index, row in enumerate(self.filtered_groups):
+            if row["corrupt"]:
+                tag = "t1_corrupt" if row["best_t1"] else "corrupt"
+            elif row["affix"] == "前綴":
+                tag = "prefix"
+            elif row["affix"] == "後綴":
+                tag = "suffix"
+            else:
+                tag = "tn"
+            self.affix_tree.insert(
+                "",
+                "end",
+                iid=str(index),
+                values=(
+                    row["label"],
+                    row["affix"],
+                    "是" if row["corrupt"] else "",
+                    row["source"],
+                    row["best_t1"] or "—",
+                    row["t1_weight"] or "—",
+                    row["max_tiers"],
+                    len(row["slots"]),
+                ),
+                tags=(tag,),
+            )
+
+    def sort_detail_tree(self, tree: ttk.Treeview, column: str, numeric: bool) -> None:
+        state = getattr(tree, "_sort_state", {"col": None, "desc": True})
+        descending = not state["desc"] if state["col"] == column else True
+        tree._sort_state = {"col": column, "desc": descending}
+
+        def value_of(item_id: str):
+            raw = tree.set(item_id, column)
+            if not numeric:
+                return str(raw)
+            text = str(raw).replace("%", "").replace("T", "").replace("—", "0").replace(",", "")
+            try:
+                return float(text)
+            except ValueError:
+                return 0.0
+
+        rows = list(tree.get_children(""))
+        rows.sort(key=value_of, reverse=descending)
+        for index, item_id in enumerate(rows):
+            tree.move(item_id, "", index)
+
+    def _selected_row(self) -> dict | None:
+        selected = self.affix_tree.selection()
+        if not selected:
+            return None
+        try:
+            return self.filtered_groups[int(selected[0])]
+        except (ValueError, IndexError):
+            return None
+
+    def show_selected_affix(self) -> None:
+        row = self._selected_row()
+        if not row:
+            return
+        self.summary_var.set(row["label"])
+        corrupt_mark = "　汙染詞" if row.get("corrupt") else ""
+        self.meta_var.set(
+            f"{row['affix']}　{row['source']}{corrupt_mark}　家族 {row['family'] or '—'}　"
+            f"T1 物等 {row.get('best_t1') or '—'}　T1 權重 {row.get('t1_weight') or '—'}"
+        )
+        self.slot_list.delete(0, "end")
+        slot_names = list(row["slots"].keys())
+        preferred = self.slot_var.get()
+        chosen = 0
+        for index, name in enumerate(slot_names):
+            group = row["slots"][name]
+            t1 = group["tiers"][0] if group.get("tiers") else {}
+            self.slot_list.insert(
+                "end",
+                f"{name}    T1 物等 {t1.get('level', '—')}    權重 {t1.get('weight', '—')}    共 {len(group.get('tiers', []))} 階",
+            )
+            self.slot_list.itemconfig(index, fg=T1_FG)
+            if preferred != ALL and name == preferred:
+                chosen = index
+        if slot_names:
+            self.slot_list.selection_set(chosen)
+            self.slot_list.see(chosen)
+            self.show_slot_table()
+
+    def show_slot_table(self) -> None:
+        row = self._selected_row()
+        if not row:
+            return
+        selection = self.slot_list.curselection()
+        if not selection:
+            return
+        slot_name = list(row["slots"].keys())[selection[0]]
+        group = row["slots"][slot_name]
+        for item in self.tier_tree.get_children():
+            self.tier_tree.delete(item)
+        corrupt = self._is_corrupt(group) or bool(row.get("corrupt"))
+        for tier in group.get("tiers", []):
+            self.tier_tree.insert(
+                "",
+                "end",
+                values=(
+                    f"T{tier.get('tier')}",
+                    tier.get("level"),
+                    tier.get("name"),
+                    self._weight_value(tier),
+                    self._pool_chance(slot_name, group, tier),
+                    "是" if corrupt else "",
+                    tier.get("text"),
+                ),
+                tags=(_tier_tag(tier.get("tier"), corrupt=corrupt),),
+            )
+        t1 = group["tiers"][0] if group.get("tiers") else {}
+        corrupt_mark = "　汙染詞" if corrupt else ""
+        self.meta_var.set(
+            f"{row['affix']}　{row['source']}{corrupt_mark}　部位 {slot_name}　"
+            f"T1 需要物等 {t1.get('level', '—')}（最難出）　T1 權重 {t1.get('weight', '—')}　"
+            f"估計占比 {self._pool_chance(slot_name, group, t1) if t1 else '—'}　"
+            f"共 {len(group.get('tiers', []))} 階"
+        )
+        self.refresh_corrupt_panel()
+
+    def start_sync(self) -> None:
+        if self._syncing:
+            return
+        self._syncing = True
+        self.progress.configure(value=0, maximum=100)
+
+        def run() -> None:
+            def progress(message: str, current: int, total: int) -> None:
+                self.after(0, lambda: self._on_progress(message, current, total))
+
+            try:
+                catalog = sync_catalog(progress=progress)
+                self.after(0, lambda: self._on_sync_done(catalog, None))
+            except Exception as error:  # noqa: BLE001
+                self.after(0, lambda: self._on_sync_done(None, error))
+
+        threading.Thread(target=run, daemon=True).start()
+
+    def _on_progress(self, message: str, current: int, total: int) -> None:
+        self.status_var.set(message)
+        self.progress.configure(maximum=max(total, 1), value=current)
+
+    def _on_sync_done(self, catalog: dict | None, error: Exception | None) -> None:
+        self._syncing = False
+        if error:
+            self.status_var.set(f"更新失敗：{error}")
+            messagebox.showerror("更新失敗", str(error))
+            return
+        assert catalog is not None
+        skipped = catalog.get("skipped") or []
+        self.set_catalog(catalog)
+        extra = f"\n略過 {len(skipped)} 個沒有詞綴表的頁面。" if skipped else ""
+        messagebox.showinfo(
+            "更新完成",
+            f"已從 PoEDB 下載 {catalog.get('slot_count', 0)} 個部位、"
+            f"{catalog.get('group_count', 0)} 組詞綴。{extra}",
+        )
+
+
+def main() -> None:
+    from .menu import main as run_menu
+
+    run_menu()
