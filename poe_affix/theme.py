@@ -66,8 +66,8 @@ def apply_theme(widget: tk.Misc) -> None:
         bordercolor=GOLD,
         lightcolor=BG_RAISED,
         darkcolor=BG_RAISED,
-        padding=(24, 18),
-        font=("Microsoft JhengHei UI", 14, "bold"),
+        padding=(12, 6),
+        font=("Microsoft JhengHei UI", 11, "bold"),
     )
     style.map("Menu.TButton", background=[("active", "#3a3324")], foreground=[("active", GOLD_HI)])
     style.configure(

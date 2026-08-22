@@ -18,3 +18,4 @@ dist/*
 # Local logs / editor
 nba_logs/
 .vscode/
+poe_affix_data/chinese_pin.json
