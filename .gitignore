@@ -9,10 +9,11 @@ venv/
 
 # Build artifacts
 build/
-dist/
-*.exe
 *.zip
 *.msix
+*.exe
+dist/*
+!dist/PoE查詢工具.exe
 
 # Local logs / editor
 nba_logs/
