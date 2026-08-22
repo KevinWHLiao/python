@@ -90,6 +90,285 @@ def generalize(text: str) -> str:
     return _SPACE_RE.sub(" ", label).strip()
 
 
+# Longer / more specific family tokens first.
+_FAMILY_CATEGORIES: tuple[tuple[str, str], ...] = (
+    ("LifeLeech", "偷取"),
+    ("ManaLeech", "偷取"),
+    ("EnergyShield", "能量護盾"),
+    ("MaximumLife", "生命"),
+    ("IncreasedLife", "生命"),
+    ("PercentLife", "生命"),
+    ("HybridLife", "生命"),
+    ("JewelLife", "生命"),
+    ("LifeRegen", "生命"),
+    ("LifeOnHit", "生命"),
+    ("LifeOnKill", "生命"),
+    ("FlaskLife", "生命"),
+    ("MaximumMana", "魔力"),
+    ("IncreasedMana", "魔力"),
+    ("ManaRegen", "魔力"),
+    ("FlaskMana", "魔力"),
+    ("FireResistance", "抗性"),
+    ("ColdResistance", "抗性"),
+    ("LightningResistance", "抗性"),
+    ("ChaosResistance", "抗性"),
+    ("AllResistance", "抗性"),
+    ("AllResistances", "抗性"),
+    ("AttackSpeed", "速度"),
+    ("CastSpeed", "速度"),
+    ("MovementSpeed", "速度"),
+    ("ProjectileSpeed", "速度"),
+    ("Attack", "攻擊"),
+    ("Accuracy", "攻擊"),
+    ("Critical", "暴擊"),
+    ("Crits", "暴擊"),
+    ("Crit", "暴擊"),
+    ("AddedFire", "火焰"),
+    ("FireDamage", "火焰"),
+    ("AddedCold", "冰冷"),
+    ("ColdDamage", "冰冷"),
+    ("AddedLightning", "閃電"),
+    ("LightningDamage", "閃電"),
+    ("AddedChaos", "混沌"),
+    ("ChaosDamage", "混沌"),
+    ("PhysicalDamage", "物理"),
+    ("AddedPhysical", "物理"),
+    ("Armour", "護甲"),
+    ("Armor", "護甲"),
+    ("Evasion", "閃避"),
+    ("Block", "格擋"),
+    ("Spell", "法術"),
+    ("Minion", "召喚物"),
+    ("Totem", "圖騰"),
+    ("Trap", "陷阱"),
+    ("Mine", "地雷"),
+    ("Curse", "詛咒"),
+    ("Flask", "藥劑"),
+    ("Gem", "寶石"),
+    ("Socketed", "寶石"),
+    ("Attribute", "能力"),
+    ("Strength", "能力"),
+    ("Dexterity", "能力"),
+    ("Intelligence", "能力"),
+    ("Ailment", "異常狀態"),
+    ("Bleed", "異常狀態"),
+    ("Poison", "異常狀態"),
+    ("Ignite", "異常狀態"),
+    ("Freeze", "異常狀態"),
+    ("Chill", "異常狀態"),
+    ("Shock", "異常狀態"),
+    ("Projectile", "投射物"),
+    ("Arrow", "投射物"),
+    ("Area", "範圍"),
+    ("Duration", "持續"),
+    ("Charge", "球"),
+    ("Leech", "偷取"),
+    ("Life", "生命"),
+    ("Mana", "魔力"),
+    ("Fire", "火焰"),
+    ("Cold", "冰冷"),
+    ("Lightning", "閃電"),
+    ("Chaos", "混沌"),
+    ("Physical", "物理"),
+    ("Elemental", "元素"),
+    ("Speed", "速度"),
+    ("Damage", "傷害"),
+)
+
+_LABEL_CATEGORIES: tuple[tuple[str, str], ...] = (
+    ("最大生命", "生命"),
+    ("生命偷取", "偷取"),
+    ("生命恢復", "生命"),
+    ("生命回復", "生命"),
+    ("最大魔力", "魔力"),
+    ("魔力恢復", "魔力"),
+    ("魔力回復", "魔力"),
+    ("能量護盾", "能量護盾"),
+    ("火焰抗性", "抗性"),
+    ("冰冷抗性", "抗性"),
+    ("閃電抗性", "抗性"),
+    ("混沌抗性", "抗性"),
+    ("全部元素抗性", "抗性"),
+    ("所有元素抗性", "抗性"),
+    ("物理傷害", "物理"),
+    ("火焰傷害", "火焰"),
+    ("冰冷傷害", "冰冷"),
+    ("閃電傷害", "閃電"),
+    ("混沌傷害", "混沌"),
+    ("元素傷害", "元素"),
+    ("攻擊速度", "速度"),
+    ("攻擊", "攻擊"),
+    ("施放速度", "速度"),
+    ("移動速度", "速度"),
+    ("暴擊", "暴擊"),
+    ("命中", "攻擊"),
+    ("護甲", "護甲"),
+    ("閃避", "閃避"),
+    ("格擋", "格擋"),
+    ("力量", "能力"),
+    ("敏捷", "能力"),
+    ("智慧", "能力"),
+    ("藥劑", "藥劑"),
+    ("寶石", "寶石"),
+    ("召喚物", "召喚物"),
+    ("圖騰", "圖騰"),
+    ("詛咒", "詛咒"),
+)
+
+
+_CAMEL_RE = re.compile(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z]+|[A-Z]+|[0-9]+")
+_SHORT_FAMILY_PARTS = {
+    "life",
+    "mana",
+    "fire",
+    "cold",
+    "lightning",
+    "chaos",
+    "physical",
+    "speed",
+    "damage",
+    "attack",
+    "shock",
+    "chill",
+    "bleed",
+    "spell",
+    "gem",
+    "area",
+    "mine",
+    "trap",
+    "curse",
+    "flask",
+    "block",
+    "leech",
+    "crit",
+}
+
+# Match PoEDB crafting-badge order when filling heuristic tags.
+_TAG_ORDER = (
+    "生命",
+    "魔力",
+    "防禦",
+    "能量護盾",
+    "護甲",
+    "閃避",
+    "傷害",
+    "元素",
+    "火焰",
+    "冰冷",
+    "閃電",
+    "混沌",
+    "物理",
+    "攻擊",
+    "法術",
+    "速度",
+    "暴擊",
+    "異常狀態",
+    "抗性",
+    "偷取",
+    "能力",
+    "寶石",
+    "召喚物",
+    "詛咒",
+    "藥劑",
+    "範圍",
+    "投射物",
+    "持續",
+    "球",
+    "圖騰",
+    "陷阱",
+    "地雷",
+    "格擋",
+    "其他",
+)
+
+
+def extract_mod_tags(entry: dict[str, Any]) -> list[str]:
+    """Read official PoEDB crafting badges from a ModsView entry."""
+    tags: list[str] = []
+    seen: set[str] = set()
+    for raw in entry.get("mod_no") or []:
+        text = strip_html(str(raw))
+        if text and text not in seen:
+            seen.add(text)
+            tags.append(text)
+    return tags
+
+
+def _family_parts(family: str) -> set[str]:
+    return {part.casefold() for part in _CAMEL_RE.findall(family or "")}
+
+
+def _family_token_hits(family: str, token: str) -> bool:
+    lowered = (family or "").casefold()
+    needle = token.casefold()
+    if needle in _SHORT_FAMILY_PARTS:
+        return needle in _family_parts(family)
+    return needle in lowered
+
+
+def _sorted_tags(tags: list[str]) -> list[str]:
+    rank = {name: index for index, name in enumerate(_TAG_ORDER)}
+    unique: list[str] = []
+    seen: set[str] = set()
+    for tag in tags:
+        if tag and tag not in seen:
+            seen.add(tag)
+            unique.append(tag)
+    unique.sort(key=lambda name: (rank.get(name, len(_TAG_ORDER)), name))
+    return unique
+
+
+def affix_categories(family: str, label: str = "") -> list[str]:
+    """Heuristic tags used when a catalog row has no official PoEDB badges."""
+    found: list[str] = []
+    seen: set[str] = set()
+    family_text = family or ""
+    for token, category in _FAMILY_CATEGORIES:
+        if category in seen:
+            continue
+        if _family_token_hits(family_text, token):
+            found.append(category)
+            seen.add(category)
+    label_text = label or ""
+    for token, category in _LABEL_CATEGORIES:
+        if category not in seen and token in label_text:
+            found.append(category)
+            seen.add(category)
+    if any(name in seen for name in ("能量護盾", "護甲", "閃避")):
+        if "防禦" not in seen:
+            found.insert(0, "防禦")
+            seen.add("防禦")
+    if "傷害" in seen and any(name in seen for name in ("火焰", "冰冷", "閃電")) and "元素" not in seen:
+        found.append("元素")
+        seen.add("元素")
+    return _sorted_tags(found) or ["其他"]
+
+
+def affix_category(family: str, label: str = "") -> str:
+    """Map a PoEDB mod family / label to the first Traditional Chinese group tag."""
+    return affix_categories(family, label)[0]
+
+
+def format_tag_text(tags: list[str]) -> str:
+    return "  ".join(tag for tag in tags if tag)
+
+
+def group_categories(group: dict[str, Any]) -> list[str]:
+    if group.get("tag_source") == "poedb":
+        cached = group.get("categories")
+        if isinstance(cached, list) and cached:
+            return [str(tag) for tag in cached if tag]
+    value = affix_categories(str(group.get("family") or ""), str(group.get("label") or ""))
+    group["categories"] = value
+    group["category"] = value[0]
+    return value
+
+
+def group_category(group: dict[str, Any]) -> str:
+    tags = group_categories(group)
+    return tags[0] if tags else "其他"
+
+
 def extract_mods_view(page_html: str) -> dict[str, Any] | None:
     marker = "new ModsView("
     start = page_html.find(marker)
@@ -186,6 +465,7 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
                     "source_key": source_key,
                     "affix": affix,
                     "family": _family_key(entry),
+                    "tags": extract_mod_tags(entry),
                     "is_corrupt": is_corrupt,
                 }
             )
@@ -212,13 +492,30 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
             for index, row in enumerate(unique_rows, start=1)
         ]
         label_source = next((item["text"] for item in tiers), "")
+        label = generalize(label_source) or family or label_source
+        poedb_tags: list[str] = []
+        seen_tags: set[str] = set()
+        for row in unique_rows:
+            for tag in row.get("tags") or []:
+                if tag not in seen_tags:
+                    seen_tags.add(tag)
+                    poedb_tags.append(tag)
+        if poedb_tags:
+            tags = poedb_tags
+            tag_source = "poedb"
+        else:
+            tags = affix_categories(family, label)
+            tag_source = "heuristic"
         groups.append(
             {
                 "family": family,
+                "category": tags[0],
+                "categories": tags,
+                "tag_source": tag_source,
                 "affix": affix,
                 "source": unique_rows[0]["source"] if unique_rows else "",
                 "source_key": unique_rows[0]["source_key"] if unique_rows else "",
-                "label": generalize(label_source) or family or label_source,
+                "label": label,
                 "is_corrupt": bool(unique_rows[0].get("is_corrupt")) if unique_rows else False,
                 "tier_count": len(tiers),
                 "min_level": min((item["level"] for item in tiers), default=0),

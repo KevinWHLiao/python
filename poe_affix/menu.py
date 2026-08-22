@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import threading
 import tkinter as tk
 import webbrowser
 from tkinter import ttk
 
+from . import ROOT
 from .theme import BG, BG_HEAD, BG_PANEL, FONT_SMALL, FONT_UI, GOLD, MUTED, TEXT, apply_theme
 
 CRAFT_OF_EXILE_URL = "https://www.craftofexile.com/"
@@ -23,16 +25,23 @@ class MenuApp(tk.Tk):
         apply_theme(self)
         self._child = None
         self._canvas = None
+        self.path_var = tk.StringVar(value=f"編輯路徑：{ROOT}")
+        self.version_var = tk.StringVar(value="遊戲版本：讀取中…")
         self._build()
+        self.after(80, self._load_version)
 
     def _build(self) -> None:
         header = tk.Frame(self, bg=BG_HEAD)
         header.pack(fill="x")
         tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
         ttk.Label(header, text="流亡黯道  ·  查詢工具", style="Gold.TLabel", background=BG_HEAD).pack(
-            pady=(12, 2)
+            pady=(10, 2)
         )
-        tk.Label(header, text="選擇要使用的功能", bg=BG_HEAD, fg=MUTED, font=FONT_SMALL).pack(pady=(0, 10))
+        tk.Label(header, textvariable=self.path_var, bg=BG_HEAD, fg=TEXT, font=FONT_SMALL, wraplength=680).pack(
+            pady=(0, 1)
+        )
+        tk.Label(header, textvariable=self.version_var, bg=BG_HEAD, fg=GOLD, font=FONT_SMALL).pack(pady=(0, 2))
+        tk.Label(header, text="選擇要使用的功能", bg=BG_HEAD, fg=MUTED, font=FONT_SMALL).pack(pady=(0, 8))
 
         tk.Label(
             self,
@@ -96,6 +105,28 @@ class MenuApp(tk.Tk):
 
     def _hide(self) -> None:
         self.withdraw()
+
+    def _load_version(self) -> None:
+        threading.Thread(target=self._version_worker, daemon=True).start()
+
+    def _version_worker(self) -> None:
+        try:
+            from .chinese import fetch_pins
+
+            pins = fetch_pins()
+            info = pins.tw or pins.cn
+            if not info:
+                raise RuntimeError("頁面上沒有版本")
+            same = info.server_version == info.patch_version
+            if same:
+                text = f"遊戲版本：{info.server_version}"
+            else:
+                text = f"遊戲版本：{info.server_version}　中文化：{info.patch_version}"
+            if pins.from_cache:
+                text += "　（快取）"
+        except Exception as error:  # noqa: BLE001
+            text = f"遊戲版本：無法讀取（{error}）"
+        self.after(0, lambda message=text: self.version_var.set(message))
 
     def show_menu(self) -> None:
         self._child = None

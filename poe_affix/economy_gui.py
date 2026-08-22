@@ -7,7 +7,20 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
-from .economy import ALL, CATEGORY_LABELS, ECONOMY_PAGE, League, PriceRow, clear_cache, fetch_leagues, fetch_prices, matches
+from .economy import (
+    ALL,
+    CATEGORY_LABELS,
+    ECONOMY_PAGE,
+    GAINER_WORKERS,
+    MIN_GAIN_PERCENT,
+    League,
+    PriceRow,
+    clear_cache,
+    fetch_leagues,
+    fetch_prices,
+    matches,
+)
+from .search_combo import bind_searchable_combo, choice_matches, filter_choices
 from .theme import BG, BG_HEAD, FONT_SMALL, FONT_UI, GOLD, MUTED, PREFIX, SUFFIX, apply_theme, sort_tree
 
 NUMERIC_COLUMNS = {"chaos", "divine", "change", "listings"}
@@ -60,6 +73,11 @@ class EconomyApp(tk.Toplevel):
         self.category_var = tk.StringVar(value="通貨")
         self.search_var = tk.StringVar()
         self.status_var = tk.StringVar(value="正在連線 poe.ninja…")
+        self.top_gainer_var = tk.StringVar(value="")
+        self._allow_all = False
+        self._focus_top_gainer = False
+        self._league_options: list[str] = []
+        self._category_options: list[str] = [ALL, *CATEGORY_LABELS]
 
         self._build()
         self.search_var.trace_add("write", lambda *_: self.refresh())
@@ -83,26 +101,36 @@ class EconomyApp(tk.Toplevel):
         filters = ttk.Frame(self, padding=(16, 12, 16, 8))
         filters.pack(fill="x")
         ttk.Label(filters, text="聯盟", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
-        self.league_combo = ttk.Combobox(filters, textvariable=self.league_var, state="readonly", width=22)
+        self.league_combo = ttk.Combobox(filters, textvariable=self.league_var, state="normal", width=22)
         self.league_combo.grid(row=0, column=1, padx=(0, 16))
-        self.league_combo.bind("<<ComboboxSelected>>", lambda _e: self.load_prices())
+        bind_searchable_combo(self.league_combo, lambda: self._league_options, self.load_prices)
 
         ttk.Label(filters, text="分類", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.category_combo = ttk.Combobox(
-            filters, textvariable=self.category_var, state="readonly", width=16, values=[ALL, *CATEGORY_LABELS]
+            filters, textvariable=self.category_var, state="normal", width=16, values=self._category_options
         )
         self.category_combo.grid(row=0, column=3, padx=(0, 16))
-        self.category_combo.bind("<<ComboboxSelected>>", lambda _e: self.load_prices())
+        bind_searchable_combo(self.category_combo, lambda: self._category_options, self.load_prices)
 
         ttk.Label(filters, text="搜尋物品", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
         ttk.Entry(filters, textvariable=self.search_var, width=36).grid(row=0, column=5, sticky="ew")
+        ttk.Button(filters, text=f"漲幅≥{MIN_GAIN_PERCENT:.0f}%", command=self.show_top_gainer).grid(
+            row=0, column=6, padx=(16, 0)
+        )
         filters.columnconfigure(5, weight=1)
 
         ttk.Label(
             self,
-            text="估價來自 poe.ninja。名稱顯示中文與英文，兩邊都能搜，例如「獵首」「Headhunter」「混沌石」。雙擊列可開官網。",
+            text=(
+                "估價來自 poe.ninja。名稱顯示中文與英文，兩邊都能搜。"
+                "聯盟／分類可輸入關鍵字後從清單點選。"
+                f"分類選「全部」時可按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」，只列出全部分類裡漲超過 {MIN_GAIN_PERCENT:.0f}% 的物品。雙擊列可開官網。"
+            ),
             style="Muted.TLabel",
         ).pack(anchor="w", padx=16)
+        tk.Label(self, textvariable=self.top_gainer_var, bg=BG, fg=SUFFIX, font=FONT_UI, anchor="w").pack(
+            fill="x", padx=16, pady=(0, 2)
+        )
 
         wrap = ttk.Frame(self, padding=(16, 8, 16, 8))
         wrap.pack(fill="both", expand=True)
@@ -152,11 +180,28 @@ class EconomyApp(tk.Toplevel):
         self.progress.pack(side="right", padx=16, pady=8)
 
     def current_league(self) -> League | None:
-        name = self.league_var.get()
+        name = (self.league_var.get() or "").strip()
         for league in self.leagues:
             if league.name == name or league.id == name:
                 return league
+        hits = [league for league in self.leagues if choice_matches(name, league.name)]
+        if len(hits) == 1:
+            self.league_var.set(hits[0].name)
+            return hits[0]
         return self.leagues[0] if self.leagues else None
+
+    def _resolved_category(self) -> str | None:
+        typed = (self.category_var.get() or "").strip()
+        options = self._category_options
+        if typed in options:
+            return typed
+        hits = filter_choices(typed, options)
+        if len(hits) == 1:
+            self.category_var.set(hits[0])
+            return hits[0]
+        if not typed:
+            return "通貨"
+        return None
 
     def _startup(self) -> None:
         threading.Thread(target=self._load_leagues_worker, daemon=True).start()
@@ -172,6 +217,7 @@ class EconomyApp(tk.Toplevel):
     def _on_leagues(self, leagues: list[League]) -> None:
         self.leagues = leagues
         names = [league.name for league in leagues]
+        self._league_options = names
         self.league_combo.configure(values=names)
         if names and self.league_var.get() not in names:
             self.league_var.set(names[0])
@@ -190,12 +236,19 @@ class EconomyApp(tk.Toplevel):
         league = self.current_league()
         if not league:
             return
-        category = self.category_var.get() or "通貨"
+        category = self._resolved_category()
+        if not category:
+            self.status_var.set("請從分類清單點選一個項目，或再輸入更完整的關鍵字。")
+            return
         query = self.search_var.get().strip()
-        if category == ALL and not force and len(query) < 2:
+        if category != ALL:
+            self._allow_all = False
+            self._focus_top_gainer = False
+            self.top_gainer_var.set("")
+        if category == ALL and not self._allow_all and not force and len(query) < 2:
             self.rows = []
             self.refresh()
-            self.status_var.set("分類選「全部」時，請輸入至少兩個字再查詢，避免一次下載所有分類。")
+            self.status_var.set(f"分類選「全部」時，請輸入至少兩個字再查詢，或按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」。")
             return
         self._loading = True
         self._pending_load = None
@@ -207,8 +260,9 @@ class EconomyApp(tk.Toplevel):
         def progress(done: int, total: int, message: str) -> None:
             self.after(0, lambda: self._set_progress(done, total, message))
 
+        workers = GAINER_WORKERS if category == ALL else None
         try:
-            rows = fetch_prices(league, category, force=force, progress=progress)
+            rows = fetch_prices(league, category, force=force, progress=progress, max_workers=workers)
         except RuntimeError as error:
             self.after(0, lambda message=str(error): self._fail(message))
             return
@@ -231,7 +285,9 @@ class EconomyApp(tk.Toplevel):
     def _fail(self, message: str) -> None:
         self._loading = False
         self._pending_load = None
+        self._focus_top_gainer = False
         self.status_var.set(message)
+        self.top_gainer_var.set("")
         messagebox.showerror("價格查詢失敗", message, parent=self)
 
     def refresh(self) -> None:
@@ -241,7 +297,11 @@ class EconomyApp(tk.Toplevel):
             self.load_prices()
             return
         visible = [row for row in self.rows if matches(row, query)]
-        if category == ALL and not query.strip():
+        if self._allow_all:
+            visible = [
+                row for row in visible if row.change is not None and row.change >= MIN_GAIN_PERCENT
+            ]
+        if category == ALL and not query.strip() and not self._allow_all:
             visible = []
         self.tree.delete(*self.tree.get_children(""))
         self._row_urls.clear()
@@ -267,13 +327,68 @@ class EconomyApp(tk.Toplevel):
                 tags=(tag,),
             )
             self._row_urls[item_id] = row.ninja_url
-        self._sort_chaos_desc()
-        if category == ALL and not query.strip():
-            self.status_var.set("分類選「全部」時，請輸入至少兩個字再查詢。")
+        if self._allow_all or self._focus_top_gainer:
+            self._sort_change_desc()
+        else:
+            self._sort_chaos_desc()
+        if self._focus_top_gainer and visible:
+            self._select_top_gainer(visible)
+            self._focus_top_gainer = False
+        elif category == ALL and not query.strip() and not self._allow_all:
+            self.top_gainer_var.set("")
+            self.status_var.set(
+                f"分類選「全部」時，請輸入至少兩個字，或按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」只看大漲的物品。"
+            )
+        elif self._allow_all:
+            self.status_var.set(f"只顯示漲幅 ≥ {MIN_GAIN_PERCENT:.0f}% · {len(visible):,} 筆 · poe.ninja")
         elif self.rows:
             league = self.current_league()
             league_name = league.name if league else ""
             self.status_var.set(f"{league_name} · 顯示 {len(visible):,} / {len(self.rows):,} 筆 · poe.ninja")
+
+    def show_top_gainer(self) -> None:
+        self._allow_all = True
+        self._focus_top_gainer = True
+        self.category_var.set(ALL)
+        self.rows = []
+        if self.search_var.get():
+            self.search_var.set("")
+        self.top_gainer_var.set(f"正在下載全部分類，只列出漲幅 ≥ {MIN_GAIN_PERCENT:.0f}% 的物品…")
+        self.load_prices()
+
+    def _select_top_gainer(self, visible: list[PriceRow]) -> None:
+        if not visible:
+            self.top_gainer_var.set(f"全部分類裡目前沒有漲幅 ≥ {MIN_GAIN_PERCENT:.0f}% 的物品。")
+            self.status_var.set(f"已載入全部物品，沒有漲超過 {MIN_GAIN_PERCENT:.0f}% 的項目。")
+            return
+        children = list(self.tree.get_children(""))
+        if children:
+            self.tree.selection_set(children[0])
+            self.tree.focus(children[0])
+            self.tree.see(children[0])
+        top = visible[0]
+        # visible is not yet sorted here; use the first tree row after change-desc sort.
+        top_name = str(self.tree.set(children[0], "name_zh") if children else (top.display_zh or top.name))
+        top_change = str(self.tree.set(children[0], "change") if children else format_change(top.change))
+        self.top_gainer_var.set(
+            f"漲幅 ≥ {MIN_GAIN_PERCENT:.0f}%：{len(visible)} 筆　最高 {top_name} {top_change}"
+        )
+        self.status_var.set(f"只顯示漲幅 ≥ {MIN_GAIN_PERCENT:.0f}% · {len(visible):,} 筆 · 已依漲跌排序")
+
+    def _sort_change_desc(self) -> None:
+        rows = list(self.tree.get_children(""))
+
+        def change_of(item_id: str) -> float:
+            text = str(self.tree.set(item_id, "change")).replace("%", "").replace("—", "").replace(",", "").replace("+", "")
+            try:
+                return float(text)
+            except ValueError:
+                return float("-inf")
+
+        rows.sort(key=change_of, reverse=True)
+        for index, item_id in enumerate(rows):
+            self.tree.move(item_id, "", index)
+        self.tree._sort_state = {"col": "change", "desc": True}
 
     def _sort_chaos_desc(self) -> None:
         rows = list(self.tree.get_children(""))

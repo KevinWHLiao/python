@@ -9,7 +9,8 @@ import webbrowser
 from tkinter import messagebox, ttk
 
 from . import resolve_data_file
-from .catalog import SOURCE_ORDER, SOURCE_TITLES
+from .catalog import SOURCE_ORDER, SOURCE_TITLES, format_tag_text, group_categories
+from .search_combo import bind_searchable_combo, choice_matches
 from .sync import sync_catalog
 from .theme import apply_theme
 
@@ -98,6 +99,7 @@ class AffixApp(tk.Toplevel):
         self.slot_var = tk.StringVar(value=ALL)
         self.affix_var = tk.StringVar(value=ALL)
         self.source_var = tk.StringVar(value="基底")
+        self.category_var = tk.StringVar(value=ALL)
         self.search_var = tk.StringVar()
         self.status_var = tk.StringVar(value="尚未載入資料")
         self.summary_var = tk.StringVar(value="請從左側選擇一個詞綴")
@@ -108,6 +110,10 @@ class AffixApp(tk.Toplevel):
         self.affix_headings = {}
         self.tier_sort_desc = True
         self.corrupt_sort_desc = True
+        self._slot_options: list[str] = [ALL]
+        self._affix_options: list[str] = [ALL, "前綴", "後綴", "汙染"]
+        self._source_options: list[str] = [ALL, "基底"]
+        self._category_options: list[str] = [ALL]
 
         self._build()
         self.search_var.trace_add("write", lambda *_: self.refresh_affix_list())
@@ -157,30 +163,40 @@ class AffixApp(tk.Toplevel):
         filters = ttk.Frame(self, padding=(16, 12, 16, 8))
         filters.pack(fill="x")
         ttk.Label(filters, text="部位", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
-        self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, state="readonly", width=22)
+        self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, width=22, state="normal")
         self.slot_combo.grid(row=0, column=1, padx=(0, 16))
-        self.slot_combo.bind("<<ComboboxSelected>>", lambda _e: self.on_filters_changed())
+        bind_searchable_combo(self.slot_combo, lambda: self._slot_options, self.on_filters_changed)
 
         ttk.Label(filters, text="前後綴", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.affix_combo = ttk.Combobox(
             filters,
             textvariable=self.affix_var,
-            state="readonly",
             width=10,
-            values=(ALL, "前綴", "後綴", "汙染"),
+            values=self._affix_options,
+            state="normal",
         )
         self.affix_combo.grid(row=0, column=3, padx=(0, 16))
-        self.affix_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh_affix_list())
+        bind_searchable_combo(self.affix_combo, lambda: self._affix_options, self.refresh_affix_list)
 
         ttk.Label(filters, text="來源", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
-        self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, state="readonly", width=16)
+        self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, width=14, state="normal")
         self.source_combo.grid(row=0, column=5, padx=(0, 16))
-        self.source_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh_affix_list())
+        bind_searchable_combo(self.source_combo, lambda: self._source_options, self.refresh_affix_list)
 
-        ttk.Label(filters, text="篩選詞綴", style="Muted.TLabel").grid(row=0, column=6, sticky="w", padx=(0, 6))
-        search = ttk.Entry(filters, textvariable=self.search_var, width=28)
-        search.grid(row=0, column=7, sticky="ew")
-        filters.columnconfigure(7, weight=1)
+        ttk.Label(filters, text="分類", style="Muted.TLabel").grid(row=0, column=6, sticky="w", padx=(0, 6))
+        self.category_combo = ttk.Combobox(filters, textvariable=self.category_var, width=12, state="normal")
+        self.category_combo.grid(row=0, column=7, padx=(0, 16))
+        bind_searchable_combo(self.category_combo, lambda: self._category_options, self.refresh_affix_list)
+
+        ttk.Label(filters, text="篩選詞綴", style="Muted.TLabel").grid(row=0, column=8, sticky="w", padx=(0, 6))
+        search = ttk.Entry(filters, textvariable=self.search_var, width=24)
+        search.grid(row=0, column=9, sticky="ew")
+        filters.columnconfigure(9, weight=1)
+        ttk.Label(
+            filters,
+            text="部位／前後綴／來源／分類可輸入關鍵字（可多字或空格），例如「手套 力」「塑界」；點清單或 Enter 套用",
+            style="Muted.TLabel",
+        ).grid(row=1, column=0, columnspan=10, sticky="w", pady=(6, 0))
 
         legend = ttk.Frame(self, padding=(16, 0, 16, 8))
         legend.pack(fill="x")
@@ -208,10 +224,11 @@ class AffixApp(tk.Toplevel):
         tk.Frame(left, bg=GOLD, height=2).pack(fill="x", pady=(4, 8))
         list_wrap = ttk.Frame(left, style="Panel.TFrame")
         list_wrap.pack(fill="both", expand=True)
-        columns = ("label", "affix", "corrupt", "source", "t1", "weight", "tiers", "slots")
+        columns = ("label", "category", "affix", "corrupt", "source", "t1", "weight", "tiers", "slots")
         self.affix_tree = ttk.Treeview(list_wrap, columns=columns, show="headings", selectmode="browse")
         self.affix_headings = {
             "label": "詞綴",
+            "category": "分類",
             "affix": "前後綴",
             "corrupt": "汙染",
             "source": "來源",
@@ -221,7 +238,8 @@ class AffixApp(tk.Toplevel):
             "slots": "部位數",
         }
         widths = {
-            "label": 220,
+            "label": 190,
+            "category": 240,
             "affix": 58,
             "corrupt": 48,
             "source": 78,
@@ -232,8 +250,10 @@ class AffixApp(tk.Toplevel):
         }
         for key, title in self.affix_headings.items():
             self.affix_tree.heading(key, text=title, command=lambda column=key: self.sort_affix_list(column))
-            stretch = key == "label"
-            self.affix_tree.column(key, width=widths[key], stretch=stretch, anchor="center" if key != "label" else "w")
+            stretch = key in {"label", "category"}
+            self.affix_tree.column(
+                key, width=widths[key], stretch=stretch, anchor="w" if key in {"label", "category"} else "center"
+            )
         yscroll = ttk.Scrollbar(list_wrap, orient="vertical", command=self.affix_tree.yview)
         self.affix_tree.configure(yscrollcommand=yscroll.set)
         self.affix_tree.pack(side="left", fill="both", expand=True)
@@ -337,9 +357,17 @@ class AffixApp(tk.Toplevel):
         else:
             self.status_var.set("沒有本地資料，請按「從 PoEDB 更新資料」。")
 
+    @staticmethod
+    def _choice_matches(typed: str, candidate: str) -> bool:
+        text = (typed or "").strip()
+        if not text or text == ALL:
+            return True
+        return choice_matches(text, candidate)
+
     def set_catalog(self, catalog: dict) -> None:
         self.catalog = catalog
         slots = [ALL] + [slot["name"] for slot in catalog.get("slots", [])]
+        self._slot_options = slots
         self.slot_combo.configure(values=slots)
         if self.slot_var.get() not in slots:
             self.slot_var.set(ALL)
@@ -357,9 +385,27 @@ class AffixApp(tk.Toplevel):
                 if title and title not in seen:
                     sources.append(title)
                     seen.add(title)
+        self._source_options = sources
         self.source_combo.configure(values=sources)
         if self.source_var.get() not in sources:
             self.source_var.set("基底")
+
+        categories = [ALL]
+        seen_categories = {ALL}
+        for slot in catalog.get("slots", []):
+            for group in slot.get("groups", []):
+                for title in group_categories(group):
+                    if title not in seen_categories:
+                        categories.append(title)
+                        seen_categories.add(title)
+        extra_categories = sorted(name for name in categories if name not in {ALL, "其他"})
+        categories = [ALL, *extra_categories]
+        if "其他" in seen_categories:
+            categories.append("其他")
+        self._category_options = categories
+        self.category_combo.configure(values=categories)
+        if self.category_var.get() not in categories:
+            self.category_var.set(ALL)
 
         synced = catalog.get("synced_at", "")
         self.status_var.set(
@@ -426,24 +472,28 @@ class AffixApp(tk.Toplevel):
         slot_filter = self.slot_var.get()
         affix_filter = self.affix_var.get()
         source_filter = self.source_var.get()
+        category_filter = self.category_var.get()
         query = self.search_var.get().strip().lower()
         tokens = [token for token in query.split() if token]
         for slot in self.catalog.get("slots", []):
-            if slot_filter != ALL and slot["name"] != slot_filter:
+            if not self._choice_matches(slot_filter, slot["name"]):
                 continue
             for group in slot.get("groups", []):
                 corrupt = self._is_corrupt(group)
-                if affix_filter == "汙染":
-                    if not corrupt:
+                affix_label = "汙染" if corrupt else (group.get("affix") or "")
+                if not self._choice_matches(affix_filter, affix_label):
+                    continue
+                if affix_filter.strip() != "汙染" and not self._choice_matches(source_filter, group.get("source") or ""):
+                    continue
+                tags = group_categories(group)
+                if category_filter.strip() and category_filter.strip() != ALL:
+                    if not any(self._choice_matches(category_filter, tag) for tag in tags):
                         continue
-                elif affix_filter != ALL and group.get("affix") != affix_filter:
-                    continue
-                if affix_filter != "汙染" and source_filter != ALL and group.get("source") != source_filter:
-                    continue
                 haystack = " ".join(
                     [
                         group.get("label", ""),
                         group.get("family", ""),
+                        *tags,
                         group.get("affix", ""),
                         group.get("source", ""),
                         slot["name"],
@@ -456,17 +506,23 @@ class AffixApp(tk.Toplevel):
                 yield slot["name"], group
 
     def current_slot_name(self) -> str | None:
-        slot_filter = self.slot_var.get()
-        if slot_filter and slot_filter != ALL:
-            return slot_filter
+        slot_filter = (self.slot_var.get() or "").strip()
+        slot_names = [slot["name"] for slot in (self.catalog or {}).get("slots", [])]
+        matched = [name for name in slot_names if self._choice_matches(slot_filter, name)] if slot_filter else slot_names
         row = self._selected_row()
-        if not row:
-            return None
-        selection = self.slot_list.curselection()
-        names = list(row["slots"].keys())
-        if selection and selection[0] < len(names):
-            return names[selection[0]]
-        return names[0] if names else None
+        if row:
+            selected_names = list(row["slots"].keys())
+            overlap = [name for name in selected_names if name in matched] if matched else selected_names
+            names = overlap or selected_names
+            selection = self.slot_list.curselection()
+            if selection and selection[0] < len(names):
+                return names[selection[0]]
+            return names[0] if names else None
+        if slot_filter and slot_filter != ALL:
+            if slot_filter in slot_names:
+                return slot_filter
+            return matched[0] if matched else None
+        return None
 
     def refresh_corrupt_panel(self) -> None:
         for item in self.corrupt_tree.get_children():
@@ -516,6 +572,8 @@ class AffixApp(tk.Toplevel):
                     "affix": key[1],
                     "source": key[2],
                     "family": key[3],
+                    "categories": group_categories(group),
+                    "category": format_tag_text(group_categories(group)),
                     "corrupt": self._is_corrupt(group),
                     "slots": {},
                     "max_tiers": 0,
@@ -564,6 +622,8 @@ class AffixApp(tk.Toplevel):
             return row.get("affix") or ""
         if column == "source":
             return row.get("source") or ""
+        if column == "category":
+            return row.get("category") or ""
         return row.get("label") or ""
 
     def _update_affix_headings(self) -> None:
@@ -602,6 +662,7 @@ class AffixApp(tk.Toplevel):
                 iid=str(index),
                 values=(
                     row["label"],
+                    format_tag_text(row.get("categories") or [row.get("category") or "其他"]),
                     row["affix"],
                     "是" if row["corrupt"] else "",
                     row["source"],
@@ -646,10 +707,12 @@ class AffixApp(tk.Toplevel):
         row = self._selected_row()
         if not row:
             return
-        self.summary_var.set(row["label"])
+        tags = row.get("categories") or [row.get("category") or "其他"]
+        tag_text = "　".join(f"[{tag}]" for tag in tags)
+        self.summary_var.set(f"{row['label']}　{tag_text}")
         corrupt_mark = "　汙染詞" if row.get("corrupt") else ""
         self.meta_var.set(
-            f"{row['affix']}　{row['source']}{corrupt_mark}　家族 {row['family'] or '—'}　"
+            f"{row['affix']}　{row['source']}{corrupt_mark}　分類 {format_tag_text(tags)}　家族 {row['family'] or '—'}　"
             f"T1 物等 {row.get('best_t1') or '—'}　T1 權重 {row.get('t1_weight') or '—'}"
         )
         self.slot_list.delete(0, "end")

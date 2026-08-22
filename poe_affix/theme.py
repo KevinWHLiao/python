@@ -77,20 +77,38 @@ def apply_theme(widget: tk.Misc) -> None:
         foreground=TEXT,
         arrowcolor=GOLD,
         bordercolor=LINE,
+        lightcolor=LINE,
+        darkcolor=LINE,
+        insertcolor=GOLD_HI,
+        insertwidth=2,
+        padding=3,
     )
     style.map(
         "TCombobox",
-        fieldbackground=[("readonly", BG_INPUT)],
-        foreground=[("readonly", TEXT)],
-        selectbackground=[("readonly", BG_HEAD)],
-        selectforeground=[("readonly", GOLD_HI)],
+        fieldbackground=[("readonly", BG_INPUT), ("focus", BG_INPUT)],
+        foreground=[("readonly", TEXT), ("focus", TEXT)],
+        bordercolor=[("focus", GOLD), ("readonly", LINE)],
+        lightcolor=[("focus", GOLD)],
+        darkcolor=[("focus", GOLD)],
+        selectbackground=[("readonly", BG_HEAD), ("focus", BG_INPUT)],
+        selectforeground=[("readonly", GOLD_HI), ("focus", TEXT)],
     )
     style.configure(
         "TEntry",
         fieldbackground=BG_INPUT,
         foreground=TEXT,
         bordercolor=LINE,
+        lightcolor=LINE,
+        darkcolor=LINE,
         insertcolor=GOLD_HI,
+        insertwidth=2,
+        padding=3,
+    )
+    style.map(
+        "TEntry",
+        bordercolor=[("focus", GOLD)],
+        lightcolor=[("focus", GOLD)],
+        darkcolor=[("focus", GOLD)],
     )
     style.configure(
         "Treeview",
@@ -129,6 +147,8 @@ def apply_theme(widget: tk.Misc) -> None:
     widget.option_add("*TCombobox*Listbox.foreground", TEXT)
     widget.option_add("*TCombobox*Listbox.selectBackground", "#5a3e14")
     widget.option_add("*TCombobox*Listbox.selectForeground", GOLD_HI)
+    widget.option_add("*TCombobox*insertBackground", GOLD_HI)
+    widget.option_add("*TCombobox*insertWidth", 2)
 
 
 def sort_tree(tree: ttk.Treeview, column: str, numeric: bool) -> None:

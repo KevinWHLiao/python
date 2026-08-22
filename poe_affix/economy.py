@@ -17,6 +17,8 @@ NINJA_BASE = "https://poe.ninja"
 ECONOMY_PAGE = f"{NINJA_BASE}/poe1/economy/"
 CACHE_TTL = 15 * 60
 MAX_WORKERS = 3
+GAINER_WORKERS = 6
+MIN_GAIN_PERCENT = 30
 USER_AGENT = "PoELookupTool/1.0 (Windows desktop; personal local app)"
 
 ALL = "全部"
@@ -345,6 +347,7 @@ def fetch_prices(
     category_label: str,
     force: bool = False,
     progress=None,
+    max_workers: int | None = None,
 ) -> list[PriceRow]:
     specs = _specs_for_label(category_label)
     if not specs:
@@ -367,7 +370,7 @@ def fetch_prices(
 
     if missing:
         done = 0
-        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        with ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS) as pool:
             futures = {
                 pool.submit(fetch_overview, league, kind, api_type, force): (api_type, kind)
                 for api_type, kind, _slug in missing
