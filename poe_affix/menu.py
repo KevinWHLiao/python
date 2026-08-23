@@ -78,6 +78,7 @@ class MenuApp(tk.Tk):
             ("商店配方", "查商人交易配方：獎勵、需要物品與分類", self.open_vendor),
             ("工藝解鎖區域", "查工藝台配方要在哪個區域解鎖、消耗與適用部位", self.open_craft),
             ("價格查詢", "查 poe.ninja 估價：通貨、傳奇、寶石與輿圖", self.open_economy),
+            ("流派排名", "查 poe.ninja 熱門昇華、技能與流派占比", self.open_builds),
             ("中文化 PIN", "查 poedb.tw 目前的繁中 / 簡中 4 碼 PIN 與遊戲版本", self.open_chinese),
             ("開啟 Craft of Exile", "用瀏覽器開啟做裝模擬器（Calculator / Simulator / Emulator）", self.open_craftofexile),
             ("開啟軍團珠寶查詢", "用瀏覽器開啟 Timeless Jewel 天賦樹與 Seed 查詢", self.open_timeless_jewels),
@@ -157,6 +158,12 @@ class MenuApp(tk.Tk):
 
         self._hide()
         self._child = EconomyApp(self, on_back=self.show_menu)
+
+    def open_builds(self) -> None:
+        from .builds_gui import BuildsApp
+
+        self._hide()
+        self._child = BuildsApp(self, on_back=self.show_menu)
 
     def open_chinese(self) -> None:
         from .chinese_gui import ChineseApp
