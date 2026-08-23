@@ -21,7 +21,9 @@ CACHE_TTL = 15 * 60
 COMBO_CLASSES = 10
 COMBO_SKILLS_PER_CLASS = 2
 COMBO_LIMIT = 12
-COMBO_WORKERS = 4
+COMBO_WORKERS = 6
+TREND_DAYS = ("day-6", "day-5", "day-4", "day-3", "day-2", "day-1")
+GENERIC_ITEM_PREFIXES = ("Rare ", "Magic ", "Normal ", "White ")
 USER_AGENT = "PoELookupTool/1.0 (Windows desktop; personal local app)"
 
 ALL = "全部"
@@ -76,6 +78,7 @@ class BuildLeague:
     version: str
     ladder: str
     character_count: int | None = None
+    time_labels: list[str] = field(default_factory=list)
 
     @property
     def ladder_label(self) -> str:
@@ -84,6 +87,20 @@ class BuildLeague:
     @property
     def page_url(self) -> str:
         return f"{BUILDS_PAGE}/{self.url}"
+
+
+@dataclass
+class SampleChar:
+    name: str
+    account: str
+    level: int = 0
+    life: int = 0
+    es: int = 0
+    dps: float = 0.0
+    ehp: float = 0.0
+    dps_text: str = ""
+    ehp_text: str = ""
+    ninja_url: str = ""
 
 
 @dataclass
@@ -98,6 +115,17 @@ class RankRow:
     extra_zh: str = ""
     ninja_url: str = ""
     search_blob: str = field(repr=False, default="")
+    dps: float = 0.0
+    ehp: float = 0.0
+    life: int = 0
+    es: int = 0
+    level: int = 0
+    yesterday: float = 0.0
+    delta: float = 0.0
+    trend: list[float] = field(default_factory=list)
+    items: list[str] = field(default_factory=list)
+    keystones: list[str] = field(default_factory=list)
+    samples: list[SampleChar] = field(default_factory=list)
 
 
 @dataclass
@@ -107,8 +135,12 @@ class BuildIndex:
 
 _cache_lock = threading.Lock()
 _index_cache: tuple[float, BuildIndex] | None = None
-_rank_cache: dict[tuple[str, str], tuple[float, tuple[int, list[RankRow], list[RankRow], list[RankRow]]]] = {}
+_rank_cache: dict[
+    tuple[str, str],
+    tuple[float, tuple[int, list[RankRow], list[RankRow], list[RankRow], dict[str, int]]],
+] = {}
 _dict_cache: dict[str, list[str]] = {}
+_history_cache: dict[tuple[str, str, str], tuple[float, tuple[int, dict[str, float], dict[str, float]]]] = {}
 
 
 def _request(url: str, timeout: int = 45, accept: str = "application/json") -> bytes:
@@ -160,6 +192,236 @@ def _search_blob(*parts: object) -> str:
     return " ".join(chunks)
 
 
+def parse_stat(text: str) -> float:
+    raw = (text or "").strip().replace(",", "").replace("%", "")
+    if not raw or raw in {"—", "-"}:
+        return 0.0
+    multiplier = 1.0
+    suffix = raw[-1].upper()
+    if suffix == "B":
+        multiplier = 1_000_000_000
+        raw = raw[:-1]
+    elif suffix == "M":
+        multiplier = 1_000_000
+        raw = raw[:-1]
+    elif suffix == "K":
+        multiplier = 1_000
+        raw = raw[:-1]
+    try:
+        return float(raw) * multiplier
+    except ValueError:
+        return 0.0
+
+
+def format_stat(value: float | int | None) -> str:
+    if value is None:
+        return "—"
+    number = float(value)
+    if number <= 0:
+        return "—"
+    if number >= 1_000_000_000:
+        text = f"{number / 1_000_000_000:.1f}B"
+    elif number >= 1_000_000:
+        text = f"{number / 1_000_000:.1f}M"
+    elif number >= 10_000:
+        text = f"{number / 1_000:.0f}k"
+    elif number >= 1_000:
+        text = f"{number / 1_000:.1f}k"
+    else:
+        text = f"{number:.0f}"
+    return text.replace(".0B", "B").replace(".0M", "M").replace(".0k", "k")
+
+
+def sparkline(values: list[float]) -> str:
+    if len(values) < 2:
+        return "—"
+    blocks = "▁▂▃▄▅▆▇█"
+    low = min(values)
+    high = max(values)
+    if high <= low:
+        return blocks[0] * len(values)
+    return "".join(blocks[min(7, int(round((value - low) / (high - low) * 7)))] for value in values)
+
+
+def _median(values: list[float] | list[int]) -> float:
+    numbers = [float(value) for value in values if value is not None]
+    if not numbers:
+        return 0.0
+    numbers.sort()
+    return numbers[len(numbers) // 2]
+
+
+def _packed_varints(blob: bytes) -> list[int]:
+    values: list[int] = []
+    index = 0
+    while index < len(blob):
+        result = 0
+        shift = 0
+        while index < len(blob):
+            byte = blob[index]
+            index += 1
+            result |= (byte & 127) << shift
+            if not (byte & 128):
+                break
+            shift += 7
+        values.append(result)
+    return values
+
+
+def _table_columns(result: list[tuple[int, str, object]]) -> dict[str, dict[str, object]]:
+    columns: dict[str, dict[str, object]] = {}
+    for field, kind, value in result:
+        if field != 12 or kind != "bytes":
+            continue
+        inner = _decode_message(bytes(value))
+        name = ""
+        packed = b""
+        strings: list[str] = []
+        for sub_field, sub_kind, sub_value in inner:
+            if sub_field == 1 and sub_kind == "bytes" and not name:
+                name = _as_text(sub_value)
+            elif sub_field == 6 and sub_kind == "bytes":
+                packed = bytes(sub_value)
+            elif sub_field == 7 and sub_kind == "bytes":
+                strings.append(_as_text(sub_value))
+        if name:
+            columns[name] = {"packed": packed, "strings": strings}
+    return columns
+
+
+def _column_strings(columns: dict[str, dict[str, object]], *names: str) -> list[str]:
+    for name in names:
+        strings = columns.get(name, {}).get("strings")
+        if isinstance(strings, list) and strings:
+            return [str(item) for item in strings]
+    for key, data in columns.items():
+        if any(key == name or key.startswith(f"{name}-") or key.endswith(name) for name in names):
+            strings = data.get("strings")
+            if isinstance(strings, list) and strings:
+                return [str(item) for item in strings]
+    return []
+
+
+def _dps_strings(columns: dict[str, dict[str, object]], skill: str = "") -> list[str]:
+    if skill:
+        keyed = _column_strings(columns, f"dps-{skill}.total")
+        if keyed:
+            return keyed
+    direct = _column_strings(columns, "dps.total")
+    if direct:
+        return direct
+    series: list[list[str]] = []
+    for key, data in columns.items():
+        if not (key.startswith("dps-") and key.endswith(".total")):
+            continue
+        strings = data.get("strings")
+        if isinstance(strings, list) and strings:
+            series.append([str(item) for item in strings])
+    if not series:
+        return []
+    length = max(len(column) for column in series)
+    picked: list[str] = []
+    for index in range(length):
+        best_text = ""
+        best_value = 0.0
+        for column in series:
+            if index >= len(column):
+                continue
+            value = parse_stat(column[index])
+            if value > best_value:
+                best_value = value
+                best_text = column[index]
+        picked.append(best_text)
+    return picked
+
+
+def _unique_names(result: list[tuple[int, str, object]], dim_id: str, dict_name: str, limit: int = 4) -> list[str]:
+    dicts = _dictionaries(result)
+    names = _dictionary_names(dicts.get(dict_name, ""))
+    ordered = sorted(_dimension_counts(result, dim_id), key=lambda item: item[1], reverse=True)
+    picked: list[str] = []
+    for key, _count in ordered:
+        if key < 0 or key >= len(names):
+            continue
+        name = names[key]
+        if any(name.startswith(prefix) for prefix in GENERIC_ITEM_PREFIXES):
+            continue
+        label = translate_name(name) or name
+        if label not in picked:
+            picked.append(label)
+        if len(picked) >= limit:
+            break
+    return picked
+
+
+def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]], row: RankRow) -> None:
+    columns = _table_columns(result)
+    levels = list(columns.get("level", {}).get("packed") or b"")
+    lives = _packed_varints(bytes(columns.get("life", {}).get("packed") or b""))
+    shields = _packed_varints(bytes(columns.get("energyshield", {}).get("packed") or b""))
+    dps_text = _dps_strings(columns, row.extra)
+    ehp_text = _column_strings(columns, "ehp__str")
+    names = _column_strings(columns, "name")
+    accounts = _column_strings(columns, "account")
+    row.level = int(_median(levels)) if levels else 0
+    row.life = int(_median(lives)) if lives else 0
+    row.es = int(_median(shields)) if shields else 0
+    dps_values = [parse_stat(text) for text in dps_text]
+    ehp_values = [parse_stat(text) for text in ehp_text]
+    row.dps = _median(dps_values)
+    row.ehp = _median(ehp_values)
+    row.items = _unique_names(result, "items", "item")
+    row.keystones = _unique_names(result, "keypassives", "keypassive", limit=3)
+    samples: list[SampleChar] = []
+    count = min(len(names), len(accounts), 8)
+    for index in range(count):
+        query = urllib.parse.urlencode({"account": accounts[index], "character": names[index]})
+        samples.append(
+            SampleChar(
+                name=names[index],
+                account=accounts[index],
+                level=int(levels[index]) if index < len(levels) else 0,
+                life=int(lives[index]) if index < len(lives) else 0,
+                es=int(shields[index]) if index < len(shields) else 0,
+                dps=dps_values[index] if index < len(dps_values) else 0.0,
+                ehp=ehp_values[index] if index < len(ehp_values) else 0.0,
+                dps_text=dps_text[index] if index < len(dps_text) else "",
+                ehp_text=ehp_text[index] if index < len(ehp_text) else "",
+                ninja_url=f"{league.page_url}?{query}",
+            )
+        )
+    row.samples = samples
+    extra = [item for item in row.items + row.keystones]
+    row.search_blob = _search_blob(
+        row.name,
+        row.name_zh,
+        row.extra,
+        row.extra_zh,
+        league.name,
+        *extra,
+        *[sample.name for sample in samples],
+    )
+
+
+def _set_trend(row: RankRow, points: list[float]) -> None:
+    row.trend = points
+    if len(points) >= 2:
+        row.yesterday = points[-2]
+        row.delta = points[-1] - points[-2]
+    elif points:
+        row.yesterday = 0.0
+        row.delta = 0.0
+
+
+def _dim_percents(result: list[tuple[int, str, object]], dim_id: str, names: list[str], total: int) -> dict[str, float]:
+    mapping: dict[str, float] = {}
+    for key, count in _dimension_counts(result, dim_id):
+        if key < 0 or key >= len(names):
+            continue
+        mapping[names[key]] = (count / total * 100) if total else 0.0
+    return mapping
+
+
 def _decode_astro(node):
     if isinstance(node, list) and len(node) == 2 and isinstance(node[0], int):
         tag, value = node
@@ -200,6 +462,8 @@ def _parse_snapshots(html: str) -> list[BuildLeague]:
             url = str(item.get("url") or "")
             version = str(item.get("version") or "")
             snapshot = str(item.get("snapshotName") or url)
+            labels = item.get("timeMachineLabels") if isinstance(item.get("timeMachineLabels"), list) else []
+            time_labels = [str(label) for label in labels]
             if not (name and url and version):
                 continue
             stamp = (url, ladder)
@@ -207,7 +471,14 @@ def _parse_snapshots(html: str) -> list[BuildLeague]:
                 continue
             seen.add(stamp)
             leagues.append(
-                BuildLeague(name=name, url=url, snapshot_name=snapshot, version=version, ladder=ladder)
+                BuildLeague(
+                    name=name,
+                    url=url,
+                    snapshot_name=snapshot,
+                    version=version,
+                    ladder=ladder,
+                    time_labels=time_labels,
+                )
             )
     return leagues
 
@@ -235,6 +506,7 @@ def clear_cache() -> None:
         _index_cache = None
         _rank_cache.clear()
         _dict_cache.clear()
+        _history_cache.clear()
 
 
 def _read_varint(buf: bytes, index: int) -> tuple[int, int]:
@@ -436,6 +708,8 @@ def _combo_for_class(
         result = _search_result(league, {"class": class_row.name})
     except RuntimeError:
         return []
+    if result:
+        _apply_table_stats(league, result, class_row)
     counts = _skill_counts(result)
     if not counts:
         return []
@@ -498,7 +772,108 @@ def _combo_rows(league: BuildLeague, class_rows: list[RankRow], gem_names: list[
     return ranked
 
 
-def fetch_ranks(league: BuildLeague, force: bool = False) -> tuple[int, list[RankRow], list[RankRow], list[RankRow]]:
+def _fill_combo_stats(league: BuildLeague, row: RankRow) -> None:
+    try:
+        result = _search_result(league, {"class": row.name, "skills": row.extra})
+    except RuntimeError:
+        return
+    if result:
+        _apply_table_stats(league, result, row)
+
+
+def _fill_skill_stats(league: BuildLeague, row: RankRow) -> None:
+    try:
+        result = _search_result(league, {"skills": row.name})
+    except RuntimeError:
+        return
+    if not result:
+        return
+    saved = row.extra
+    row.extra = row.name
+    _apply_table_stats(league, result, row)
+    row.extra = saved
+
+
+def _history_snapshot(league: BuildLeague, label: str) -> tuple[str, int, dict[str, float], dict[str, float]]:
+    cache_key = (league.version, league.ladder, label)
+    with _cache_lock:
+        cached = _history_cache.get(cache_key)
+        if cached and _fresh(cached[0]):
+            total, class_pcts, skill_pcts = cached[1]
+            return label, total, class_pcts, skill_pcts
+    try:
+        result = _search_result(league, {"timeMachine": label})
+    except RuntimeError:
+        return label, 0, {}, {}
+    if not result:
+        return label, 0, {}, {}
+    total = _result_total(result)
+    dicts = _dictionaries(result)
+    class_names = _dictionary_names(dicts.get("class", ""))
+    gem_names = _dictionary_names(dicts.get("gem", ""))
+    class_pcts = _dim_percents(result, "class", class_names, total)
+    skill_pcts = _dim_percents(result, "skills", gem_names, total)
+    if not skill_pcts:
+        skill_pcts = _dim_percents(result, "allgems", gem_names, total)
+    with _cache_lock:
+        _history_cache[cache_key] = (time.time(), (total, class_pcts, skill_pcts))
+    return label, total, class_pcts, skill_pcts
+
+
+def _apply_history(
+    class_rows: list[RankRow],
+    skill_rows: list[RankRow],
+    snapshots: list[tuple[str, int, dict[str, float], dict[str, float]]],
+) -> dict[str, int]:
+    totals: dict[str, int] = {}
+    for row in class_rows:
+        points = [mapping.get(row.name, 0.0) for _label, _total, mapping, _skills in snapshots]
+        points.append(row.percent)
+        _set_trend(row, points)
+    for row in skill_rows:
+        points = [mapping.get(row.name, 0.0) for _label, _total, _classes, mapping in snapshots]
+        points.append(row.percent)
+        _set_trend(row, points)
+    for label, total, _classes, _skills in snapshots:
+        totals[label] = total
+    return totals
+
+
+def _combo_day_percent(league: BuildLeague, row: RankRow, label: str, day_total: int) -> float:
+    if not day_total:
+        return 0.0
+    try:
+        result = _search_result(league, {"class": row.name, "skills": row.extra, "timeMachine": label})
+    except RuntimeError:
+        return 0.0
+    if not result:
+        return 0.0
+    return _result_total(result) / day_total * 100
+
+
+def fetch_combo_trends(
+    league: BuildLeague,
+    combo_rows: list[RankRow],
+    day_totals: dict[str, int],
+) -> list[RankRow]:
+    labels = [label for label in TREND_DAYS if label in day_totals]
+    if not labels or not combo_rows:
+        return combo_rows
+
+    def one(row: RankRow) -> RankRow:
+        points = [_combo_day_percent(league, row, label, day_totals.get(label, 0)) for label in labels]
+        points.append(row.percent)
+        _set_trend(row, points)
+        return row
+
+    with ThreadPoolExecutor(max_workers=COMBO_WORKERS) as pool:
+        list(pool.map(one, combo_rows))
+    return combo_rows
+
+
+def fetch_ranks(
+    league: BuildLeague, force: bool = False
+) -> tuple[int, list[RankRow], list[RankRow], list[RankRow], dict[str, int]]:
     cache_key = (league.version, league.ladder)
     with _cache_lock:
         cached = _rank_cache.get(cache_key)
@@ -509,12 +884,13 @@ def fetch_ranks(league: BuildLeague, force: bool = False) -> tuple[int, list[Ran
         raise RuntimeError("poe.ninja 沒有回傳這個聯盟的流派資料。")
     total = _result_total(result)
     dicts = _dictionaries(result)
+    class_names = _dictionary_names(dicts.get("class", ""))
     gem_names = _dictionary_names(dicts.get("gem", ""))
     class_rows = _rank_rows(
         league,
         "class",
         "class",
-        _dictionary_names(dicts.get("class", "")),
+        class_names,
         _dimension_counts(result, "class"),
         total,
         "class",
@@ -529,7 +905,27 @@ def fetch_ranks(league: BuildLeague, force: bool = False) -> tuple[int, list[Ran
         "skills",
     )
     combo_rows = _combo_rows(league, class_rows, gem_names, total)
-    packed = (total, class_rows, skill_rows, combo_rows)
+    labels = [label for label in TREND_DAYS if label in (league.time_labels or TREND_DAYS)]
+    snapshots: list[tuple[str, int, dict[str, float], dict[str, float]]] = []
+    with ThreadPoolExecutor(max_workers=COMBO_WORKERS) as pool:
+        stat_futures = [pool.submit(_fill_combo_stats, league, row) for row in combo_rows]
+        stat_futures.extend(pool.submit(_fill_skill_stats, league, row) for row in skill_rows[:8])
+        hist_futures = [
+            pool.submit(_history_snapshot, league, label) for label in labels
+        ]
+        for future in as_completed(stat_futures):
+            try:
+                future.result()
+            except Exception:
+                continue
+        for future in hist_futures:
+            try:
+                snapshots.append(future.result())
+            except Exception:
+                continue
+    snapshots.sort(key=lambda item: labels.index(item[0]) if item[0] in labels else 99)
+    day_totals = _apply_history(class_rows, skill_rows, snapshots)
+    packed = (total, class_rows, skill_rows, combo_rows, day_totals)
     with _cache_lock:
         _rank_cache[cache_key] = (time.time(), packed)
     return packed
