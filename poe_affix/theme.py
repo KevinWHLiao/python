@@ -49,6 +49,36 @@ BTN_GHOST_HOVER = "#252018"
 BTN_DANGER = "#8b3a3a"
 
 _APPEARANCE_READY = False
+_SCROLL_PATCH_READY = False
+
+
+def _patch_ctk_scrollable_frame() -> None:
+    """Guard CustomTkinter mouse-wheel handler against ttk popdowns.
+
+    CTkScrollableFrame uses bind_all("<MouseWheel>"). Over ttk Combobox /
+    Treeview dropdowns, Tk may pass event.widget as a string path instead of
+    a widget object, and the stock _check_if_valid_scroll then crashes with
+    AttributeError: 'str' object has no attribute 'master'.
+    """
+    global _SCROLL_PATCH_READY
+    if _SCROLL_PATCH_READY:
+        return
+
+    frame_cls = ctk.CTkScrollableFrame
+    original = frame_cls._check_if_valid_scroll
+
+    def _safe_check(self, widget):  # noqa: ANN001
+        if isinstance(widget, str):
+            try:
+                widget = self.nametowidget(widget)
+            except (KeyError, tk.TclError):
+                return False
+        if not hasattr(widget, "master"):
+            return False
+        return original(self, widget)
+
+    frame_cls._check_if_valid_scroll = _safe_check
+    _SCROLL_PATCH_READY = True
 
 
 def setup_appearance() -> None:
@@ -57,6 +87,7 @@ def setup_appearance() -> None:
         return
     ctk.set_appearance_mode("dark")
     ctk.set_default_color_theme("dark-blue")
+    _patch_ctk_scrollable_frame()
     _APPEARANCE_READY = True
 
 

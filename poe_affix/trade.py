@@ -54,7 +54,7 @@ CATEGORY_ZH: dict[str, str] = {
     "Itemised Corpse": "屍體",
     "Idol": "神像",
     "Graft": "嫁接",
-    "Wombgift": "子宮贈禮",
+    "Wombgift": "胎贈",
     "Enshrouded Item": "籠罩物品",
     "Chart": "海圖",
 }

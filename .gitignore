@@ -14,6 +14,7 @@ build/
 *.exe
 dist/*
 !dist/PoE查詢工具.exe
+!dist/PoE查詢工具.zip
 
 # Local logs / editor
 nba_logs/

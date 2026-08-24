@@ -9,6 +9,7 @@ Sources:
 from __future__ import annotations
 
 import json
+import re
 from functools import lru_cache
 
 from . import resolve_named_data
@@ -18,6 +19,23 @@ PREFIXES = (
     ("Foulborn ", "穢生．"),
     ("Tainted ", "汙染"),
 )
+
+# poe.ninja map overview names are often aggregated, not base-type keys.
+_MAP_TIER_RE = re.compile(r"^(?:(.*) )?Map \(Tier (\d+)\)$")
+_VAAL_TEMPLE_RE = re.compile(r"^(.*) Vaal Temple Map$")
+
+MAP_NAME_PARTS: dict[str, str] = {
+    "Al-Hezmin": "奧赫茲明",
+    "Baran": "巴倫",
+    "Drox": "圖拉克斯",
+    "Veritania": "維羅提尼亞",
+    "The Purifier": "淨化者",
+    "The Eradicator": "根除者",
+    "The Enslaver": "奴役者",
+    "The Constrictor": "束縛者",
+    "Nightmare": "夢魘",
+    "Shaper Guardian": "塑界者守護者",
+}
 
 # Names missing from the PoeCharm dump (newer currency, catalysts, etc.).
 EXTRA_NAMES: dict[str, str] = {
@@ -101,6 +119,56 @@ EXTRA_NAMES: dict[str, str] = {
     "Volatile Vaal Orb": "不穩定瓦爾寶珠",
     "Warlord's Exalted Orb": "總督軍崇高石",
     "Wild Crystallised Lifeforce": "野性結晶生靈之力",
+    # Keepers / Allflame — Wombgifts (胎贈)
+    "Ancient Wombgift": "古老之胎贈",
+    "Lavish Wombgift": "奢華之胎贈",
+    "Mysterious Wombgift": "神秘之胎贈",
+    "Provisioning Wombgift": "供應之胎贈",
+    # Settlers — Runegrafts (符文之結)
+    "Runegraft of Bellows": "轟鳴符文之結",
+    "Runegraft of Blasphemy": "瀆神符文之結",
+    "Runegraft of Connection": "聯繫符文之結",
+    "Runegraft of Consecration": "奉獻符文之結",
+    "Runegraft of Fury": "憤怒符文之結",
+    "Runegraft of Gemcraft": "寶石工藝符文之結",
+    "Runegraft of Loyalty": "忠誠符文之結",
+    "Runegraft of Quaffing": "狂飲符文之結",
+    "Runegraft of Rallying": "召集符文之結",
+    "Runegraft of Refraction": "折射符文之結",
+    "Runegraft of Restitching": "重新縫合符文之結",
+    "Runegraft of Resurgence": "復甦符文之結",
+    "Runegraft of Rotblood": "腐血符文之結",
+    "Runegraft of Stability": "穩定符文之結",
+    "Runegraft of Suffering": "折磨符文之結",
+    "Runegraft of Time": "時間符文之結",
+    "Runegraft of Treachery": "背信符文之結",
+    "Runegraft of the Agile": "迅敏符文之結",
+    "Runegraft of the Angler": "長竿符文之結",
+    "Runegraft of the Bound": "緊密符文之結",
+    "Runegraft of the Combatant": "戰鬥者符文之結",
+    "Runegraft of the Fortress": "堡壘符文之結",
+    "Runegraft of the Gauche": "笨拙符文之結",
+    "Runegraft of the Imbued": "灌注符文之結",
+    "Runegraft of the Jeweller": "工匠符文之結",
+    "Runegraft of the Novamark": "星印符文之結",
+    "Runegraft of the River": "河川符文之結",
+    "Runegraft of the Sinistral": "左旋符文之結",
+    "Runegraft of the Soulwick": "魂芯符文之結",
+    "Runegraft of the Spellbound": "魔縛符文之結",
+    "Runegraft of the Warp": "扭曲符文之結",
+    "Runegraft of the Witchmark": "巫印符文之結",
+    # Aggregated map labels from poe.ninja
+    "Nightmare Map": "夢魘地圖",
+    "Shaper Guardian Map": "塑界者守護者地圖",
+    # Allflame Embers (不滅之火餘燼)
+    "Allflame Ember of Flesh": "不滅之火血肉餘燼",
+    "Allflame Ember of Kulemak": "不滅之火骷髏馬克餘燼",
+    "Allflame Ember of Propagation": "不滅之火傳播餘燼",
+    "Allflame Ember of Resplendence": "不滅之火輝煌餘燼",
+    "Allflame Ember of Toads": "不滅之火蟾蜍餘燼",
+    "Allflame Ember of the Ethereal": "不滅之火虛靈餘燼",
+    "Allflame Ember of the Gilded": "不滅之火鍍金餘燼",
+    "Allflame Ember of the Wildwood": "不滅之火荒林餘燼",
 }
 
 # Extra nicknames that are not the official client name.
@@ -130,6 +198,35 @@ def name_map() -> dict[str, str]:
     return mapping
 
 
+def _translate_map_label(english: str, mapping: dict[str, str]) -> str:
+    """Handle poe.ninja aggregated map names that are not plain base types."""
+    tier_match = _MAP_TIER_RE.match(english)
+    if tier_match:
+        prefix, tier = tier_match.group(1) or "", tier_match.group(2)
+        if not prefix:
+            return f"地圖（階級 {tier}）"
+        prefix_zh = mapping.get(prefix) or MAP_NAME_PARTS.get(prefix) or ""
+        if prefix_zh:
+            return f"{prefix_zh}地圖（階級 {tier}）"
+        return ""
+
+    temple_match = _VAAL_TEMPLE_RE.match(english)
+    if temple_match:
+        prefix = temple_match.group(1)
+        prefix_zh = mapping.get(prefix) or MAP_NAME_PARTS.get(prefix) or ""
+        temple_zh = mapping.get("Vaal Temple Map") or "瓦爾密殿"
+        if prefix_zh:
+            return f"{prefix_zh}{temple_zh}"
+        return ""
+
+    if english.endswith(" Map"):
+        prefix = english[: -len(" Map")]
+        prefix_zh = mapping.get(prefix) or MAP_NAME_PARTS.get(prefix) or ""
+        if prefix_zh:
+            return f"{prefix_zh}地圖"
+    return ""
+
+
 def translate_name(english: str) -> str:
     if not english:
         return ""
@@ -146,6 +243,9 @@ def translate_name(english: str) -> str:
         stat = english.removeprefix("Deafening Essence of ")
         if stat in {"Horror", "Delirium", "Hysteria", "Insanity"}:
             return translate_name(f"Essence of {stat}")
+    map_zh = _translate_map_label(english, mapping)
+    if map_zh:
+        return map_zh
     return ""
 
 
