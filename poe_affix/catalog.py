@@ -228,6 +228,8 @@ _SHORT_FAMILY_PARTS = {
     "speed",
     "damage",
     "attack",
+    "arrow",
+    "projectile",
     "shock",
     "chill",
     "bleed",
@@ -241,6 +243,20 @@ _SHORT_FAMILY_PARTS = {
     "block",
     "leech",
     "crit",
+}
+
+# Exact ModFamilyList keys → official-style tags (legacy helper / offline fallback).
+_FAMILY_TAG_OVERRIDES: dict[str, tuple[str, ...]] = {
+    "AdditionalArrows": ("攻擊",),
+    "ProjectileSpeed": ("速度",),
+    "AdditionalProjectiles": ("投射物",),
+    "Pierce": ("投射物",),
+    "ProjectileDamagePerEnemyPierced": ("投射物", "傷害"),
+    "IncreaseProjectileAttackDamagePerAccuracy": ("投射物", "攻擊", "傷害"),
+    "DisplaySocketedSkillsFork": ("投射物", "寶石"),
+    "SingleProjAOE": ("投射物", "攻擊", "範圍"),
+    "SupportedByProjectileSpeed": ("寶石", "速度"),
+    "SupportedByMultipleProjectiles": ("寶石", "投射物"),
 }
 
 # Match PoEDB crafting-badge order when filling heuristic tags.
@@ -283,7 +299,12 @@ _TAG_ORDER = (
 
 
 def extract_mod_tags(entry: dict[str, Any]) -> list[str]:
-    """Read official PoEDB crafting badges from a ModsView entry."""
+    """Read official PoEDB crafting badges from ModsView ``mod_no`` only.
+
+    Empty ``mod_no`` means PoEDB shows no crafting tag for that mod. Do not
+    invent badges from ``fossil_no`` / family heuristics — those are not the
+    same as the on-page crafting badges.
+    """
     tags: list[str] = []
     seen: set[str] = set()
     for raw in entry.get("mod_no") or []:
@@ -320,9 +341,14 @@ def _sorted_tags(tags: list[str]) -> list[str]:
 
 def affix_categories(family: str, label: str = "") -> list[str]:
     """Heuristic tags used when a catalog row has no official PoEDB badges."""
+    family_text = family or ""
+    if "|" not in family_text:
+        override = _FAMILY_TAG_OVERRIDES.get(family_text)
+        if override:
+            return _sorted_tags(list(override))
+
     found: list[str] = []
     seen: set[str] = set()
-    family_text = family or ""
     for token, category in _FAMILY_CATEGORIES:
         if category in seen:
             continue
@@ -350,23 +376,39 @@ def affix_category(family: str, label: str = "") -> str:
 
 
 def format_tag_text(tags: list[str]) -> str:
-    return "  ".join(tag for tag in tags if tag)
+    parts = [tag for tag in tags if tag]
+    return "  ".join(parts) if parts else "—"
+
+
+def format_tag_text_marked(tags: list[str]) -> str:
+    """Treeview-friendly multi-tag text with colored emoji markers."""
+    from .theme import tag_marker
+
+    parts: list[str] = []
+    for tag in tags:
+        if not tag:
+            continue
+        parts.append(f"{tag_marker(tag)}{tag}")
+    return "  ".join(parts) if parts else "—"
 
 
 def group_categories(group: dict[str, Any]) -> list[str]:
-    if group.get("tag_source") == "poedb":
-        cached = group.get("categories")
-        if isinstance(cached, list) and cached:
-            return [str(tag) for tag in cached if tag]
-    value = affix_categories(str(group.get("family") or ""), str(group.get("label") or ""))
-    group["categories"] = value
-    group["category"] = value[0]
-    return value
+    """Return official PoEDB crafting tags only; empty when PoEDB has no badge."""
+    tag_source = group.get("tag_source")
+    cached = group.get("categories")
+    if tag_source == "none":
+        return []
+    if isinstance(cached, list):
+        return [str(tag) for tag in cached if tag]
+    if tag_source == "poedb":
+        return []
+    # Legacy rows without tag_source: do not invent labels from family names.
+    return []
 
 
 def group_category(group: dict[str, Any]) -> str:
     tags = group_categories(group)
-    return tags[0] if tags else "其他"
+    return tags[0] if tags else ""
 
 
 def extract_mods_view(page_html: str) -> dict[str, Any] | None:
@@ -504,12 +546,12 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
             tags = poedb_tags
             tag_source = "poedb"
         else:
-            tags = affix_categories(family, label)
-            tag_source = "heuristic"
+            tags = []
+            tag_source = "none"
         groups.append(
             {
                 "family": family,
-                "category": tags[0],
+                "category": tags[0] if tags else "",
                 "categories": tags,
                 "tag_source": tag_source,
                 "affix": affix,

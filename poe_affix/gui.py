@@ -11,7 +11,7 @@ from tkinter import messagebox, ttk
 import customtkinter as ctk
 
 from . import resolve_data_file
-from .catalog import SOURCE_ORDER, SOURCE_TITLES, format_tag_text, group_categories
+from .catalog import SOURCE_ORDER, SOURCE_TITLES, format_tag_text, format_tag_text_marked, group_categories
 from .search_combo import bind_searchable_combo, choice_matches
 from .sync import sync_catalog
 from .theme import (
@@ -43,6 +43,7 @@ from .theme import (
     set_progress,
     setup_appearance,
     setup_window,
+    tag_color,
 )
 
 ALL = "全部"
@@ -201,6 +202,12 @@ class AffixApp(ctk.CTkToplevel):
             ("後綴", SUFFIX),
         ):
             ctk.CTkLabel(legend, text=f"● {text}", font=FONT_SMALL, text_color=color).pack(side="left", padx=(0, 14))
+        ctk.CTkLabel(
+            legend,
+            text="多標籤時分類欄會用色點區分；右側詳情為彩色標籤",
+            font=FONT_SMALL,
+            text_color=MUTED,
+        ).pack(side="left", padx=(8, 0))
 
         body = content_panel(self)
         paned = ttk.Panedwindow(body, orient="horizontal")
@@ -253,6 +260,8 @@ class AffixApp(ctk.CTkToplevel):
 
         ttk.Label(right, textvariable=self.summary_var, style="Section.TLabel").pack(anchor="w")
         ctk.CTkFrame(right, fg_color=GOLD, corner_radius=0, height=2).pack(fill="x", pady=(4, 6))
+        self.tag_chip_row = ctk.CTkFrame(right, fg_color="transparent")
+        self.tag_chip_row.pack(anchor="w", fill="x", pady=(0, 4))
         ttk.Label(right, textvariable=self.meta_var, style="PanelMuted.TLabel").pack(anchor="w", pady=(0, 8))
 
         ttk.Label(right, text="出現部位", style="PanelMuted.TLabel").pack(anchor="w")
@@ -373,18 +382,26 @@ class AffixApp(ctk.CTkToplevel):
         if self.source_var.get() not in sources:
             self.source_var.set("基底")
 
+        NO_TAG = "無標籤"
         categories = [ALL]
         seen_categories = {ALL}
+        has_untagged = False
         for slot in catalog.get("slots", []):
             for group in slot.get("groups", []):
-                for title in group_categories(group):
+                tags = group_categories(group)
+                if not tags:
+                    has_untagged = True
+                    continue
+                for title in tags:
                     if title not in seen_categories:
                         categories.append(title)
                         seen_categories.add(title)
-        extra_categories = sorted(name for name in categories if name not in {ALL, "其他"})
+        extra_categories = sorted(name for name in categories if name not in {ALL, "其他", NO_TAG})
         categories = [ALL, *extra_categories]
         if "其他" in seen_categories:
             categories.append("其他")
+        if has_untagged:
+            categories.append(NO_TAG)
         self._category_options = categories
         self.category_combo.configure(values=categories)
         if self.category_var.get() not in categories:
@@ -470,7 +487,10 @@ class AffixApp(ctk.CTkToplevel):
                     continue
                 tags = group_categories(group)
                 if category_filter.strip() and category_filter.strip() != ALL:
-                    if not any(self._choice_matches(category_filter, tag) for tag in tags):
+                    if category_filter.strip() == "無標籤":
+                        if tags:
+                            continue
+                    elif not any(self._choice_matches(category_filter, tag) for tag in tags):
                         continue
                 haystack = " ".join(
                     [
@@ -580,6 +600,7 @@ class AffixApp(ctk.CTkToplevel):
         self.status_var.set(f"符合 {count} 組詞綴。點欄位標題可排序，目前依 {self._affix_sort_label()}。")
         self.summary_var.set("請從左側選擇一個詞綴")
         self.meta_var.set("T1 為該部位最難出的最高階詞綴")
+        self._render_tag_chips([])
         self.slot_list.delete(0, "end")
         for item in self.tier_tree.get_children():
             self.tier_tree.delete(item)
@@ -645,7 +666,7 @@ class AffixApp(ctk.CTkToplevel):
                 iid=str(index),
                 values=(
                     row["label"],
-                    format_tag_text(row.get("categories") or [row.get("category") or "其他"]),
+                    format_tag_text_marked(row.get("categories") or [row.get("category") or "其他"]),
                     row["affix"],
                     "是" if row["corrupt"] else "",
                     row["source"],
@@ -686,16 +707,38 @@ class AffixApp(ctk.CTkToplevel):
         except (ValueError, IndexError):
             return None
 
+    def _render_tag_chips(self, tags: list[str]) -> None:
+        for child in self.tag_chip_row.winfo_children():
+            child.destroy()
+        names = [str(tag) for tag in tags if tag]
+        if not names:
+            return
+        for name in names:
+            color = tag_color(name)
+            chip = ctk.CTkLabel(
+                self.tag_chip_row,
+                text=name,
+                font=FONT_SMALL,
+                text_color="#101318",
+                fg_color=color,
+                corner_radius=6,
+                padx=10,
+                pady=3,
+            )
+            chip.pack(side="left", padx=(0, 6), pady=2)
+
     def show_selected_affix(self) -> None:
         row = self._selected_row()
         if not row:
             return
         tags = row.get("categories") or [row.get("category") or "其他"]
-        tag_text = "　".join(f"[{tag}]" for tag in tags)
-        self.summary_var.set(f"{row['label']}　{tag_text}")
+        if isinstance(tags, str):
+            tags = [part for part in tags.replace("·", " ").split() if part]
+        self.summary_var.set(row["label"])
+        self._render_tag_chips(tags)
         corrupt_mark = "　汙染詞" if row.get("corrupt") else ""
         self.meta_var.set(
-            f"{row['affix']}　{row['source']}{corrupt_mark}　分類 {format_tag_text(tags)}　家族 {row['family'] or '—'}　"
+            f"{row['affix']}　{row['source']}{corrupt_mark}　家族 {row['family'] or '—'}　"
             f"T1 物等 {row.get('best_t1') or '—'}　T1 權重 {row.get('t1_weight') or '—'}"
         )
         self.slot_list.delete(0, "end")
