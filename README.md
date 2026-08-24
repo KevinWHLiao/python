@@ -1,6 +1,6 @@
 # 流亡黯道 · 查詢工具
 
-Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + CustomTkinter 做成，資料主要來自 [poedb.tw](https://poedb.tw/tw) 與 [poe.ninja](https://poe.ninja)。
+Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + CustomTkinter 做成，資料主要來自 [poedb.tw](https://poedb.tw/tw)、[poe.ninja](https://poe.ninja) 與 [官方賣場](https://www.pathofexile.com/trade)。
 
 ## 功能
 
@@ -10,11 +10,12 @@ Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + CustomTk
 | **商店配方** | 商人交易：獎勵、材料、分類 |
 | **工藝解鎖區域** | 工藝台配方解鎖地圖、消耗、適用部位 |
 | **價格查詢** | poe.ninja 估價：通貨、傳奇、寶石、輿圖等 |
+| **官方賣場** | pathofexile.com/trade：關鍵字提示、賣家狀態、分類／物等／價格／詞綴過濾、上架預覽 |
 | **流派排名** | poe.ninja 熱門流派、DPS／EHP、逐日占比 |
 | **中文化 PIN** | poedb.tw 繁中／簡中 PIN 與遊戲版本 |
 | **外部連結** | Craft of Exile、軍團珠寶（Timeless Jewel）查詢 |
 
-詞綴／商店／工藝可離線查（本地 JSON）；市價、流派、PIN 需連網。
+詞綴／商店／工藝可離線查（本地 JSON）；市價、賣場、流派、PIN 需連網。
 
 ## 環境需求
 
@@ -61,7 +62,7 @@ GUI 內也可分別更新：
 - 商店配方 →「從 PoEDB 更新商店配方」
 - 工藝解鎖 →「從 PoEDB 更新工藝資料」
 
-價格與流派會即時打 poe.ninja（記憶體快取約 15 分鐘）。中文化 PIN 每次開啟／重新整理時從 PoEDB 抓取。
+價格、官方賣場與流派會即時打對應 API（記憶體快取約 10～15 分鐘）。中文化 PIN 每次開啟／重新整理時從 PoEDB 抓取。
 
 ## 資料來源與抓取方式
 
@@ -71,6 +72,7 @@ GUI 內也可分別更新：
 | 商店／工藝 | poedb.tw 表格頁 | 解析 HTML `<table>`，寫入 `vendor.json` / `crafting.json` |
 | 中文化 PIN | poedb.tw/tw/chinese | 下載頁面後以正則解析 |
 | 價格 | poe.ninja economy API | HTTP JSON |
+| 官方賣場 | pathofexile.com/api/trade | HTTP JSON（search + fetch） |
 | 流派 | poe.ninja builds | HTTP（含 protobuf 解析） |
 | 中文物品名 | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
 
@@ -97,7 +99,7 @@ poe_affix/
   menu.py                 # 主選單
   gui.py / catalog.py / sync.py   # 詞綴查詢與同步
   vendor*.py / craft*.py          # 商店、工藝
-  economy*.py / builds*.py        # 價格、流派
+  economy*.py / builds*.py / trade*.py  # 價格、流派、官方賣場
   chinese*.py                     # 中文化 PIN
   i18n.py / theme.py / net.py
 poe_affix_data/
@@ -117,4 +119,4 @@ poe_affix_data/
 ## 授權與注意
 
 - 個人／本地查詢用途；資料版權屬各來源網站與遊戲官方
-- 請勿對 PoEDB／poe.ninja 過於頻繁請求；同步已內建間隔延遲
+- 請勿對 PoEDB／poe.ninja／官方賣場過於頻繁請求；同步已內建間隔延遲

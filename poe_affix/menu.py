@@ -35,6 +35,7 @@ MENU_CARDS = [
     ("商店配方", "查商人交易配方：獎勵、需要物品與分類", "open_vendor", True),
     ("工藝解鎖區域", "查工藝台配方解鎖區域、消耗與適用部位", "open_craft", True),
     ("價格查詢", "poe.ninja 估價：通貨、傳奇、寶石與輿圖", "open_economy", True),
+    ("官方賣場", "pathofexile.com/trade：即時上架、價格與密語", "open_trade", True),
     ("流派排名", "poe.ninja 熱門流派、DPS、EHP 與逐日占比", "open_builds", True),
     ("中文化 PIN", "poedb.tw 繁中／簡中 PIN 與遊戲版本", "open_chinese", True),
     ("Craft of Exile", "開啟做裝模擬器（Calculator / Simulator）", "open_craftofexile", False),
@@ -47,8 +48,8 @@ class MenuApp(ctk.CTk):
         setup_appearance()
         super().__init__()
         self.title("流亡黯道 · 查詢工具")
-        self.geometry("820x760")
-        self.minsize(640, 560)
+        self.geometry("820x820")
+        self.minsize(640, 600)
         setup_window(self)
         self._child = None
         self.path_var = tk.StringVar(value=f"資料路徑：{ROOT}")
@@ -79,7 +80,7 @@ class MenuApp(ctk.CTk):
 
         ctk.CTkLabel(
             self,
-            text="資料來源：poedb.tw  ·  poe.ninja　　中文化 PIN：poedb.tw/tw/chinese",
+            text="資料來源：poedb.tw  ·  poe.ninja  ·  pathofexile.com/trade　　中文化 PIN：poedb.tw/tw/chinese",
             font=FONT_SMALL,
             text_color=MUTED,
         ).pack(side="bottom", fill="x", pady=(4, 16), padx=28)
@@ -181,6 +182,12 @@ class MenuApp(ctk.CTk):
 
         self._hide()
         self._child = EconomyApp(self, on_back=self.show_menu)
+
+    def open_trade(self) -> None:
+        from .trade_gui import TradeApp
+
+        self._hide()
+        self._child = TradeApp(self, on_back=self.show_menu)
 
     def open_builds(self) -> None:
         from .builds_gui import BuildsApp

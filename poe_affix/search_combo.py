@@ -5,7 +5,7 @@ from __future__ import annotations
 import tkinter as tk
 from tkinter import ttk
 
-from .theme import BG_HEAD, BG_INPUT, FONT_UI, GOLD_HI, LINE, TEXT
+from .theme import BG_HEAD, BG_INPUT, FONT_UI, GOLD_HI, LINE, MUTED, TEXT
 
 _NAV_KEYS = {
     "Return",
@@ -321,3 +321,241 @@ class SearchableCombo:
         self._hide_popup()
         if self.on_commit:
             self.on_commit()
+
+
+def bind_structured_suggest(entry: tk.Entry | ttk.Entry, get_rows, on_pick, on_commit=None) -> "StructuredSuggest":
+    """Autocomplete popup with non-selectable section headers (trade-style)."""
+    return StructuredSuggest(entry, get_rows, on_pick, on_commit)
+
+
+class StructuredSuggest:
+    """Type-ahead list for Entry widgets; headers are skipped when navigating."""
+
+    def __init__(self, entry, get_rows, on_pick, on_commit=None) -> None:
+        self.entry = entry
+        self.get_rows = get_rows
+        self.on_pick = on_pick
+        self.on_commit = on_commit
+        self._popup: tk.Toplevel | None = None
+        self._listbox: tk.Listbox | None = None
+        self._hide_job: str | None = None
+        self._rows: list = []
+        self._debounce: str | None = None
+        entry.bind("<KeyRelease>", self._on_keyrelease, add="+")
+        entry.bind("<Down>", self._on_down, add="+")
+        entry.bind("<Up>", self._on_up, add="+")
+        entry.bind("<Return>", self._on_return, add="+")
+        entry.bind("<Escape>", self._on_escape, add="+")
+        entry.bind("<FocusOut>", self._on_focus_out, add="+")
+        entry.bind("<MouseWheel>", self._on_wheel, add="+")
+
+    def _on_keyrelease(self, event) -> None:
+        if event.keysym in _NAV_KEYS:
+            return
+        if self._debounce:
+            self.entry.after_cancel(self._debounce)
+        self._debounce = self.entry.after(120, self._refresh)
+
+    def _refresh(self) -> None:
+        self._debounce = None
+        typed = self.entry.get().strip()
+        if not typed:
+            self._hide_popup()
+            return
+        rows = list(self.get_rows(typed) or [])
+        self._show_popup(rows)
+
+    def _on_down(self, _event=None) -> str:
+        if not self._popup_open():
+            self._refresh()
+        self._move(1)
+        return "break"
+
+    def _on_up(self, _event=None) -> str:
+        if self._popup_open():
+            self._move(-1)
+        return "break"
+
+    def _on_return(self, _event=None) -> str:
+        row = self._highlighted_row()
+        if row is not None and getattr(row, "kind", "") == "item":
+            self._apply_row(row)
+            return "break"
+        self._hide_popup()
+        if self.on_commit:
+            self.on_commit()
+        return "break"
+
+    def _on_escape(self, _event=None) -> str:
+        self._hide_popup()
+        return "break"
+
+    def _on_focus_out(self, _event=None) -> None:
+        self._hide_job = self.entry.after(160, self._hide_if_idle)
+
+    def _on_wheel(self, event) -> str | None:
+        if not self._popup_open() or self._listbox is None:
+            return None
+        step = -1 if event.delta > 0 else 1
+        self._move(step)
+        return "break"
+
+    def _cancel_hide(self) -> None:
+        if self._hide_job:
+            self.entry.after_cancel(self._hide_job)
+            self._hide_job = None
+
+    def _hide_if_idle(self) -> None:
+        self._hide_job = None
+        try:
+            if self.entry.focus_get() is self.entry:
+                return
+        except (tk.TclError, KeyError):
+            pass
+        if self._popup_open() and self._pointer_over_popup():
+            return
+        self._hide_popup()
+
+    def _pointer_over_popup(self) -> bool:
+        popup = self._popup
+        if popup is None or not popup.winfo_exists():
+            return False
+        try:
+            x, y = popup.winfo_pointerxy()
+            return (
+                popup.winfo_rootx() <= x <= popup.winfo_rootx() + popup.winfo_width()
+                and popup.winfo_rooty() <= y <= popup.winfo_rooty() + popup.winfo_height()
+            )
+        except tk.TclError:
+            return False
+
+    def _popup_open(self) -> bool:
+        return bool(self._popup and self._popup.winfo_exists() and self._popup.winfo_ismapped())
+
+    def _create_popup(self) -> None:
+        popup = tk.Toplevel(self.entry.winfo_toplevel())
+        popup.withdraw()
+        popup.overrideredirect(True)
+        try:
+            popup.attributes("-topmost", True)
+        except tk.TclError:
+            pass
+        frame = tk.Frame(popup, bg=LINE, bd=1, highlightthickness=0)
+        frame.pack(fill="both", expand=True)
+        listbox = tk.Listbox(
+            frame,
+            font=FONT_UI,
+            background=BG_INPUT,
+            foreground=TEXT,
+            selectbackground=BG_HEAD,
+            selectforeground=GOLD_HI,
+            activestyle="none",
+            relief="flat",
+            highlightthickness=0,
+            exportselection=False,
+            takefocus=0,
+            bd=0,
+        )
+        listbox.pack(fill="both", expand=True)
+        listbox.bind("<ButtonPress-1>", self._on_list_press)
+        listbox.bind("<ButtonRelease-1>", self._on_list_click)
+        self._popup = popup
+        self._listbox = listbox
+
+    def _show_popup(self, rows: list) -> None:
+        self._cancel_hide()
+        items = [row for row in rows if getattr(row, "kind", "") == "item"]
+        if not items:
+            self._hide_popup()
+            return
+        if self._popup is None or not self._popup.winfo_exists():
+            self._create_popup()
+        assert self._listbox is not None
+        self._rows = list(rows)
+        self._listbox.delete(0, "end")
+        for row in self._rows:
+            if getattr(row, "kind", "") == "header":
+                self._listbox.insert("end", f"  {row.text}")
+                self._listbox.itemconfig("end", foreground=MUTED, selectbackground=BG_INPUT, selectforeground=MUTED)
+            else:
+                self._listbox.insert("end", f"  {row.text}")
+        visible = min(14, max(4, len(self._rows)))
+        self._listbox.configure(height=visible)
+        self._place_popup()
+        assert self._popup is not None
+        self._popup.deiconify()
+        self._popup.lift()
+        # Highlight first selectable item.
+        for index, row in enumerate(self._rows):
+            if getattr(row, "kind", "") == "item":
+                self._highlight(index)
+                break
+
+    def _place_popup(self) -> None:
+        popup = self._popup
+        listbox = self._listbox
+        if popup is None or listbox is None:
+            return
+        entry = self.entry
+        entry.update_idletasks()
+        width = max(entry.winfo_width(), 460)
+        line_height = FONT_UI[1] + 12
+        height = listbox.size() * line_height + 4
+        popup.geometry(f"{width}x{height}+{entry.winfo_rootx()}+{entry.winfo_rooty() + entry.winfo_height()}")
+
+    def _hide_popup(self) -> None:
+        self._cancel_hide()
+        if self._popup is not None and self._popup.winfo_exists():
+            self._popup.withdraw()
+
+    def _highlight(self, index: int) -> None:
+        listbox = self._listbox
+        if listbox is None or listbox.size() == 0:
+            return
+        index = max(0, min(index, listbox.size() - 1))
+        listbox.selection_clear(0, "end")
+        listbox.selection_set(index)
+        listbox.activate(index)
+        listbox.see(index)
+
+    def _move(self, step: int) -> None:
+        listbox = self._listbox
+        if listbox is None or not self._rows:
+            return
+        current = listbox.curselection()
+        index = int(current[0]) if current else -1
+        for _ in range(len(self._rows)):
+            index = (index + step) % len(self._rows)
+            if getattr(self._rows[index], "kind", "") == "item":
+                self._highlight(index)
+                return
+
+    def _highlighted_row(self):
+        listbox = self._listbox
+        if listbox is None or not self._popup_open() or not self._rows:
+            return None
+        current = listbox.curselection()
+        if not current:
+            return None
+        index = int(current[0])
+        if 0 <= index < len(self._rows):
+            return self._rows[index]
+        return None
+
+    def _on_list_press(self, _event=None) -> None:
+        self._cancel_hide()
+
+    def _on_list_click(self, event) -> str:
+        listbox = self._listbox
+        if listbox is None:
+            return "break"
+        index = listbox.nearest(event.y)
+        if 0 <= index < len(self._rows):
+            row = self._rows[index]
+            if getattr(row, "kind", "") == "item":
+                self._apply_row(row)
+        return "break"
+
+    def _apply_row(self, row) -> None:
+        self._hide_popup()
+        self.on_pick(row)
