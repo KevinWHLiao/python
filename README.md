@@ -1,0 +1,114 @@
+# 流亡黯道 · 查詢工具
+
+Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + Tkinter 做成，資料主要來自 [poedb.tw](https://poedb.tw/tw) 與 [poe.ninja](https://poe.ninja)。
+
+## 功能
+
+| 功能 | 說明 |
+|---|---|
+| **詞綴查詢** | 依裝備部位查前綴／後綴／固定／汙染詞（階層、物等、權重、勢力來源） |
+| **商店配方** | 商人交易：獎勵、材料、分類 |
+| **工藝解鎖區域** | 工藝台配方解鎖地圖、消耗、適用部位 |
+| **價格查詢** | poe.ninja 估價：通貨、傳奇、寶石、輿圖等 |
+| **流派排名** | poe.ninja 熱門流派、DPS／EHP、逐日占比 |
+| **中文化 PIN** | poedb.tw 繁中／簡中 PIN 與遊戲版本 |
+| **外部連結** | Craft of Exile、軍團珠寶（Timeless Jewel）查詢 |
+
+詞綴／商店／工藝可離線查（本地 JSON）；市價、流派、PIN 需連網。
+
+## 環境需求
+
+- Windows
+- Python 3.10+（建議）
+- 僅標準函式庫，不必另外 `pip install`（打包 exe 時才需要 PyInstaller）
+
+## 啟動方式
+
+雙擊：
+
+```text
+開啟詞綴查詢.bat
+```
+
+或在專案根目錄執行：
+
+```bash
+py -3 poe_affix_gui.py
+```
+
+```bash
+py -3 -m poe_affix
+```
+
+## 更新本地資料
+
+聯盟改版或 PoEDB 更新後，可在對應視窗按更新按鈕，或用指令重抓：
+
+```bash
+# 詞綴 → poe_affix_data/mods.json
+py -3 -m poe_affix.sync
+```
+
+GUI 內也可分別更新：
+
+- 詞綴查詢 →「從 PoEDB 更新資料」
+- 商店配方 →「從 PoEDB 更新商店配方」
+- 工藝解鎖 →「從 PoEDB 更新工藝資料」
+
+價格與流派會即時打 poe.ninja（記憶體快取約 15 分鐘）。中文化 PIN 每次開啟／重新整理時從 PoEDB 抓取。
+
+## 資料來源與抓取方式
+
+| 資料 | 來源 | 方式 |
+|---|---|---|
+| 詞綴 | poedb.tw ModsView | 下載 HTML，抽出 `new ModsView({...})` JSON，寫入 `mods.json` |
+| 商店／工藝 | poedb.tw 表格頁 | 解析 HTML `<table>`，寫入 `vendor.json` / `crafting.json` |
+| 中文化 PIN | poedb.tw/tw/chinese | 下載頁面後以正則解析 |
+| 價格 | poe.ninja economy API | HTTP JSON |
+| 流派 | poe.ninja builds | HTTP（含 protobuf 解析） |
+| 中文物品名 | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
+
+本地資料目錄：`poe_affix_data/`。
+
+## 打包成 exe（可選）
+
+已附 `poe_affix.spec`，可用 PyInstaller：
+
+```bash
+pip install pyinstaller
+pyinstaller poe_affix.spec
+```
+
+產出無主控台視窗程式 `PoE查詢工具.exe`，並會一併打包 `poe_affix_data` 內的資料檔。
+
+## 專案結構（精簡）
+
+```text
+poe_affix_gui.py          # 啟動入口
+開啟詞綴查詢.bat
+poe_affix.spec            # PyInstaller 設定
+poe_affix/
+  menu.py                 # 主選單
+  gui.py / catalog.py / sync.py   # 詞綴查詢與同步
+  vendor*.py / craft*.py          # 商店、工藝
+  economy*.py / builds*.py        # 價格、流派
+  chinese*.py                     # 中文化 PIN
+  i18n.py / theme.py / net.py
+poe_affix_data/
+  mods.json
+  vendor.json
+  crafting.json
+  names_zh.json
+```
+
+## 改版後建議維護順序
+
+1. 等 PoEDB 更新後，同步詞綴 → 工藝 → 商店
+2. 查價若出現英文／空白名稱，補 `names_zh.json` 或 `i18n.py` 的 `EXTRA_NAMES`
+3. poe.ninja 新增經濟分類時，更新 `economy.py` 的分類清單
+4. 同步或 PIN／流派整頁失敗時，再檢查 HTML／API 解析程式
+
+## 授權與注意
+
+- 個人／本地查詢用途；資料版權屬各來源網站與遊戲官方
+- 請勿對 PoEDB／poe.ninja 過於頻繁請求；同步已內建間隔延遲
