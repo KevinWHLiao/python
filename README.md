@@ -1,6 +1,6 @@
 # 流亡黯道 · 查詢工具
 
-Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + Tkinter 做成，資料主要來自 [poedb.tw](https://poedb.tw/tw) 與 [poe.ninja](https://poe.ninja)。
+Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + CustomTkinter 做成，資料主要來自 [poedb.tw](https://poedb.tw/tw) 與 [poe.ninja](https://poe.ninja)。
 
 ## 功能
 
@@ -20,7 +20,13 @@ Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + Tkinter 
 
 - Windows
 - Python 3.10+（建議）
-- 僅標準函式庫，不必另外 `pip install`（打包 exe 時才需要 PyInstaller）
+- 依賴：`customtkinter`（其餘為標準函式庫）
+
+```bash
+py -3 -m pip install -r requirements.txt
+```
+
+打包 exe 時另需 PyInstaller。
 
 ## 啟動方式
 

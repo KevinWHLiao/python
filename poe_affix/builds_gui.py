@@ -7,6 +7,8 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
+import customtkinter as ctk
+
 from .builds import (
     BUILDS_PAGE,
     LADDER_DELVE,
@@ -14,16 +16,40 @@ from .builds import (
     BuildLeague,
     RankRow,
     clear_cache,
+    enrich_row,
     fetch_combo_trends,
     fetch_index,
     fetch_ranks,
     format_stat,
+    is_private_league,
     matches,
     parse_stat,
     sparkline,
 )
 from .search_combo import bind_searchable_combo, filter_choices
-from .theme import BG, BG_HEAD, BG_PANEL, FONT_SMALL, FONT_UI, GOLD, MUTED, PREFIX, SUFFIX, apply_theme
+from .theme import (
+    BG,
+    BG_PANEL,
+    FONT_FAMILY,
+    FONT_SECTION,
+    FONT_SMALL,
+    FONT_UI,
+    GOLD,
+    GOLD_HI,
+    LINE_SOFT,
+    MUTED,
+    PREFIX,
+    SUFFIX,
+    TEXT,
+    content_panel,
+    filter_panel,
+    ghost_button,
+    make_header,
+    make_status_bar,
+    muted_hint,
+    primary_button,
+    setup_window,
+)
 
 VIEW_CLASS = "熱門昇華"
 VIEW_SKILL = "熱門技能"
@@ -51,16 +77,14 @@ def format_delta(value: float) -> str:
     return f"{sign}{value:.1f}%"
 
 
-class BuildsApp(tk.Toplevel):
+class BuildsApp(ctk.CTkToplevel):
     def __init__(self, master: tk.Misc, on_back) -> None:
         super().__init__(master)
         self._on_back = on_back
         self.title("流亡黯道 · 流派排名")
         self.geometry("1480x860")
         self.minsize(1100, 640)
-        self.configure(bg=BG)
-        self.option_add("*Font", FONT_UI)
-        apply_theme(self)
+        setup_window(self)
         self.protocol("WM_DELETE_WINDOW", self.go_back)
 
         self.leagues: list[BuildLeague] = []
@@ -95,47 +119,49 @@ class BuildsApp(tk.Toplevel):
         self._on_back()
 
     def _build(self) -> None:
-        header = tk.Frame(self, bg=BG_HEAD)
-        header.pack(fill="x")
-        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
-        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=16, pady=12)
-        ttk.Label(header, text="流派排名", style="Gold.TLabel", background=BG_HEAD).pack(side="left", pady=12)
-        ttk.Button(header, text="重新整理", command=self.reload).pack(side="right", padx=16, pady=12)
-        ttk.Button(header, text="開啟 poe.ninja", command=self.open_league_page).pack(side="right", padx=(0, 8), pady=12)
+        make_header(
+            self,
+            "流派排名",
+            on_back=self.go_back,
+            right_actions=[
+                ("重新整理", self.reload),
+                ("開啟 poe.ninja", self.open_league_page),
+            ],
+        )
+        _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
-        filters = ttk.Frame(self, padding=(16, 12, 16, 8))
-        filters.pack(fill="x")
-        ttk.Label(filters, text="聯盟", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        filters = filter_panel(self)
+        ctk.CTkLabel(filters, text="聯盟", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
         self.league_combo = ttk.Combobox(filters, textvariable=self.league_var, state="normal", width=22)
         self.league_combo.grid(row=0, column=1, padx=(0, 16))
         bind_searchable_combo(self.league_combo, lambda: self._league_options, self.load_ranks)
 
-        ttk.Label(filters, text="榜單", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="榜單", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.ladder_combo = ttk.Combobox(
             filters, textvariable=self.ladder_var, state="normal", width=10, values=self._ladder_options
         )
         self.ladder_combo.grid(row=0, column=3, padx=(0, 16))
         bind_searchable_combo(self.ladder_combo, lambda: self._ladder_options, self.load_ranks)
 
-        ttk.Label(filters, text="檢視", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="檢視", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.view_combo = ttk.Combobox(
             filters, textvariable=self.view_var, state="normal", width=12, values=self._view_options
         )
         self.view_combo.grid(row=0, column=5, padx=(0, 16))
         bind_searchable_combo(self.view_combo, lambda: self._view_options, self.refresh)
 
-        ttk.Label(filters, text="搜尋", style="Muted.TLabel").grid(row=0, column=6, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="搜尋", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
         ttk.Entry(filters, textvariable=self.search_var, width=28).grid(row=0, column=7, sticky="ew")
-        filters.columnconfigure(7, weight=1)
+        filters.grid_columnconfigure(7, weight=1)
 
-        ttk.Label(
+        muted_hint(
             self,
-            text="資料來自 poe.ninja。DPS／EHP 是樣本角色的中位數（PoB 模擬值）。占比趨勢來自近 6 日快照。雙擊列開流派頁，雙擊角色開該角色。",
-            style="Muted.TLabel",
-        ).pack(anchor="w", padx=16)
+            "資料來自 poe.ninja。DPS／EHP 是樣本角色的中位數（PoB 模擬值）。占比趨勢來自近 6 日快照。雙擊列開流派頁，雙擊角色開該角色。",
+        )
 
-        pane = ttk.Panedwindow(self, orient="vertical")
-        pane.pack(fill="both", expand=True, padx=16, pady=8)
+        body = content_panel(self)
+        pane = ttk.Panedwindow(body, orient="vertical")
+        pane.pack(fill="both", expand=True, padx=10, pady=10)
 
         wrap = ttk.Frame(pane)
         columns = (
@@ -203,42 +229,108 @@ class BuildsApp(tk.Toplevel):
         pane.add(wrap, weight=3)
 
         detail = tk.Frame(pane, bg=BG_PANEL, highlightbackground=GOLD, highlightthickness=1)
-        pane.add(detail, weight=1)
-        top = tk.Frame(detail, bg=BG_PANEL)
-        top.pack(fill="x", padx=12, pady=(8, 4))
-        tk.Label(top, textvariable=self.detail_title_var, bg=BG_PANEL, fg=GOLD, font=FONT_UI, anchor="w").pack(fill="x")
-        tk.Label(top, textvariable=self.detail_stats_var, bg=BG_PANEL, fg=PREFIX, font=FONT_SMALL, anchor="w").pack(fill="x")
-        tk.Label(top, textvariable=self.detail_items_var, bg=BG_PANEL, fg=MUTED, font=FONT_SMALL, anchor="w", wraplength=1400, justify="left").pack(fill="x")
+        pane.add(detail, weight=2)
 
-        body = tk.Frame(detail, bg=BG_PANEL)
-        body.pack(fill="both", expand=True, padx=12, pady=(0, 8))
-        chart_wrap = tk.Frame(body, bg=BG_PANEL)
-        chart_wrap.pack(side="left", fill="both", expand=True, padx=(0, 12))
+        detail_split = ttk.Panedwindow(detail, orient="horizontal")
+        detail_split.pack(fill="both", expand=True, padx=8, pady=8)
+
+        info_host = ttk.Frame(detail_split)
+        detail_split.add(info_host, weight=3)
+        info_wrap = ctk.CTkFrame(info_host, fg_color=BG_PANEL, corner_radius=12, border_width=1, border_color=LINE_SOFT)
+        info_wrap.pack(fill="both", expand=True)
+        self.detail_scroll = ctk.CTkScrollableFrame(
+            info_wrap,
+            fg_color=BG_PANEL,
+            corner_radius=0,
+            scrollbar_button_color=LINE_SOFT,
+            scrollbar_button_hover_color=GOLD,
+        )
+        self.detail_scroll.pack(fill="both", expand=True, padx=8, pady=8)
+        self.detail_title = ctk.CTkLabel(
+            self.detail_scroll, textvariable=self.detail_title_var, font=FONT_SECTION, text_color=GOLD, anchor="w"
+        )
+        self.detail_title.pack(fill="x", pady=(0, 6))
+        self.detail_stats = ctk.CTkLabel(
+            self.detail_scroll,
+            textvariable=self.detail_stats_var,
+            font=FONT_SMALL,
+            text_color=PREFIX,
+            anchor="w",
+            justify="left",
+        )
+        self.detail_stats.pack(fill="x", pady=(0, 8))
+        self.detail_sections = ctk.CTkFrame(self.detail_scroll, fg_color="transparent")
+        self.detail_sections.pack(fill="both", expand=True)
+        self._detail_labels: dict[str, ctk.CTkLabel] = {}
+        for key, title in (
+            ("dps", "傷害組成（中位占比）"),
+            ("skills", "熱門技能"),
+            ("supports", "常見寶石／輔助"),
+            ("keys", "鑰石"),
+            ("items", "熱門傳奇"),
+            ("meta", "血脈／神殿／強盜／武器／塗油"),
+        ):
+            block = ctk.CTkFrame(
+                self.detail_sections, fg_color="#12161f", corner_radius=10, border_width=1, border_color=LINE_SOFT
+            )
+            block.pack(fill="x", pady=4)
+            ctk.CTkLabel(block, text=title, font=(FONT_FAMILY, 12, "bold"), text_color=GOLD_HI, anchor="w").pack(
+                fill="x", padx=10, pady=(8, 2)
+            )
+            label = ctk.CTkLabel(
+                block,
+                text="—",
+                font=FONT_SMALL,
+                text_color=TEXT,
+                anchor="w",
+                justify="left",
+                wraplength=720,
+            )
+            label.pack(fill="x", padx=10, pady=(0, 8))
+            self._detail_labels[key] = label
+
+        action_row = ctk.CTkFrame(self.detail_scroll, fg_color="transparent")
+        action_row.pack(fill="x", pady=(8, 0))
+        primary_button(action_row, "在 poe.ninja 開啟此流派", command=self.open_selected, width=180).pack(side="left")
+        ghost_button(action_row, "複製摘要", command=self.copy_detail, width=100).pack(side="left", padx=8)
+
+        right_wrap = tk.Frame(detail_split, bg=BG_PANEL)
+        detail_split.add(right_wrap, weight=2)
+        chart_wrap = tk.Frame(right_wrap, bg=BG_PANEL)
+        chart_wrap.pack(side="top", fill="both", expand=True, padx=(8, 0), pady=(0, 8))
         tk.Label(chart_wrap, text="近 7 日占比", bg=BG_PANEL, fg=MUTED, font=FONT_SMALL, anchor="w").pack(fill="x")
         self.chart = tk.Canvas(chart_wrap, bg=BG, highlightthickness=0, height=160)
         self.chart.pack(fill="both", expand=True)
         self.chart.bind("<Configure>", lambda _event: self._draw_chart(self._selected))
 
-        sample_wrap = tk.Frame(body, bg=BG_PANEL)
-        sample_wrap.pack(side="right", fill="both", expand=True)
+        sample_wrap = tk.Frame(right_wrap, bg=BG_PANEL)
+        sample_wrap.pack(side="bottom", fill="both", expand=True, padx=(8, 0))
         tk.Label(sample_wrap, text="樣本角色（雙擊開啟）", bg=BG_PANEL, fg=MUTED, font=FONT_SMALL, anchor="w").pack(fill="x")
-        sample_cols = ("name", "account", "dps", "ehp", "life", "es")
-        self.sample_tree = ttk.Treeview(sample_wrap, columns=sample_cols, show="headings", selectmode="browse", height=6)
-        sample_heads = {"name": "角色", "account": "帳號", "dps": "DPS", "ehp": "EHP", "life": "生命", "es": "能盾"}
+        sample_cols = ("name", "account", "level", "dps", "ehp", "life", "es", "weapon")
+        self.sample_tree = ttk.Treeview(sample_wrap, columns=sample_cols, show="headings", selectmode="browse", height=8)
+        sample_heads = {
+            "name": "角色",
+            "account": "帳號",
+            "level": "等級",
+            "dps": "DPS",
+            "ehp": "EHP",
+            "life": "生命",
+            "es": "能盾",
+            "weapon": "武器",
+        }
         for key, title in sample_heads.items():
             self.sample_tree.heading(key, text=title)
-            self.sample_tree.column(key, width=90 if key != "account" else 140, stretch=True, anchor="w")
+            width = 70
+            if key == "account":
+                width = 120
+            elif key == "weapon":
+                width = 110
+            elif key == "name":
+                width = 110
+            self.sample_tree.column(key, width=width, stretch=True, anchor="w")
         self.sample_tree.pack(fill="both", expand=True)
         self.sample_tree.bind("<Double-1>", self.open_sample)
         self._sample_urls: dict[str, str] = {}
-
-        status = tk.Frame(self, bg=BG_HEAD)
-        status.pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
-            side="left", padx=16, pady=6
-        )
-        self.progress = ttk.Progressbar(status, mode="indeterminate", length=180)
-        self.progress.pack(side="right", padx=16, pady=8)
 
     def current_league(self) -> BuildLeague | None:
         name = (self.league_var.get() or "").strip()
@@ -295,10 +387,15 @@ class BuildsApp(tk.Toplevel):
         for league in leagues:
             if league.name not in names:
                 names.append(league.name)
-        self._league_options = names
-        self.league_combo.configure(values=names)
-        if names and self.league_var.get() not in names:
-            self.league_var.set(names[0])
+        # Prefer public leagues in the combobox; keep private ones at the end.
+        public = [name for name in names if not is_private_league(name)]
+        private = [name for name in names if is_private_league(name)]
+        self._league_options = public + private
+        self.league_combo.configure(values=self._league_options)
+        if self._league_options and (
+            not self.league_var.get() or self.league_var.get() not in self._league_options
+        ):
+            self.league_var.set(public[0] if public else self._league_options[0])
         self.load_ranks()
 
     def reload(self) -> None:
@@ -315,7 +412,10 @@ class BuildsApp(tk.Toplevel):
         self._loading = True
         self._pending_load = False
         self.status_var.set(f"正在下載 {league.name} / {league.ladder_label} 的流派、DPS 與逐日資料…")
-        self.progress.start(12)
+        try:
+            self.progress.start()
+        except Exception:
+            pass
         threading.Thread(target=self._ranks_worker, args=(league,), daemon=True).start()
 
     def _ranks_worker(self, league: BuildLeague) -> None:
@@ -336,7 +436,11 @@ class BuildsApp(tk.Toplevel):
         day_totals: dict[str, int],
     ) -> None:
         self._loading = False
-        self.progress.stop()
+        try:
+            self.progress.stop()
+            self.progress.set(1)
+        except Exception:
+            pass
         self.total = total
         self.class_rows = class_rows
         self.skill_rows = skill_rows
@@ -370,7 +474,11 @@ class BuildsApp(tk.Toplevel):
 
     def _fail(self, message: str) -> None:
         self._loading = False
-        self.progress.stop()
+        try:
+            self.progress.stop()
+            self.progress.set(0)
+        except Exception:
+            pass
         self.status_var.set(message)
         messagebox.showerror("流派排名失敗", message, parent=self)
 
@@ -467,13 +575,31 @@ class BuildsApp(tk.Toplevel):
             bits.append(f"等級 {row.level}")
         if row.yesterday:
             bits.append(f"昨日 {format_percent(row.yesterday)}（{format_delta(row.delta)}）")
-        self.detail_stats_var.set("　　".join(bits))
-        extras = []
-        if row.items:
-            extras.append("熱門傳奇：" + "、".join(row.items))
-        if row.keystones:
-            extras.append("鑰石：" + "、".join(row.keystones))
-        self.detail_items_var.set("　　".join(extras) or "這列還沒有傳奇／鑰石樣本。")
+        self.detail_stats_var.set("　·　".join(bits))
+
+        if row.dps_share:
+            dps_text = "　".join(f"{name} {value:.0f}%" for name, value in row.dps_share.items())
+        else:
+            dps_text = "尚無元素占比樣本（可能還在載入，或此列沒有 DPS 細項）。"
+        self._detail_labels["dps"].configure(text=dps_text)
+        self._detail_labels["skills"].configure(text="、".join(row.skills) if row.skills else "尚無技能樣本")
+        self._detail_labels["supports"].configure(text="、".join(row.supports) if row.supports else "尚無寶石樣本")
+        self._detail_labels["keys"].configure(text="、".join(row.keystones) if row.keystones else "尚無鑰石樣本")
+        self._detail_labels["items"].configure(text="、".join(row.items) if row.items else "尚無傳奇樣本")
+        meta_bits = []
+        if row.second_ascendancy:
+            meta_bits.append("血脈：" + "、".join(row.second_ascendancy))
+        if row.pantheon:
+            meta_bits.append("神殿：" + "、".join(row.pantheon))
+        if row.bandit:
+            meta_bits.append("強盜：" + "、".join(row.bandit))
+        if row.weapon_modes:
+            meta_bits.append("武器：" + "、".join(row.weapon_modes))
+        if row.anointed:
+            meta_bits.append("塗油：" + "、".join(row.anointed))
+        self._detail_labels["meta"].configure(text="\n".join(meta_bits) if meta_bits else "尚無額外配置樣本")
+        self.detail_items_var.set("")
+
         self._draw_chart(row)
         self.sample_tree.delete(*self.sample_tree.get_children(""))
         self._sample_urls.clear()
@@ -484,13 +610,51 @@ class BuildsApp(tk.Toplevel):
                 values=(
                     sample.name,
                     sample.account,
+                    sample.level or "—",
                     sample.dps_text or format_stat(sample.dps),
                     sample.ehp_text or format_stat(sample.ehp),
                     format_stat(sample.life) if sample.life else "—",
                     format_stat(sample.es),
+                    sample.weapon or "—",
                 ),
             )
             self._sample_urls[item_id] = sample.ninja_url
+
+        if not row.samples and not row.items and not row.dps:
+            self._detail_labels["items"].configure(text="正在補抓此列細節…")
+            threading.Thread(target=self._enrich_worker, args=(row,), daemon=True).start()
+
+    def _enrich_worker(self, row: RankRow) -> None:
+        league = self.current_league()
+        if not league:
+            return
+        try:
+            enrich_row(league, row)
+        except Exception:
+            return
+        self.after(0, lambda: self._show_detail(row) if self._selected is row else None)
+
+    def copy_detail(self) -> None:
+        row = self._selected
+        if not row:
+            messagebox.showinfo("沒有資料", "請先選一列流派。", parent=self)
+            return
+        lines = [
+            self.detail_title_var.get(),
+            self.detail_stats_var.get(),
+            "傷害組成：" + self._detail_labels["dps"].cget("text"),
+            "熱門技能：" + self._detail_labels["skills"].cget("text"),
+            "常見寶石：" + self._detail_labels["supports"].cget("text"),
+            "鑰石：" + self._detail_labels["keys"].cget("text"),
+            "傳奇：" + self._detail_labels["items"].cget("text"),
+            self._detail_labels["meta"].cget("text"),
+        ]
+        if row.ninja_url:
+            lines.append(row.ninja_url)
+        text = "\n".join(line for line in lines if line)
+        self.clipboard_clear()
+        self.clipboard_append(text)
+        self.status_var.set("已複製流派摘要到剪貼簿")
 
     def _draw_chart(self, row: RankRow | None) -> None:
         canvas = self.chart

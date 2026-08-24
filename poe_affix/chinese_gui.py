@@ -5,24 +5,36 @@ from __future__ import annotations
 import threading
 import tkinter as tk
 import webbrowser
-from tkinter import messagebox, ttk
+from tkinter import messagebox
+
+import customtkinter as ctk
 
 from .chinese import CHINESE_PAGE, ChinesePins, PinInfo, fetch_pins
-from .theme import BG, BG_HEAD, BG_PANEL, FONT_SMALL, FONT_UI, GOLD, GOLD_HI, MUTED, TEXT, apply_theme
+from .theme import (
+    BG_CARD,
+    FONT_FAMILY,
+    FONT_UI,
+    GOLD,
+    GOLD_HI,
+    LINE_SOFT,
+    TEXT,
+    make_header,
+    make_status_bar,
+    primary_button,
+    setup_window,
+)
 
-FONT_PIN = ("Consolas", 42, "bold")
+FONT_PIN = ("Consolas", 44, "bold")
 
 
-class ChineseApp(tk.Toplevel):
+class ChineseApp(ctk.CTkToplevel):
     def __init__(self, master: tk.Misc, on_back) -> None:
         super().__init__(master)
         self._on_back = on_back
         self.title("流亡黯道 · 中文化 PIN")
-        self.geometry("860x560")
-        self.minsize(720, 480)
-        self.configure(bg=BG)
-        self.option_add("*Font", FONT_UI)
-        apply_theme(self)
+        self.geometry("900x580")
+        self.minsize(740, 500)
+        setup_window(self)
         self.protocol("WM_DELETE_WINDOW", self.go_back)
 
         self._loading = False
@@ -48,51 +60,48 @@ class ChineseApp(tk.Toplevel):
         self._on_back()
 
     def _build(self) -> None:
-        header = tk.Frame(self, bg=BG_HEAD)
-        header.pack(fill="x")
-        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
-        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=16, pady=12)
-        ttk.Label(header, text="中文化 PIN", style="Gold.TLabel", background=BG_HEAD).pack(side="left", pady=12)
-        ttk.Button(header, text="重新整理", command=self.reload).pack(side="right", padx=16, pady=12)
-        ttk.Button(header, text="開啟 PoEDB 中文化頁", command=lambda: webbrowser.open(CHINESE_PAGE)).pack(
-            side="right", padx=(0, 8), pady=12
-        )
-
-        ttk.Label(
+        make_header(
             self,
-            text="PIN 來自 poedb.tw，每次遊戲更新都會變。點複製可貼到中文化工具；安裝步驟請看 PoEDB 原頁。",
-            style="Muted.TLabel",
-        ).pack(anchor="w", padx=16, pady=(12, 4))
+            "中文化 PIN",
+            on_back=self.go_back,
+            right_actions=[
+                ("重新整理", self.reload),
+                ("開啟 PoEDB 中文化頁", lambda: webbrowser.open(CHINESE_PAGE)),
+            ],
+            hint="每次遊戲更新 PIN 都會變；點複製可貼到中文化工具",
+        )
+        make_status_bar(self, self.status_var)
 
-        cards = ttk.Frame(self, padding=(16, 8, 16, 8))
-        cards.pack(fill="both", expand=True)
-        cards.columnconfigure(0, weight=1)
-        cards.columnconfigure(1, weight=1)
+        cards = ctk.CTkFrame(self, fg_color="transparent")
+        cards.pack(fill="both", expand=True, padx=18, pady=16)
+        cards.grid_columnconfigure(0, weight=1)
+        cards.grid_columnconfigure(1, weight=1)
+        cards.grid_rowconfigure(0, weight=1)
         self._make_card(cards, 0, "tw", "繁體中文  ·  tw PIN")
         self._make_card(cards, 1, "cn", "簡體中文  ·  cn PIN")
 
-        status = tk.Frame(self, bg=BG_HEAD)
-        status.pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
-            side="left", padx=16, pady=8
+    def _make_card(self, parent, column: int, locale: str, title: str) -> None:
+        card = ctk.CTkFrame(
+            parent,
+            fg_color=BG_CARD,
+            corner_radius=18,
+            border_width=1,
+            border_color=LINE_SOFT,
         )
-
-    def _make_card(self, parent: ttk.Frame, column: int, locale: str, title: str) -> None:
-        card = tk.Frame(parent, bg=BG_PANEL, highlightbackground=GOLD, highlightthickness=1)
-        card.grid(row=0, column=column, sticky="nsew", padx=(0, 12) if column == 0 else (12, 0), pady=8)
-        inner = tk.Frame(card, bg=BG_PANEL)
-        inner.pack(fill="both", expand=True, padx=22, pady=22)
-        tk.Label(inner, text=title, bg=BG_PANEL, fg=GOLD, font=("Microsoft JhengHei UI", 12, "bold")).pack(anchor="w")
-        tk.Label(inner, textvariable=self._pin_vars[locale]["pin"], bg=BG_PANEL, fg=GOLD_HI, font=FONT_PIN).pack(
-            pady=(18, 10)
+        card.grid(row=0, column=column, sticky="nsew", padx=(0, 10) if column == 0 else (10, 0))
+        inner = ctk.CTkFrame(card, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=24, pady=24)
+        ctk.CTkLabel(inner, text=title, font=(FONT_FAMILY, 14, "bold"), text_color=GOLD, anchor="w").pack(anchor="w")
+        ctk.CTkLabel(inner, textvariable=self._pin_vars[locale]["pin"], font=FONT_PIN, text_color=GOLD_HI).pack(
+            pady=(22, 12)
         )
-        tk.Label(inner, textvariable=self._pin_vars[locale]["server"], bg=BG_PANEL, fg=TEXT, font=FONT_UI).pack(
-            anchor="w"
-        )
-        tk.Label(inner, textvariable=self._pin_vars[locale]["patch"], bg=BG_PANEL, fg=TEXT, font=FONT_UI).pack(
-            anchor="w", pady=(2, 16)
-        )
-        ttk.Button(inner, text="複製 PIN", command=lambda key=locale: self.copy_pin(key)).pack(anchor="w")
+        ctk.CTkLabel(
+            inner, textvariable=self._pin_vars[locale]["server"], font=FONT_UI, text_color=TEXT, anchor="w"
+        ).pack(anchor="w")
+        ctk.CTkLabel(
+            inner, textvariable=self._pin_vars[locale]["patch"], font=FONT_UI, text_color=TEXT, anchor="w"
+        ).pack(anchor="w", pady=(4, 18))
+        primary_button(inner, "複製 PIN", command=lambda key=locale: self.copy_pin(key), width=120).pack(anchor="w")
 
     def copy_pin(self, locale: str) -> None:
         pin = self._pin_vars[locale]["pin"].get().strip()

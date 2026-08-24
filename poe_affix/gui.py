@@ -1,4 +1,4 @@
-"""Tkinter GUI: pick a slot, then pick an affix to see tiers and item levels."""
+"""Affix lookup GUI: pick a slot, then pick an affix to see tiers and item levels."""
 
 from __future__ import annotations
 
@@ -8,42 +8,44 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
+import customtkinter as ctk
+
 from . import resolve_data_file
 from .catalog import SOURCE_ORDER, SOURCE_TITLES, format_tag_text, group_categories
 from .search_combo import bind_searchable_combo, choice_matches
 from .sync import sync_catalog
-from .theme import apply_theme
+from .theme import (
+    BG,
+    BG_INPUT,
+    BG_PANEL,
+    CORRUPT,
+    CORRUPT_BG,
+    CORRUPT_T1_BG,
+    CORRUPT_T1_FG,
+    FONT_SMALL,
+    FONT_UI,
+    GOLD,
+    MUTED,
+    PREFIX,
+    SUFFIX,
+    T1_BG,
+    T1_FG,
+    T2_BG,
+    T2_FG,
+    T3_BG,
+    T3_FG,
+    TEXT,
+    TN_FG,
+    content_panel,
+    filter_panel,
+    make_header,
+    make_status_bar,
+    set_progress,
+    setup_appearance,
+    setup_window,
+)
 
 ALL = "全部"
-FONT_UI = ("Microsoft JhengHei UI", 10)
-FONT_TITLE = ("Microsoft JhengHei UI", 16, "bold")
-FONT_SECTION = ("Microsoft JhengHei UI", 11, "bold")
-FONT_SMALL = ("Microsoft JhengHei UI", 9)
-
-# PoE-inspired dark palette
-BG = "#101218"
-BG_PANEL = "#171a22"
-BG_RAISED = "#1f2430"
-BG_INPUT = "#141821"
-BG_HEAD = "#2a2418"
-LINE = "#3a3324"
-GOLD = "#e0b15a"
-GOLD_HI = "#ffd37a"
-TEXT = "#ece7da"
-MUTED = "#9b9586"
-PREFIX = "#7ecbff"
-SUFFIX = "#86e0b0"
-CORRUPT = "#d9a5ff"
-T1_BG = "#4a3210"
-T1_FG = "#ffd37a"
-T2_BG = "#322a16"
-T2_FG = "#e8c07a"
-T3_BG = "#1c2738"
-T3_FG = "#9ab8ea"
-TN_FG = "#c9c3b4"
-CORRUPT_BG = "#2c1836"
-CORRUPT_T1_BG = "#4a2048"
-CORRUPT_T1_FG = "#f3c6ff"
 
 
 def load_catalog() -> dict | None:
@@ -75,11 +77,12 @@ def _tier_tag(tier_value, corrupt: bool = False) -> str:
     return "tn"
 
 
-class AffixApp(tk.Toplevel):
+class AffixApp(ctk.CTkToplevel):
     def __init__(self, master: tk.Misc | None = None, on_back=None) -> None:
         owns_root = master is None
         if owns_root:
-            master = tk.Tk()
+            setup_appearance()
+            master = ctk.CTk()
             master.withdraw()
         super().__init__(master)
         self._owns_root = owns_root
@@ -87,9 +90,7 @@ class AffixApp(tk.Toplevel):
         self.title("流亡黯道 · 裝備詞綴查詢")
         self.geometry("1360x820")
         self.minsize(1080, 680)
-        self.configure(bg=BG)
-        self.option_add("*Font", FONT_UI)
-        apply_theme(self)
+        setup_window(self)
         self.protocol("WM_DELETE_WINDOW", self.go_back)
 
         self.catalog: dict | None = None
@@ -139,35 +140,25 @@ class AffixApp(tk.Toplevel):
             tree.tag_configure("odd", background="#151922", foreground=TEXT)
 
     def _build(self) -> None:
-        header = tk.Frame(self, bg=BG_HEAD, height=64)
-        header.pack(fill="x")
-        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
-        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=(16, 0), pady=12)
-        ttk.Label(header, text="流亡黯道  ·  裝備詞綴", style="Gold.TLabel", background=BG_HEAD).pack(
-            side="left", padx=16, pady=14
+        make_header(
+            self,
+            "裝備詞綴",
+            on_back=self.go_back,
+            right_actions=[
+                ("從 PoEDB 更新資料", self.start_sync),
+                ("開啟 PoEDB 詞綴頁", lambda: webbrowser.open("https://poedb.tw/tw/Modifiers")),
+            ],
+            hint="金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
         )
-        ttk.Label(
-            header,
-            text="金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
-            style="Muted.TLabel",
-            background=BG_HEAD,
-            font=FONT_SMALL,
-        ).pack(side="left", padx=(8, 0), pady=14)
-        ttk.Button(header, text="從 PoEDB 更新資料", command=self.start_sync).pack(side="right", padx=(0, 16), pady=12)
-        ttk.Button(
-            header,
-            text="開啟 PoEDB 詞綴頁",
-            command=lambda: webbrowser.open("https://poedb.tw/tw/Modifiers"),
-        ).pack(side="right", padx=(0, 8), pady=12)
+        _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
-        filters = ttk.Frame(self, padding=(16, 12, 16, 8))
-        filters.pack(fill="x")
-        ttk.Label(filters, text="部位", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        filters = filter_panel(self)
+        ctk.CTkLabel(filters, text="部位", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
         self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, width=22, state="normal")
         self.slot_combo.grid(row=0, column=1, padx=(0, 16))
         bind_searchable_combo(self.slot_combo, lambda: self._slot_options, self.on_filters_changed)
 
-        ttk.Label(filters, text="前後綴", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="前後綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.affix_combo = ttk.Combobox(
             filters,
             textvariable=self.affix_var,
@@ -178,28 +169,29 @@ class AffixApp(tk.Toplevel):
         self.affix_combo.grid(row=0, column=3, padx=(0, 16))
         bind_searchable_combo(self.affix_combo, lambda: self._affix_options, self.refresh_affix_list)
 
-        ttk.Label(filters, text="來源", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="來源", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, width=14, state="normal")
         self.source_combo.grid(row=0, column=5, padx=(0, 16))
         bind_searchable_combo(self.source_combo, lambda: self._source_options, self.refresh_affix_list)
 
-        ttk.Label(filters, text="分類", style="Muted.TLabel").grid(row=0, column=6, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
         self.category_combo = ttk.Combobox(filters, textvariable=self.category_var, width=12, state="normal")
         self.category_combo.grid(row=0, column=7, padx=(0, 16))
         bind_searchable_combo(self.category_combo, lambda: self._category_options, self.refresh_affix_list)
 
-        ttk.Label(filters, text="篩選詞綴", style="Muted.TLabel").grid(row=0, column=8, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="篩選詞綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=8, sticky="w", padx=(0, 6))
         search = ttk.Entry(filters, textvariable=self.search_var, width=24)
         search.grid(row=0, column=9, sticky="ew")
-        filters.columnconfigure(9, weight=1)
-        ttk.Label(
+        filters.grid_columnconfigure(9, weight=1)
+        ctk.CTkLabel(
             filters,
             text="部位／前後綴／來源／分類可輸入關鍵字（可多字或空格），例如「手套 力」「塑界」；點清單或 Enter 套用",
-            style="Muted.TLabel",
-        ).grid(row=1, column=0, columnspan=10, sticky="w", pady=(6, 0))
+            font=FONT_SMALL,
+            text_color=MUTED,
+        ).grid(row=1, column=0, columnspan=10, sticky="w", pady=(8, 0))
 
-        legend = ttk.Frame(self, padding=(16, 0, 16, 8))
-        legend.pack(fill="x")
+        legend = ctk.CTkFrame(self, fg_color="transparent")
+        legend.pack(fill="x", padx=20, pady=(0, 4))
         for text, color in (
             ("T1 最難出", T1_FG),
             ("T2", T2_FG),
@@ -208,12 +200,11 @@ class AffixApp(tk.Toplevel):
             ("前綴", PREFIX),
             ("後綴", SUFFIX),
         ):
-            swatch = tk.Label(legend, text="●", fg=color, bg=BG, font=("Segoe UI", 11))
-            swatch.pack(side="left")
-            tk.Label(legend, text=text, fg=MUTED, bg=BG, font=FONT_SMALL).pack(side="left", padx=(2, 14))
+            ctk.CTkLabel(legend, text=f"● {text}", font=FONT_SMALL, text_color=color).pack(side="left", padx=(0, 14))
 
-        paned = ttk.Panedwindow(self, orient="horizontal")
-        paned.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+        body = content_panel(self)
+        paned = ttk.Panedwindow(body, orient="horizontal")
+        paned.pack(fill="both", expand=True, padx=10, pady=10)
 
         left = ttk.Frame(paned, style="Panel.TFrame", padding=10)
         right = ttk.Frame(paned, style="Panel.TFrame", padding=10)
@@ -221,7 +212,7 @@ class AffixApp(tk.Toplevel):
         paned.add(right, weight=2)
 
         ttk.Label(left, text="選擇詞綴　（點欄位標題可排序）", style="Section.TLabel").pack(anchor="w")
-        tk.Frame(left, bg=GOLD, height=2).pack(fill="x", pady=(4, 8))
+        ctk.CTkFrame(left, fg_color=GOLD, corner_radius=0, height=2).pack(fill="x", pady=(4, 8))
         list_wrap = ttk.Frame(left, style="Panel.TFrame")
         list_wrap.pack(fill="both", expand=True)
         columns = ("label", "category", "affix", "corrupt", "source", "t1", "weight", "tiers", "slots")
@@ -261,7 +252,7 @@ class AffixApp(tk.Toplevel):
         self.affix_tree.bind("<<TreeviewSelect>>", lambda _e: self.show_selected_affix())
 
         ttk.Label(right, textvariable=self.summary_var, style="Section.TLabel").pack(anchor="w")
-        tk.Frame(right, bg=GOLD, height=2).pack(fill="x", pady=(4, 6))
+        ctk.CTkFrame(right, fg_color=GOLD, corner_radius=0, height=2).pack(fill="x", pady=(4, 6))
         ttk.Label(right, textvariable=self.meta_var, style="PanelMuted.TLabel").pack(anchor="w", pady=(0, 8))
 
         ttk.Label(right, text="出現部位", style="PanelMuted.TLabel").pack(anchor="w")
@@ -275,7 +266,7 @@ class AffixApp(tk.Toplevel):
             bg=BG_INPUT,
             fg=TEXT,
             selectbackground="#5a3e14",
-            selectforeground=GOLD_HI,
+            selectforeground="#ffd37a",
             highlightthickness=0,
             bd=0,
             relief="flat",
@@ -312,7 +303,7 @@ class AffixApp(tk.Toplevel):
         tier_scroll.pack(side="right", fill="y")
 
         ttk.Label(right, textvariable=self.corrupt_title_var, style="Section.TLabel").pack(anchor="w", pady=(12, 0))
-        tk.Frame(right, bg=CORRUPT, height=2).pack(fill="x", pady=(4, 8))
+        ctk.CTkFrame(right, fg_color=CORRUPT, corner_radius=0, height=2).pack(fill="x", pady=(4, 8))
         corrupt_wrap = ttk.Frame(right, style="Panel.TFrame")
         corrupt_wrap.pack(fill="both", expand=True)
         corrupt_cols = ("tier", "level", "weight", "chance", "text")
@@ -335,14 +326,6 @@ class AffixApp(tk.Toplevel):
         corrupt_scroll.pack(side="right", fill="y")
 
         self._tag_trees()
-
-        status = tk.Frame(self, bg=BG_HEAD)
-        status.pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
-            side="left", padx=16, pady=6
-        )
-        self.progress = ttk.Progressbar(status, mode="determinate", length=220)
-        self.progress.pack(side="right", padx=16, pady=8)
 
     def _startup_load(self) -> None:
         catalog = load_catalog()
@@ -775,7 +758,7 @@ class AffixApp(tk.Toplevel):
         if self._syncing:
             return
         self._syncing = True
-        self.progress.configure(value=0, maximum=100)
+        set_progress(self.progress, 0, 100)
 
         def run() -> None:
             def progress(message: str, current: int, total: int) -> None:
@@ -791,7 +774,7 @@ class AffixApp(tk.Toplevel):
 
     def _on_progress(self, message: str, current: int, total: int) -> None:
         self.status_var.set(message)
-        self.progress.configure(maximum=max(total, 1), value=current)
+        set_progress(self.progress, current, total)
 
     def _on_sync_done(self, catalog: dict | None, error: Exception | None) -> None:
         self._syncing = False

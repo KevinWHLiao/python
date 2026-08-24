@@ -18,10 +18,20 @@ from .i18n import translate_name
 NINJA_BASE = "https://poe.ninja"
 BUILDS_PAGE = f"{NINJA_BASE}/poe1/builds"
 CACHE_TTL = 15 * 60
-COMBO_CLASSES = 10
+COMBO_CLASSES = 12
 COMBO_SKILLS_PER_CLASS = 2
-COMBO_LIMIT = 12
+COMBO_LIMIT = 20
 COMBO_WORKERS = 6
+CLASS_STAT_LIMIT = 16
+SKILL_STAT_LIMIT = 16
+_PRIVATE_LEAGUE_RE = re.compile(r"\(PL\d+\)", re.I)
+DPS_ELEMENTS = (
+    ("physical", "物理"),
+    ("fire", "火焰"),
+    ("cold", "冰冷"),
+    ("lightning", "閃電"),
+    ("chaos", "混沌"),
+)
 TREND_DAYS = ("day-6", "day-5", "day-4", "day-3", "day-2", "day-1")
 GENERIC_ITEM_PREFIXES = ("Rare ", "Magic ", "Normal ", "White ")
 USER_AGENT = "PoELookupTool/1.0 (Windows desktop; personal local app)"
@@ -101,6 +111,8 @@ class SampleChar:
     dps_text: str = ""
     ehp_text: str = ""
     ninja_url: str = ""
+    weapon: str = ""
+    main_skill: str = ""
 
 
 @dataclass
@@ -125,6 +137,14 @@ class RankRow:
     trend: list[float] = field(default_factory=list)
     items: list[str] = field(default_factory=list)
     keystones: list[str] = field(default_factory=list)
+    skills: list[str] = field(default_factory=list)
+    supports: list[str] = field(default_factory=list)
+    dps_share: dict[str, float] = field(default_factory=dict)
+    second_ascendancy: list[str] = field(default_factory=list)
+    bandit: list[str] = field(default_factory=list)
+    pantheon: list[str] = field(default_factory=list)
+    weapon_modes: list[str] = field(default_factory=list)
+    anointed: list[str] = field(default_factory=list)
     samples: list[SampleChar] = field(default_factory=list)
 
 
@@ -346,12 +366,38 @@ def _unique_names(result: list[tuple[int, str, object]], dim_id: str, dict_name:
         name = names[key]
         if any(name.startswith(prefix) for prefix in GENERIC_ITEM_PREFIXES):
             continue
-        label = translate_name(name) or name
+        if name in {"None", "無", ""}:
+            continue
+        label = translate_name(name) or translate_class(name) or name
         if label not in picked:
             picked.append(label)
         if len(picked) >= limit:
             break
     return picked
+
+
+def _median_packed_share(columns: dict[str, dict[str, object]], skill: str, element: str) -> float:
+    keys = []
+    if skill:
+        keys.append(f"dps-{skill}.{element}")
+    keys.append(f"dps.{element}")
+    for key in keys:
+        packed = columns.get(key, {}).get("packed")
+        if not packed:
+            continue
+        values = _packed_varints(bytes(packed))
+        if values:
+            return float(_median(values))
+    return 0.0
+
+
+def _dps_share_map(columns: dict[str, dict[str, object]], skill: str = "") -> dict[str, float]:
+    shares: dict[str, float] = {}
+    for key, label in DPS_ELEMENTS:
+        value = _median_packed_share(columns, skill, key)
+        if value > 0:
+            shares[label] = value
+    return shares
 
 
 def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]], row: RankRow) -> None:
@@ -370,10 +416,20 @@ def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]
     ehp_values = [parse_stat(text) for text in ehp_text]
     row.dps = _median(dps_values)
     row.ehp = _median(ehp_values)
-    row.items = _unique_names(result, "items", "item")
-    row.keystones = _unique_names(result, "keypassives", "keypassive", limit=3)
+    row.dps_share = _dps_share_map(columns, row.extra)
+    row.items = _unique_names(result, "items", "item", limit=8)
+    row.keystones = _unique_names(result, "keypassives", "keypassive", limit=8)
+    row.skills = _unique_names(result, "skills", "gem", limit=10)
+    row.supports = [name for name in _unique_names(result, "allgems", "gem", limit=16) if name not in row.skills][:10]
+    row.second_ascendancy = _unique_names(result, "secondascendancy", "secondascendancy", limit=5)
+    row.bandit = _unique_names(result, "bandit", "bandit", limit=4)
+    row.pantheon = _unique_names(result, "pantheon", "pantheon", limit=6)
+    row.weapon_modes = _unique_names(result, "weaponmode", "weaponmode", limit=5)
+    row.anointed = _unique_names(result, "anointed", "anointed", limit=6)
+    weapons = row.weapon_modes
+    main_skill = row.extra_zh or row.extra or (row.skills[0] if row.skills else "")
     samples: list[SampleChar] = []
-    count = min(len(names), len(accounts), 8)
+    count = min(len(names), len(accounts), 12)
     for index in range(count):
         query = urllib.parse.urlencode({"account": accounts[index], "character": names[index]})
         samples.append(
@@ -388,10 +444,22 @@ def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]
                 dps_text=dps_text[index] if index < len(dps_text) else "",
                 ehp_text=ehp_text[index] if index < len(ehp_text) else "",
                 ninja_url=f"{league.page_url}?{query}",
+                weapon=weapons[0] if weapons else "",
+                main_skill=main_skill,
             )
         )
     row.samples = samples
-    extra = [item for item in row.items + row.keystones]
+    extra = [
+        *row.items,
+        *row.keystones,
+        *row.skills,
+        *row.supports,
+        *row.second_ascendancy,
+        *row.bandit,
+        *row.pantheon,
+        *row.weapon_modes,
+        *row.anointed,
+    ]
     row.search_blob = _search_blob(
         row.name,
         row.name_zh,
@@ -483,6 +551,23 @@ def _parse_snapshots(html: str) -> list[BuildLeague]:
     return leagues
 
 
+def _league_sort_key(league: BuildLeague) -> tuple:
+    """Prefer public challenge leagues, then Standard, then private (PLxxxxx)."""
+    name = league.name or ""
+    if _PRIVATE_LEAGUE_RE.search(name):
+        group = 2
+    elif "Standard" in name or name in {"Hardcore", "Solo Self-Found"}:
+        group = 1
+    else:
+        group = 0
+    ladder_rank = 0 if league.ladder == "exp" else 1
+    return (group, ladder_rank, name.lower())
+
+
+def is_private_league(name: str) -> bool:
+    return bool(_PRIVATE_LEAGUE_RE.search(name or ""))
+
+
 def fetch_index(force: bool = False) -> BuildIndex:
     global _index_cache
     with _cache_lock:
@@ -494,6 +579,7 @@ def fetch_index(force: bool = False) -> BuildIndex:
     leagues = _parse_snapshots(html)
     if not leagues:
         raise RuntimeError("poe.ninja 頁面上沒有聯盟榜資料。")
+    leagues.sort(key=_league_sort_key)
     index = BuildIndex(leagues=leagues)
     with _cache_lock:
         _index_cache = (time.time(), index)
@@ -781,6 +867,15 @@ def _fill_combo_stats(league: BuildLeague, row: RankRow) -> None:
         _apply_table_stats(league, result, row)
 
 
+def _fill_class_stats(league: BuildLeague, row: RankRow) -> None:
+    try:
+        result = _search_result(league, {"class": row.name})
+    except RuntimeError:
+        return
+    if result:
+        _apply_table_stats(league, result, row)
+
+
 def _fill_skill_stats(league: BuildLeague, row: RankRow) -> None:
     try:
         result = _search_result(league, {"skills": row.name})
@@ -792,6 +887,17 @@ def _fill_skill_stats(league: BuildLeague, row: RankRow) -> None:
     row.extra = row.name
     _apply_table_stats(league, result, row)
     row.extra = saved
+
+
+def enrich_row(league: BuildLeague, row: RankRow) -> RankRow:
+    """Fill DPS / items / samples for a rank row (safe to call from UI)."""
+    if row.kind == "combo" and row.extra:
+        _fill_combo_stats(league, row)
+    elif row.kind == "class":
+        _fill_class_stats(league, row)
+    else:
+        _fill_skill_stats(league, row)
+    return row
 
 
 def _history_snapshot(league: BuildLeague, label: str) -> tuple[str, int, dict[str, float], dict[str, float]]:
@@ -909,7 +1015,8 @@ def fetch_ranks(
     snapshots: list[tuple[str, int, dict[str, float], dict[str, float]]] = []
     with ThreadPoolExecutor(max_workers=COMBO_WORKERS) as pool:
         stat_futures = [pool.submit(_fill_combo_stats, league, row) for row in combo_rows]
-        stat_futures.extend(pool.submit(_fill_skill_stats, league, row) for row in skill_rows[:8])
+        stat_futures.extend(pool.submit(_fill_class_stats, league, row) for row in class_rows[:CLASS_STAT_LIMIT])
+        stat_futures.extend(pool.submit(_fill_skill_stats, league, row) for row in skill_rows[:SKILL_STAT_LIMIT])
         hist_futures = [
             pool.submit(_history_snapshot, league, label) for label in labels
         ]

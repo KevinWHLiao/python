@@ -7,6 +7,8 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
+import customtkinter as ctk
+
 from .economy import (
     ALL,
     CATEGORY_LABELS,
@@ -21,7 +23,22 @@ from .economy import (
     matches,
 )
 from .search_combo import bind_searchable_combo, choice_matches, filter_choices
-from .theme import BG, BG_HEAD, FONT_SMALL, FONT_UI, GOLD, MUTED, PREFIX, SUFFIX, apply_theme, sort_tree
+from .theme import (
+    FONT_SMALL,
+    FONT_UI,
+    MUTED,
+    PREFIX,
+    SUFFIX,
+    content_panel,
+    filter_panel,
+    make_header,
+    make_status_bar,
+    muted_hint,
+    primary_button,
+    set_progress,
+    setup_window,
+    sort_tree,
+)
 
 NUMERIC_COLUMNS = {"chaos", "divine", "change", "listings"}
 
@@ -51,16 +68,14 @@ def format_listings(value: int | None) -> str:
     return f"{value:,}"
 
 
-class EconomyApp(tk.Toplevel):
+class EconomyApp(ctk.CTkToplevel):
     def __init__(self, master: tk.Misc, on_back) -> None:
         super().__init__(master)
         self._on_back = on_back
         self.title("流亡黯道 · 價格查詢")
         self.geometry("1400x780")
         self.minsize(1080, 600)
-        self.configure(bg=BG)
-        self.option_add("*Font", FONT_UI)
-        apply_theme(self)
+        setup_window(self)
         self.protocol("WM_DELETE_WINDOW", self.go_back)
 
         self.leagues: list[League] = []
@@ -88,54 +103,54 @@ class EconomyApp(tk.Toplevel):
         self._on_back()
 
     def _build(self) -> None:
-        header = tk.Frame(self, bg=BG_HEAD)
-        header.pack(fill="x")
-        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
-        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=16, pady=12)
-        ttk.Label(header, text="價格查詢", style="Gold.TLabel", background=BG_HEAD).pack(side="left", pady=12)
-        ttk.Button(header, text="重新整理", command=self.reload_prices).pack(side="right", padx=16, pady=12)
-        ttk.Button(header, text="開啟 poe.ninja", command=lambda: webbrowser.open(ECONOMY_PAGE)).pack(
-            side="right", padx=(0, 8), pady=12
+        make_header(
+            self,
+            "價格查詢",
+            on_back=self.go_back,
+            right_actions=[
+                ("重新整理", self.reload_prices),
+                ("開啟 poe.ninja", lambda: webbrowser.open(ECONOMY_PAGE)),
+            ],
         )
+        _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
-        filters = ttk.Frame(self, padding=(16, 12, 16, 8))
-        filters.pack(fill="x")
-        ttk.Label(filters, text="聯盟", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        filters = filter_panel(self)
+        ctk.CTkLabel(filters, text="聯盟", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
         self.league_combo = ttk.Combobox(filters, textvariable=self.league_var, state="normal", width=22)
         self.league_combo.grid(row=0, column=1, padx=(0, 16))
         bind_searchable_combo(self.league_combo, lambda: self._league_options, self.load_prices)
 
-        ttk.Label(filters, text="分類", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.category_combo = ttk.Combobox(
             filters, textvariable=self.category_var, state="normal", width=16, values=self._category_options
         )
         self.category_combo.grid(row=0, column=3, padx=(0, 16))
         bind_searchable_combo(self.category_combo, lambda: self._category_options, self.load_prices)
 
-        ttk.Label(filters, text="搜尋物品", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="搜尋物品", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         ttk.Entry(filters, textvariable=self.search_var, width=36).grid(row=0, column=5, sticky="ew")
-        ttk.Button(filters, text=f"漲幅≥{MIN_GAIN_PERCENT:.0f}%", command=self.show_top_gainer).grid(
+        primary_button(filters, f"漲幅≥{MIN_GAIN_PERCENT:.0f}%", command=self.show_top_gainer, width=110).grid(
             row=0, column=6, padx=(16, 0)
         )
-        filters.columnconfigure(5, weight=1)
+        filters.grid_columnconfigure(5, weight=1)
 
-        ttk.Label(
+        muted_hint(
             self,
-            text=(
+            (
                 "估價來自 poe.ninja。名稱顯示中文與英文，兩邊都能搜。"
                 "聯盟／分類可輸入關鍵字後從清單點選。"
                 f"分類選「全部」時可按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」，只列出全部分類裡漲超過 {MIN_GAIN_PERCENT:.0f}% 的物品。雙擊列可開官網。"
             ),
-            style="Muted.TLabel",
-        ).pack(anchor="w", padx=16)
-        tk.Label(self, textvariable=self.top_gainer_var, bg=BG, fg=SUFFIX, font=FONT_UI, anchor="w").pack(
-            fill="x", padx=16, pady=(0, 2)
+        )
+        ctk.CTkLabel(self, textvariable=self.top_gainer_var, font=FONT_UI, text_color=SUFFIX, anchor="w").pack(
+            fill="x", padx=20, pady=(0, 2)
         )
 
-        wrap = ttk.Frame(self, padding=(16, 8, 16, 8))
-        wrap.pack(fill="both", expand=True)
+        wrap = content_panel(self)
+        inner = ctk.CTkFrame(wrap, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=10, pady=10)
         columns = ("name_zh", "name", "category", "chaos", "divine", "change", "extra", "listings")
-        self.tree = ttk.Treeview(wrap, columns=columns, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(inner, columns=columns, show="headings", selectmode="browse")
         self.headings = {
             "name_zh": "中文",
             "name": "英文",
@@ -161,7 +176,7 @@ class EconomyApp(tk.Toplevel):
             stretch = key in {"name_zh", "name", "extra"}
             anchor = "e" if key in NUMERIC_COLUMNS else "w"
             self.tree.column(key, width=widths[key], stretch=stretch, anchor=anchor)
-        yscroll = ttk.Scrollbar(wrap, orient="vertical", command=self.tree.yview)
+        yscroll = ttk.Scrollbar(inner, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=yscroll.set)
         self.tree.pack(side="left", fill="both", expand=True)
         yscroll.pack(side="right", fill="y")
@@ -170,14 +185,6 @@ class EconomyApp(tk.Toplevel):
         self.tree.tag_configure("flat", foreground=PREFIX)
         self.tree.bind("<Double-1>", self.open_selected)
         self.tree.bind("<Return>", self.open_selected)
-
-        status = tk.Frame(self, bg=BG_HEAD)
-        status.pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
-            side="left", padx=16, pady=6
-        )
-        self.progress = ttk.Progressbar(status, mode="determinate", length=220)
-        self.progress.pack(side="right", padx=16, pady=8)
 
     def current_league(self) -> League | None:
         name = (self.league_var.get() or "").strip()
@@ -253,7 +260,7 @@ class EconomyApp(tk.Toplevel):
         self._loading = True
         self._pending_load = None
         self.status_var.set(f"正在下載 {league.name} / {category}…")
-        self.progress.configure(value=0, maximum=1)
+        set_progress(self.progress, 0, 1)
         threading.Thread(target=self._load_prices_worker, args=(league, category, force), daemon=True).start()
 
     def _load_prices_worker(self, league: League, category: str, force: bool) -> None:
@@ -269,13 +276,13 @@ class EconomyApp(tk.Toplevel):
         self.after(0, lambda: self._on_prices(rows, league, category))
 
     def _set_progress(self, done: int, total: int, message: str) -> None:
-        self.progress.configure(maximum=max(total, 1), value=done)
+        set_progress(self.progress, done, total)
         self.status_var.set(message)
 
     def _on_prices(self, rows: list[PriceRow], league: League, category: str) -> None:
         self._loading = False
         self.rows = rows
-        self.progress.configure(value=1, maximum=1)
+        set_progress(self.progress, 1, 1)
         self.refresh()
         if self._pending_load is not None:
             pending = self._pending_load
