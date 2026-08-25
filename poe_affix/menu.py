@@ -37,6 +37,7 @@ MENU_CARDS = [
     ("價格查詢", "poe.ninja 估價：通貨、傳奇、寶石與輿圖", "open_economy", True),
     ("官方賣場", "pathofexile.com/trade：即時上架、價格與密語", "open_trade", True),
     ("流派排名", "poe.ninja 熱門流派、DPS、EHP 與逐日占比", "open_builds", True),
+    ("每季開荒推薦", "依類型／手感／預算篩選開荒 Build，一次給多個方向", "open_starters", True),
     ("中文化 PIN", "poedb.tw 繁中／簡中 PIN 與遊戲版本", "open_chinese", True),
     ("Craft of Exile", "開啟做裝模擬器（Calculator / Simulator）", "open_craftofexile", False),
     ("軍團珠寶查詢", "開啟 Timeless Jewel 天賦樹與 Seed 查詢", "open_timeless_jewels", False),
@@ -48,8 +49,8 @@ class MenuApp(ctk.CTk):
         setup_appearance()
         super().__init__()
         self.title("流亡黯道 · 查詢工具")
-        self.geometry("820x820")
-        self.minsize(640, 600)
+        self.geometry("820x880")
+        self.minsize(640, 640)
         setup_window(self)
         self._child = None
         self.path_var = tk.StringVar(value=f"資料路徑：{ROOT}")
@@ -194,6 +195,12 @@ class MenuApp(ctk.CTk):
 
         self._hide()
         self._child = BuildsApp(self, on_back=self.show_menu)
+
+    def open_starters(self) -> None:
+        from .starters_gui import StartersApp
+
+        self._hide()
+        self._child = StartersApp(self, on_back=self.show_menu)
 
     def open_chinese(self) -> None:
         from .chinese_gui import ChineseApp

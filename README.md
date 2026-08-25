@@ -12,10 +12,11 @@ Path of Exile（PoE1）用的 Windows 桌面查詢工具。以 Python + CustomTk
 | **價格查詢** | poe.ninja 估價：通貨、傳奇、寶石、輿圖等 |
 | **官方賣場** | pathofexile.com/trade：關鍵字提示、賣家狀態、分類／物等／價格／詞綴過濾、上架預覽 |
 | **流派排名** | poe.ninja 熱門流派、DPS／EHP、逐日占比 |
+| **每季開荒推薦** | 依類型／手感／預算篩選開荒 Build（本地目錄，每季更新） |
 | **中文化 PIN** | poedb.tw 繁中／簡中 PIN 與遊戲版本 |
 | **外部連結** | Craft of Exile、軍團珠寶（Timeless Jewel）查詢 |
 
-詞綴／商店／工藝可離線查（本地 JSON）；市價、賣場、流派、PIN 需連網。
+詞綴／商店／工藝／開荒推薦可離線查（本地 JSON）；市價、賣場、流派、PIN 需連網。
 
 ## 環境需求
 
@@ -75,6 +76,7 @@ GUI 內也可分別更新：
 | 官方賣場 | pathofexile.com/api/trade | HTTP JSON（search + fetch） |
 | 流派 | poe.ninja builds | HTTP（含 protobuf 解析） |
 | 中文物品名 | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
+| 每季開荒推薦 | `league_starters.json` | 本地標籤目錄＋篩選推薦（可手動更新） |
 
 本地資料目錄：`poe_affix_data/`。
 
@@ -100,6 +102,7 @@ poe_affix/
   gui.py / catalog.py / sync.py   # 詞綴查詢與同步
   vendor*.py / craft*.py          # 商店、工藝
   economy*.py / builds*.py / trade*.py  # 價格、流派、官方賣場
+  starters*.py                    # 每季開荒推薦
   chinese*.py                     # 中文化 PIN
   i18n.py / theme.py / net.py
 poe_affix_data/
@@ -107,6 +110,7 @@ poe_affix_data/
   vendor.json
   crafting.json
   names_zh.json
+  league_starters.json            # 開荒 Build 標籤目錄
 ```
 
 ## 改版後建議維護順序
@@ -114,7 +118,8 @@ poe_affix_data/
 1. 等 PoEDB 更新後，同步詞綴 → 工藝 → 商店
 2. 查價若出現英文／空白名稱，補 `names_zh.json` 或 `i18n.py` 的 `EXTRA_NAMES`
 3. poe.ninja 新增經濟分類時，更新 `economy.py` 的分類清單
-4. 同步或 PIN／流派整頁失敗時，再檢查 HTML／API 解析程式
+4. 新聯盟開季時更新 `league_starters.json`（標籤、梯隊、Guide／PoB 連結）
+5. 同步或 PIN／流派整頁失敗時，再檢查 HTML／API 解析程式
 
 ## 授權與注意
 

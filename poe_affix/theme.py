@@ -149,7 +149,6 @@ def _patch_ctk_scrollable_frame() -> None:
     global _SCROLL_PATCH_READY
     if _SCROLL_PATCH_READY:
         return
-
     frame_cls = ctk.CTkScrollableFrame
     original = frame_cls._check_if_valid_scroll
 
