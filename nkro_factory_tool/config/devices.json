@@ -1,0 +1,6 @@
+{
+  "operator_path": "",
+  "dut_path": "",
+  "default_profile": "infinity16_cherry_us",
+  "comment": "Fill operator_path / dut_path with Raw Input device paths to auto-select on startup."
+}

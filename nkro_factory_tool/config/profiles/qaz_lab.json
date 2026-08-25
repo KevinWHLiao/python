@@ -1,0 +1,13 @@
+{
+  "id": "qaz_lab",
+  "title": "QAZ Lab NKRO Test (3 keys)",
+  "hold_seconds": 5,
+  "layout": "fullsize_us",
+  "start_key": "SPACE",
+  "judgment_key": "NUM_DECIMAL",
+  "allowed_extra": [],
+  "expected_keys": [
+    "Q", "A", "Z"
+  ],
+  "notes": "Lab/debug profile: only Q, A, Z. Not for production jig."
+}

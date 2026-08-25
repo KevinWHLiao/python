@@ -1,0 +1,18 @@
+{
+  "id": "infinity16_cherry_us",
+  "title": "Infinity16 Cherry NKRO Test US 17\"",
+  "hold_seconds": 5,
+  "layout": "fullsize_us",
+  "start_key": "SPACE",
+  "judgment_key": "NUM_DECIMAL",
+  "allowed_extra": [],
+  "expected_keys": [
+    "F1", "1", "Q", "A", "Z",
+    "F3", "3", "W", "E", "D", "C",
+    "F5", "5", "T", "G", "B",
+    "F7", "7", "Y", "U", "J", "M",
+    "F9", "9", "O", "L", "PERIOD",
+    "MINUS", "P", "OEM_4"
+  ],
+  "notes": "Ghost-key jig set from NKRO Ghost Key Test Fig.1 / Fig.2 (~30 keys)."
+}
