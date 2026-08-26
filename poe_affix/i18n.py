@@ -23,6 +23,7 @@ PREFIXES = (
 # poe.ninja map overview names are often aggregated, not base-type keys.
 _MAP_TIER_RE = re.compile(r"^(?:(.*) )?Map \(Tier (\d+)\)$")
 _VAAL_TEMPLE_RE = re.compile(r"^(.*) Vaal Temple Map$")
+_TEMPLE_ROOM_TIER_RE = re.compile(r"^(.*) \(Tier (\d+)\)$")
 
 MAP_NAME_PARTS: dict[str, str] = {
     "Al-Hezmin": "奧赫茲明",
@@ -169,6 +170,124 @@ EXTRA_NAMES: dict[str, str] = {
     "Allflame Ember of the Ethereal": "不滅之火虛靈餘燼",
     "Allflame Ember of the Gilded": "不滅之火鍍金餘燼",
     "Allflame Ember of the Wildwood": "不滅之火荒林餘燼",
+    # Curse of the Allflame — Ducats (達克特)
+    "Brinehook's Ducat": "布琳霍克的達克特",
+    "Katakohi's Ducat": "卡塔科希的達克特",
+    "Kishara's Ducat": "奇夏拉的達克特",
+    "Merrick's Ducat": "莫里克的達克特",
+    "Rotmother's Ducat": "腐母的達克特",
+    "The Changeling's Ducat": "變形靈的達克特",
+    "Tzamoto's Ducat": "薩摩特的達克特",
+    "Ukatoa's Ducat": "烏卡托瓦的達克特",
+    "Cyaxan's Ducat": "塞亞珊的達克特",
+    "Telesia's Ducat": "特雷西亞的達克特",
+    "The Genteel's Ducat": "文雅者的達克特",
+    # Legion — Enshrouding Crystals (壟罩晶石)
+    "Imperial Enshrouding Crystal": "永恆壟罩晶石",
+    "Karui Enshrouding Crystal": "卡魯壟罩晶石",
+    "Vaal Enshrouding Crystal": "瓦爾壟罩晶石",
+    "Maraketh Enshrouding Crystal": "馬拉克斯壟罩晶石",
+    "Templar Enshrouding Crystal": "聖宗壟罩晶石",
+    # Atlas — Astrolabes (星盤)
+    "Deceptive Astrolabe": "幻象星盤",
+    "Fruiting Astrolabe": "碩果星盤",
+    "Grasping Astrolabe": "執掌星盤",
+    "Lightless Astrolabe": "無光星盤",
+    "Chaotic Astrolabe": "混沌星盤",
+    "Timeless Astrolabe": "永恆星盤",
+    "Fungal Astrolabe": "菌群星盤",
+    "Nameless Astrolabe": "無名星盤",
+    "Runic Astrolabe": "符文星盤",
+    "Templar Astrolabe": "聖堂星盤",
+    "Enshrouded Astrolabe": "壟罩星盤",
+    # Incursion — Temple of Atzoatl rooms (阿茲瓦特神殿)
+    # Room names that collide with maps use Alva/poedb room titles, not map titles.
+    "Anomaly Research Lab": "異常研究所",
+    "Antechamber": "神殿前院",
+    "Apex of Ascension": "祭祀之巔",
+    "Apex of Atzoatl": "阿茲瓦特之巔",
+    "Arena of Valour": "傳說對決",
+    "Armourer's Workshop": "裝甲磨坊",
+    "Armoury": "軍械庫",
+    "Atlas of Worlds": "異界輿圖",
+    "Automaton Lab": "自運研究所",
+    "Banquet Hall": "神殿宴會場",
+    "Barracks": "軍隊憩所",
+    "Breach Containment Chamber": "裂痕異域室",
+    "Catalyst of Corruption": "腐敗孳生室",
+    "Cellar": "神殿地窖",
+    "Chamber of Iron": "鋼鍛之室",
+    "Chasm": "神殿裂口",
+    "Cloister": "神殿廟",
+    "Conduit of Lightning": "雷霆導管",
+    "Corruption Chamber": "腐敗之室",
+    "Court of Sealed Death": "封亡院庭",
+    "Crucible of Flame": "烈焰熔爐",
+    "Cultivar Chamber": "培育秘室",
+    "Defense Research Lab": "禦防研究所",
+    "Demolition Lab": "拆除庫",
+    "Department of Thaumaturgy": "魔法部",
+    "Doryani's Institute": "多里亞尼之院",
+    "Engineering Department": "工程部",
+    "Explosives Room": "彈藥庫",
+    "Factory": "瓦爾工廠",
+    "Flame Workshop": "獄炎磨坊",
+    "Gemcutter's Workshop": "刻石磨坊",
+    "Glittering Halls": "閃耀聖殿",
+    "Guardhouse": "衛兵房",
+    "Hall of Champions": "冠軍聖殿",
+    "Hall of Heroes": "英雄之殿",
+    "Hall of Legends": "神話之殿",
+    "Hall of Locks": "千鎖殿堂",
+    "Hall of Lords": "權貴殿堂",
+    "Hall of Mettle": "勇氣之殿",
+    "Hall of Offerings": "獻祭殿堂",
+    "Hall of War": "戰爭聖殿",
+    "Halls": "神殿殿堂",
+    "Hatchery": "孵化室",
+    "House of the Others": "異者居所",
+    "Hurricane Engine": "颶風引擎室",
+    "Hybridisation Chamber": "異種之域",
+    "Jeweller's Workshop": "寶匠磨坊",
+    "Jewellery Forge": "珠寶冶煉室",
+    "Lightning Workshop": "風雷磨坊",
+    "Locus of Corruption": "腐敗之地",
+    "Museum of Artefacts": "文物展館",
+    "Office of Cartography": "製圖研製室",
+    "Omnitect Forge": "全能冶煉室",
+    "Omnitect Reactor Plant": "全能反應廠",
+    "Passageways": "神殿通道",
+    "Pits": "神殿舊窖",
+    "Poison Garden": "監獄花園",
+    "Pools of Restoration": "治癒之泉",
+    "Royal Meeting Room": "王室宴客室",
+    "Sacrificial Chamber": "獻祭之室",
+    "Sadist's Den": "虐狂之巢",
+    "Sanctum of Immortality": "不朽聖殿",
+    "Sanctum of Unity": "統領聖殿",
+    "Sanctum of Vitality": "活力聖殿",
+    "Shrine of Empowerment": "恩賜神殿",
+    "Shrine of Unmaking": "毀滅神殿",
+    "Sparring Room": "格鬥場",
+    "Storage Room": "儲物室",
+    "Storm of Corruption": "腐敗風暴",
+    "Strongbox Chamber": "寶箱之殿",
+    "Surveyor's Study": "研究書房",
+    "Tempest Generator": "暴雷發電室",
+    "Temple Defense Workshop": "神殿禦防室",
+    "Temple Nexus": "死神靈殿",
+    "Throne of Atziri": "阿茲里宴殿",
+    "Tombs": "神殿陵寢",
+    "Torment Cells": "磨難牢房",
+    "Torture Cages": "拷刑大牢",
+    "Toxic Grove": "劇毒果園",
+    "Trap Workshop": "陷阱磨坊",
+    "Treasury": "祕寶庫",
+    "Tunnels": "神殿地道",
+    "Vault": "藏寶庫",
+    "Warehouses": "倉庫間",
+    "Wealth of the Vaal": "瓦爾聚寶庫",
+    "Workshop": "工作坊",
 }
 
 # Extra nicknames that are not the official client name.
@@ -182,6 +301,23 @@ NICKNAMES: dict[str, tuple[str, ...]] = {
     "Chaos Orb": ("混沌",),
     "Divine Orb": ("神聖",),
     "Exalted Orb": ("崇高",),
+    # Informal spellings for newer league currencies.
+    "Brinehook's Ducat": ("杜卡特",),
+    "Katakohi's Ducat": ("杜卡特",),
+    "Kishara's Ducat": ("杜卡特",),
+    "Merrick's Ducat": ("杜卡特",),
+    "Rotmother's Ducat": ("杜卡特",),
+    "The Changeling's Ducat": ("杜卡特",),
+    "Tzamoto's Ducat": ("杜卡特",),
+    "Ukatoa's Ducat": ("杜卡特",),
+    "Cyaxan's Ducat": ("杜卡特",),
+    "Telesia's Ducat": ("杜卡特",),
+    "The Genteel's Ducat": ("杜卡特",),
+    "Imperial Enshrouding Crystal": ("壟罩結晶", "籠罩結晶"),
+    "Karui Enshrouding Crystal": ("壟罩結晶", "籠罩結晶"),
+    "Vaal Enshrouding Crystal": ("壟罩結晶", "籠罩結晶"),
+    "Maraketh Enshrouding Crystal": ("壟罩結晶", "籠罩結晶"),
+    "Templar Enshrouding Crystal": ("壟罩結晶", "籠罩結晶"),
 }
 
 
@@ -196,6 +332,18 @@ def name_map() -> dict[str, str]:
                 mapping[str(key)] = str(value)
     mapping.update(EXTRA_NAMES)
     return mapping
+
+
+def _translate_temple_room(english: str, mapping: dict[str, str]) -> str:
+    """Translate Atzoatl room names, including poe.ninja ``(Tier N)`` suffixes."""
+    tier_match = _TEMPLE_ROOM_TIER_RE.match(english)
+    if tier_match:
+        base, tier = tier_match.group(1), tier_match.group(2)
+        base_zh = mapping.get(base) or ""
+        if base_zh:
+            return f"{base_zh}（階級 {tier}）"
+        return ""
+    return ""
 
 
 def _translate_map_label(english: str, mapping: dict[str, str]) -> str:
@@ -220,10 +368,16 @@ def _translate_map_label(english: str, mapping: dict[str, str]) -> str:
         return ""
 
     if english.endswith(" Map"):
+        # Full keys like ``Beach Map`` are already resolved by name_map().
+        # Only synthesize from MAP_NAME_PARTS / non-room prefixes here.
         prefix = english[: -len(" Map")]
-        prefix_zh = mapping.get(prefix) or MAP_NAME_PARTS.get(prefix) or ""
-        if prefix_zh:
-            return f"{prefix_zh}地圖"
+        part = MAP_NAME_PARTS.get(prefix) or ""
+        if part:
+            return f"{part}地圖"
+        # Prefer the dedicated Map entry; do not reuse temple-room short names.
+        map_entry = mapping.get(english)
+        if map_entry:
+            return map_entry
     return ""
 
 
@@ -246,6 +400,9 @@ def translate_name(english: str) -> str:
     map_zh = _translate_map_label(english, mapping)
     if map_zh:
         return map_zh
+    temple_zh = _translate_temple_room(english, mapping)
+    if temple_zh:
+        return temple_zh
     return ""
 
 

@@ -471,9 +471,64 @@ def _family_key(entry: dict[str, Any]) -> str:
     return "|".join(str(part) for part in family if part)
 
 
+def _build_group(
+    affix: str,
+    family: str,
+    label: str,
+    unique_rows: list[dict[str, Any]],
+    *,
+    prefer_poedb_tags: bool = True,
+) -> dict[str, Any]:
+    tiers = [
+        {
+            "tier": index,
+            "level": row["level"],
+            "name": row["name"],
+            "text": row["text"],
+            "weight": row["weight"],
+        }
+        for index, row in enumerate(unique_rows, start=1)
+    ]
+    poedb_tags: list[str] = []
+    seen_tags: set[str] = set()
+    for row in unique_rows:
+        for tag in row.get("tags") or []:
+            if tag not in seen_tags:
+                seen_tags.add(tag)
+                poedb_tags.append(tag)
+    if poedb_tags:
+        tags = poedb_tags
+        tag_source = "poedb"
+    elif prefer_poedb_tags:
+        # Match historical parse_slot behavior: no inventing badges without PoEDB mod_no.
+        tags = []
+        tag_source = "none"
+    else:
+        heuristic = affix_categories(family, label)
+        tags = [] if heuristic == ["其他"] else heuristic
+        tag_source = "heuristic" if tags else "none"
+    return {
+        "family": family,
+        "category": tags[0] if tags else "",
+        "categories": tags,
+        "tag_source": tag_source,
+        "affix": affix,
+        "source": unique_rows[0]["source"] if unique_rows else "",
+        "source_key": unique_rows[0]["source_key"] if unique_rows else "",
+        "label": label,
+        "is_corrupt": bool(unique_rows[0].get("is_corrupt")) if unique_rows else False,
+        "tier_count": len(tiers),
+        "min_level": min((item["level"] for item in tiers), default=0),
+        "max_level": max((item["level"] for item in tiers), default=0),
+        "tiers": tiers,
+    }
+
+
 def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, Any]:
     config = payload.get("config") or {}
-    grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
+    # Include generalized mod text so PoEDB families that share one ModFamilyList
+    # (e.g. GlobalDamageTypeGemLevel) stay split by damage type like on poedb.tw.
+    grouped: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
 
     for source_key, raw in payload.items():
         if source_key in {"baseitem", "config", "gen", "opt"}:
@@ -496,7 +551,9 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
                 source_title = raw_title or source_key
             if is_corrupt:
                 source_title = "已汙染"
-            grouped[(source_key, affix, _family_key(entry))].append(
+            family = _family_key(entry)
+            pattern = generalize(text) or text
+            grouped[(source_key, affix, family, pattern)].append(
                 {
                     "name": strip_html(str(entry.get("Name") or "")),
                     "level": _as_int(entry.get("Level")),
@@ -506,14 +563,14 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
                     "source": source_title,
                     "source_key": source_key,
                     "affix": affix,
-                    "family": _family_key(entry),
+                    "family": family,
                     "tags": extract_mod_tags(entry),
                     "is_corrupt": is_corrupt,
                 }
             )
 
     groups: list[dict[str, Any]] = []
-    for (_source_key, affix, family), rows in grouped.items():
+    for (_source_key, affix, family, pattern), rows in grouped.items():
         unique_rows: list[dict[str, Any]] = []
         seen: set[tuple[Any, ...]] = set()
         for row in rows:
@@ -523,48 +580,9 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
             seen.add(stamp)
             unique_rows.append(row)
         unique_rows.sort(key=lambda item: (-item["level"], item["name"]))
-        tiers = [
-            {
-                "tier": index,
-                "level": row["level"],
-                "name": row["name"],
-                "text": row["text"],
-                "weight": row["weight"],
-            }
-            for index, row in enumerate(unique_rows, start=1)
-        ]
-        label_source = next((item["text"] for item in tiers), "")
-        label = generalize(label_source) or family or label_source
-        poedb_tags: list[str] = []
-        seen_tags: set[str] = set()
-        for row in unique_rows:
-            for tag in row.get("tags") or []:
-                if tag not in seen_tags:
-                    seen_tags.add(tag)
-                    poedb_tags.append(tag)
-        if poedb_tags:
-            tags = poedb_tags
-            tag_source = "poedb"
-        else:
-            tags = []
-            tag_source = "none"
-        groups.append(
-            {
-                "family": family,
-                "category": tags[0] if tags else "",
-                "categories": tags,
-                "tag_source": tag_source,
-                "affix": affix,
-                "source": unique_rows[0]["source"] if unique_rows else "",
-                "source_key": unique_rows[0]["source_key"] if unique_rows else "",
-                "label": label,
-                "is_corrupt": bool(unique_rows[0].get("is_corrupt")) if unique_rows else False,
-                "tier_count": len(tiers),
-                "min_level": min((item["level"] for item in tiers), default=0),
-                "max_level": max((item["level"] for item in tiers), default=0),
-                "tiers": tiers,
-            }
-        )
+        label_source = next((item["text"] for item in unique_rows), "")
+        label = pattern or generalize(label_source) or family or label_source
+        groups.append(_build_group(affix, family, label, unique_rows))
 
     groups.sort(key=lambda item: (item["affix"], item["source"], item["label"]))
     return {
@@ -573,6 +591,79 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
         "url": f"https://poedb.tw/tw/{slug}#ModifiersCalc",
         "groups": groups,
     }
+
+
+def _refine_split_tags(label: str, family: str, original_tags: list[str]) -> list[str]:
+    """Pick tags for a group split out of a previously merged family."""
+    heuristic = affix_categories(family, label)
+    if heuristic == ["其他"]:
+        heuristic = []
+    if not original_tags:
+        return heuristic
+    kept = [tag for tag in original_tags if tag in label or tag in heuristic]
+    # Elemental badge: fire/cold/lightning gem mods show 元素 on poedb.tw.
+    if (
+        "元素" in original_tags
+        and "元素" not in kept
+        and any(token in label for token in ("火焰", "火燄", "冰冷", "閃電"))
+    ):
+        kept.append("元素")
+    return kept or heuristic or list(original_tags)
+
+
+def rematerialize_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
+    """Re-split already-synced groups by generalized mod text (no network)."""
+    slots_out: list[dict[str, Any]] = []
+    for slot in catalog.get("slots") or []:
+        if not isinstance(slot, dict):
+            continue
+        rebuilt: list[dict[str, Any]] = []
+        for group in slot.get("groups") or []:
+            if not isinstance(group, dict):
+                continue
+            tiers = group.get("tiers") or []
+            buckets: dict[str, list[dict[str, Any]]] = defaultdict(list)
+            for tier in tiers:
+                if not isinstance(tier, dict):
+                    continue
+                text = str(tier.get("text") or "")
+                if not text:
+                    continue
+                buckets[generalize(text) or text].append(tier)
+            if len(buckets) <= 1:
+                rebuilt.append(group)
+                continue
+            family = str(group.get("family") or "")
+            affix = str(group.get("affix") or "")
+            original_tags = [str(tag) for tag in (group.get("categories") or []) if tag]
+            for pattern, bucket in buckets.items():
+                bucket.sort(key=lambda item: (-_as_int(item.get("level")), str(item.get("name") or "")))
+                rows = [
+                    {
+                        "level": _as_int(item.get("level")),
+                        "name": str(item.get("name") or ""),
+                        "text": str(item.get("text") or ""),
+                        "weight": _as_int(item.get("weight")),
+                        "source": str(group.get("source") or ""),
+                        "source_key": str(group.get("source_key") or ""),
+                        "is_corrupt": bool(group.get("is_corrupt")),
+                        "tags": [],
+                    }
+                    for item in bucket
+                ]
+                built = _build_group(affix, family, pattern, rows, prefer_poedb_tags=False)
+                built["categories"] = _refine_split_tags(pattern, family, original_tags)
+                built["category"] = built["categories"][0] if built["categories"] else ""
+                built["tag_source"] = "poedb" if built["categories"] and original_tags else built["tag_source"]
+                rebuilt.append(built)
+        rebuilt.sort(key=lambda item: (item.get("affix") or "", item.get("source") or "", item.get("label") or ""))
+        slot_out = dict(slot)
+        slot_out["groups"] = rebuilt
+        slots_out.append(slot_out)
+    result = dict(catalog)
+    result["slots"] = slots_out
+    result["group_count"] = sum(len(slot.get("groups") or []) for slot in slots_out)
+    return result
 
 
 def collect_index_links(index_html: str) -> list[tuple[str, str]]:

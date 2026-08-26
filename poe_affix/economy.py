@@ -40,8 +40,8 @@ EXCHANGE_TYPES: list[tuple[str, str, str]] = [
     ("Runegraft", "符文之結", "runegrafts"),
     ("AllflameEmber", "不滅之火餘燼", "allflame-embers"),
     ("DjinnCoin", "巨靈幣", "djinn-coins"),
-    ("Ducat", "杜卡特", "ducats"),
-    ("EnshroudingCrystal", "籠罩結晶", "enshrouding-crystals"),
+    ("Ducat", "達克特", "ducats"),
+    ("EnshroudingCrystal", "壟罩晶石", "enshrouding-crystals"),
     ("Astrolabe", "星盤", "astrolabes"),
 ]
 
@@ -73,15 +73,32 @@ ITEM_TYPES: list[tuple[str, str, str]] = [
     ("Vial", "瓶子", "vials"),
     ("Corpse", "屍體", "corpses"),
     ("Wombgift", "胎贈", "wombgifts"),
-    ("IncursionTemple", "神殿", "incursion-temples"),
-    ("ScryingOrb", "占卜球", "scrying-orbs"),
+    ("IncursionTemple", "阿茲瓦特神殿", "incursion-temples"),
+    ("ScryingOrb", "占卜寶珠", "scrying-orbs"),
 ]
 
 CATEGORIES = EXCHANGE_TYPES + ITEM_TYPES
 CATEGORY_LABELS = [label for _key, label, _slug in CATEGORIES]
+# Extra search tokens so informal / older spellings still match price rows.
+CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
+    "Ducat": ("達克特", "杜卡特"),
+    "EnshroudingCrystal": ("壟罩晶石", "壟罩結晶", "籠罩晶石", "籠罩結晶"),
+    "Astrolabe": ("星盤",),
+    "IncursionTemple": ("阿茲瓦特神殿", "阿茲瓦神殿", "神殿"),
+    "ScryingOrb": ("占卜寶珠", "占卜球"),
+}
 _EXCHANGE_BY_KEY = {key: (label, slug) for key, label, slug in EXCHANGE_TYPES}
 _ITEM_BY_KEY = {key: (label, slug) for key, label, slug in ITEM_TYPES}
 _LABEL_TO_SPEC = {label: (key, kind, slug) for kind, group in (("exchange", EXCHANGE_TYPES), ("item", ITEM_TYPES)) for key, label, slug in group}
+# Allow selecting / filtering by informal category spellings.
+for _api_key, _aliases in CATEGORY_SEARCH_ALIASES.items():
+    _spec = next(((key, "exchange", slug) for key, label, slug in EXCHANGE_TYPES if key == _api_key), None)
+    if _spec is None:
+        _spec = next(((key, "item", slug) for key, label, slug in ITEM_TYPES if key == _api_key), None)
+    if not _spec:
+        continue
+    for _alias in _aliases:
+        _LABEL_TO_SPEC.setdefault(_alias, _spec)
 
 @dataclass
 class League:
@@ -221,6 +238,7 @@ def _parse_exchange(league: League, api_type: str, payload: dict) -> list[PriceR
         divine = chaos * divine_per_chaos if divine_per_chaos else 0.0
         details_id = str(meta.get("detailsId") or item_id or "")
         name_zh = translate_name(name)
+        aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
         rows.append(
             PriceRow(
                 name=name,
@@ -233,7 +251,12 @@ def _parse_exchange(league: League, api_type: str, payload: dict) -> list[PriceR
                 listings=None,
                 details_id=details_id,
                 ninja_url=_item_url(league, slug, details_id),
-                search_blob=_search_blob(details_id.replace("-", " "), *search_terms(name, name_zh)),
+                search_blob=_search_blob(
+                    details_id.replace("-", " "),
+                    label,
+                    *aliases,
+                    *search_terms(name, name_zh),
+                ),
             )
         )
     return rows
@@ -264,6 +287,7 @@ def _item_extra(line: dict) -> str:
 
 def _parse_items(league: League, api_type: str, payload: dict) -> list[PriceRow]:
     label, slug = _ITEM_BY_KEY[api_type]
+    aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
     rows: list[PriceRow] = []
     for line in payload.get("lines") or []:
         if not isinstance(line, dict):
@@ -273,7 +297,11 @@ def _parse_items(league: League, api_type: str, payload: dict) -> list[PriceRow]
             continue
         details_id = str(line.get("detailsId") or "")
         extra = _item_extra(line)
-        name_zh = translate_name(name)
+        # Scrying orbs are keyed by bare map names on poe.ninja (e.g. "Beach").
+        if api_type == "ScryingOrb":
+            name_zh = translate_name(f"{name} Map") or translate_name(name)
+        else:
+            name_zh = translate_name(name)
         base_zh = translate_name(str(line.get("baseType") or ""))
         rows.append(
             PriceRow(
@@ -292,6 +320,8 @@ def _parse_items(league: League, api_type: str, payload: dict) -> list[PriceRow]
                     base_zh,
                     extra,
                     details_id.replace("-", " "),
+                    label,
+                    *aliases,
                     *search_terms(name, name_zh),
                 ),
             )
