@@ -31,7 +31,7 @@ CRAFT_OF_EXILE_URL = "https://www.craftofexile.com/"
 TIMELESS_JEWELS_URL = "https://vilsol.github.io/timeless-jewels/tree"
 
 MENU_CARDS = [
-    ("詞綴查詢", "查裝備詞綴階層、物等、部位、權重與汙染詞", "open_affix", True),
+    ("詞綴查詢", "查 PoE1／PoE2 裝備詞綴階層、物等、部位、權重與汙染詞", "open_affix", True),
     ("商店配方", "查商人交易配方：獎勵、需要物品與分類", "open_vendor", True),
     ("工藝解鎖區域", "查工藝台配方解鎖區域、消耗與適用部位", "open_craft", True),
     ("價格查詢", "poe.ninja 估價：通貨、傳奇、寶石與輿圖", "open_economy", True),
@@ -81,7 +81,7 @@ class MenuApp(ctk.CTk):
 
         ctk.CTkLabel(
             self,
-            text="資料來源：poedb.tw  ·  poe.ninja  ·  pathofexile.com/trade　　中文化 PIN：poedb.tw/tw/chinese",
+            text="資料來源：poedb.tw  ·  poe2db.tw  ·  poe.ninja  ·  pathofexile.com/trade　　中文化 PIN：poedb.tw/tw/chinese",
             font=FONT_SMALL,
             text_color=MUTED,
         ).pack(side="bottom", fill="x", pady=(4, 16), padx=28)

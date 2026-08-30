@@ -39,6 +39,18 @@ SOURCE_TITLES = {
     "scourgeup": "災魘有利",
     "scourgedown": "災魘有害",
     "warbands": "Warbands",
+    "breach_otherworldly": "異界的",
+    "breach_minion": "創生之樹 召喚物",
+    "breach_caster": "創生之樹 法術",
+    "liquid": "液態情感",
+    "chronomancy": "烏特雷的星空",
+    "marksman": "克洛爾的狩獵",
+    "decay": "卡特拉的愁悵",
+    "soul": "梅德偉的照料",
+    "destruction": "索魯德的強權",
+    "berserking": "沃拉娜的殘殺",
+    "socketable": "增幅",
+    "bonded": "命定詞綴",
 }
 
 # Order shown in the GUI source filter.
@@ -63,6 +75,33 @@ SOURCE_ORDER = [
     "infamous",
     "enchant",
 ]
+
+SOURCE_ORDER_POE2 = [
+    "normal",
+    "desecrated",
+    "essence",
+    "perfect_essence",
+    "liquid",
+    "breach_otherworldly",
+    "breach_minion",
+    "breach_caster",
+    "socketable",
+    "bonded",
+    "chronomancy",
+    "marksman",
+    "decay",
+    "soul",
+    "destruction",
+    "berserking",
+    "master",
+    "corrupted",
+    "infamous",
+    "enchant",
+]
+
+
+def source_order_for(game: str) -> list[str]:
+    return SOURCE_ORDER_POE2 if game == "poe2" else SOURCE_ORDER
 
 _NUMBER_RE = re.compile(
     r"\(?\d+(?:\.\d+)?(?:\s*[—–\-]\s*\d+(?:\.\d+)?)?\)?%?"
@@ -524,14 +563,23 @@ def _build_group(
     }
 
 
-def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, Any]:
+_SKIP_PAYLOAD_KEYS = {"baseitem", "config", "gen", "opt", "ids"}
+
+
+def parse_slot(
+    slot_name: str,
+    slug: str,
+    payload: dict[str, Any],
+    *,
+    base_url: str = "https://poedb.tw/tw",
+) -> dict[str, Any]:
     config = payload.get("config") or {}
     # Include generalized mod text so PoEDB families that share one ModFamilyList
     # (e.g. GlobalDamageTypeGemLevel) stay split by damage type like on poedb.tw.
     grouped: dict[tuple[str, str, str, str], list[dict[str, Any]]] = defaultdict(list)
 
     for source_key, raw in payload.items():
-        if source_key in {"baseitem", "config", "gen", "opt"}:
+        if source_key in _SKIP_PAYLOAD_KEYS:
             continue
         for entry in iter_mod_entries(raw):
             text = strip_html(str(entry.get("str") or ""))
@@ -588,7 +636,7 @@ def parse_slot(slot_name: str, slug: str, payload: dict[str, Any]) -> dict[str, 
     return {
         "name": slot_name,
         "slug": slug,
-        "url": f"https://poedb.tw/tw/{slug}#ModifiersCalc",
+        "url": f"{base_url.rstrip('/')}/{slug}#ModifiersCalc",
         "groups": groups,
     }
 
@@ -669,7 +717,7 @@ def rematerialize_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
 def collect_index_links(index_html: str) -> list[tuple[str, str]]:
     """Return unique (display_name, slug) pairs for ModifiersCalc pages."""
     pattern = re.compile(
-        r'href="(?:https://poedb\.tw)?(?:/tw/)?([^"#\s]+)#ModifiersCalc"[^>]*>(.*?)</a>',
+        r'href="(?:https://poe2?db\.tw)?(?:/tw/)?([^"#\s]+)#ModifiersCalc"[^>]*>(.*?)</a>',
         re.I | re.S,
     )
     seen: set[str] = set()
@@ -744,3 +792,89 @@ FALLBACK_SLOTS: list[tuple[str, str]] = [
     ("魔力藥劑", "Mana_Flasks"),
     ("功能藥劑", "Utility_Flasks"),
 ]
+
+FALLBACK_SLOTS_POE2: list[tuple[str, str]] = [
+    ("爪", "Claws"),
+    ("匕首", "Daggers"),
+    ("法杖", "Wands"),
+    ("單手劍", "One_Hand_Swords"),
+    ("單手斧", "One_Hand_Axes"),
+    ("單手錘", "One_Hand_Maces"),
+    ("權杖", "Sceptres"),
+    ("長矛", "Spears"),
+    ("鏈錘", "Flails"),
+    ("弓", "Bows"),
+    ("長杖", "Staves"),
+    ("雙手劍", "Two_Hand_Swords"),
+    ("雙手斧", "Two_Hand_Axes"),
+    ("雙手錘", "Two_Hand_Maces"),
+    ("細杖", "Quarterstaves"),
+    ("十字弓", "Crossbows"),
+    ("陷阱", "Traps"),
+    ("魔符", "Talismans"),
+    ("項鍊", "Amulets"),
+    ("戒指", "Rings"),
+    ("腰帶", "Belts"),
+    ("手套(力)", "Gloves_str"),
+    ("手套(敏)", "Gloves_dex"),
+    ("手套(智)", "Gloves_int"),
+    ("手套(力敏)", "Gloves_str_dex"),
+    ("手套(力智)", "Gloves_str_int"),
+    ("手套(敏智)", "Gloves_dex_int"),
+    ("鞋子(力)", "Boots_str"),
+    ("鞋子(敏)", "Boots_dex"),
+    ("鞋子(智)", "Boots_int"),
+    ("鞋子(力敏)", "Boots_str_dex"),
+    ("鞋子(力智)", "Boots_str_int"),
+    ("鞋子(敏智)", "Boots_dex_int"),
+    ("胸甲(力)", "Body_Armours_str"),
+    ("胸甲(敏)", "Body_Armours_dex"),
+    ("胸甲(智)", "Body_Armours_int"),
+    ("胸甲(力敏)", "Body_Armours_str_dex"),
+    ("胸甲(力智)", "Body_Armours_str_int"),
+    ("胸甲(敏智)", "Body_Armours_dex_int"),
+    ("胸甲(力敏智)", "Body_Armours_str_dex_int"),
+    ("頭部(力)", "Helmets_str"),
+    ("頭部(敏)", "Helmets_dex"),
+    ("頭部(智)", "Helmets_int"),
+    ("頭部(力敏)", "Helmets_str_dex"),
+    ("頭部(力智)", "Helmets_str_int"),
+    ("頭部(敏智)", "Helmets_dex_int"),
+    ("箭袋", "Quivers"),
+    ("盾(力)", "Shields_str"),
+    ("盾(力敏)", "Shields_str_dex"),
+    ("盾(力智)", "Shields_str_int"),
+    ("輕盾", "Bucklers"),
+    ("法器", "Foci"),
+    ("紅寶石", "Ruby"),
+    ("綠寶石", "Emerald"),
+    ("藍寶石", "Sapphire"),
+    ("鑽石", "Diamond"),
+    ("時迭紅寶石", "Time-Lost_Ruby"),
+    ("時迭綠寶石", "Time-Lost_Emerald"),
+    ("時迭藍寶石", "Time-Lost_Sapphire"),
+    ("時迭鑽石", "Time-Lost_Diamond"),
+    ("生命藥劑", "Life_Flasks"),
+    ("魔力藥劑", "Mana_Flasks"),
+    ("護符", "Charms"),
+    ("古甕聖物", "Urn_Relic"),
+    ("陶罐聖物", "Amphora_Relic"),
+    ("器皿聖物", "Vase_Relic"),
+    ("草紙聖物", "Seal_Relic"),
+    ("寶箱聖物", "Coffer_Relic"),
+    ("聖經聖物", "Tapestry_Relic"),
+    ("香爐聖物", "Incense_Relic"),
+    ("裂痕碑牌", "Breach_Tablet"),
+    ("探險碑牌", "Expedition_Tablet"),
+    ("譫妄碑牌", "Delirium_Tablet"),
+    ("祭祀碑牌", "Ritual_Tablet"),
+    ("輻照碑牌", "Irradiated_Tablet"),
+    ("總督碑牌", "Overseer_Tablet"),
+    ("深淵碑牌", "Abyss_Tablet"),
+    ("神廟碑牌", "Temple_Tablet"),
+]
+
+
+def fallback_slots_for(game: str) -> list[tuple[str, str]]:
+    return FALLBACK_SLOTS_POE2 if game == "poe2" else FALLBACK_SLOTS
+

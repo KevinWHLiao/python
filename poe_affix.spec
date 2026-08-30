@@ -10,6 +10,7 @@ a = Analysis(
     binaries=ctk_binaries,
     datas=[
         ("poe_affix_data/mods.json", "poe_affix_data"),
+        ("poe_affix_data/mods_poe2.json", "poe_affix_data"),
         ("poe_affix_data/crafting.json", "poe_affix_data"),
         ("poe_affix_data/vendor.json", "poe_affix_data"),
         ("poe_affix_data/names_zh.json", "poe_affix_data"),
@@ -35,7 +36,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,
+    upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,

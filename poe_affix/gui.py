@@ -10,8 +10,8 @@ from tkinter import messagebox, ttk
 
 import customtkinter as ctk
 
-from . import resolve_data_file
-from .catalog import SOURCE_ORDER, SOURCE_TITLES, format_tag_text, format_tag_text_marked, group_categories
+from . import game_spec, load_settings, resolve_data_file, save_settings
+from .catalog import SOURCE_TITLES, format_tag_text, format_tag_text_marked, group_categories, source_order_for
 from .search_combo import bind_searchable_combo, choice_matches
 from .sync import sync_catalog
 from .theme import (
@@ -36,6 +36,7 @@ from .theme import (
     T3_FG,
     TEXT,
     TN_FG,
+    GameToggle,
     content_panel,
     filter_panel,
     make_header,
@@ -47,13 +48,25 @@ from .theme import (
 )
 
 ALL = "全部"
+GAME_LABELS = {"poe1": "PoE1", "poe2": "PoE2"}
+GAME_IDS = {label: game_id for game_id, label in GAME_LABELS.items()}
 
 
-def load_catalog() -> dict | None:
-    path = resolve_data_file()
+def load_catalog(game: str = "poe1") -> dict | None:
+    path = resolve_data_file(game)
     if not path:
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    from .catalog import rematerialize_catalog
+
+    catalog = json.loads(path.read_text(encoding="utf-8"))
+    fixed = rematerialize_catalog(catalog)
+    if fixed.get("group_count") != catalog.get("group_count"):
+        try:
+            path.write_text(json.dumps(fixed, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
+        return fixed
+    return catalog
 
 
 def _tier_number(value) -> int:
@@ -88,7 +101,10 @@ class AffixApp(ctk.CTkToplevel):
         super().__init__(master)
         self._owns_root = owns_root
         self._on_back = on_back
-        self.title("流亡黯道 · 裝備詞綴查詢")
+        saved_game = str(load_settings().get("affix_game") or "poe1")
+        self.game_id = saved_game if saved_game in GAME_LABELS else "poe1"
+        spec = game_spec(self.game_id)
+        self.title(f"{spec['title']} · 裝備詞綴查詢")
         self.geometry("1360x820")
         self.minsize(1080, 680)
         setup_window(self)
@@ -97,6 +113,7 @@ class AffixApp(ctk.CTkToplevel):
         self.catalog: dict | None = None
         self.filtered_groups: list[dict] = []
         self._syncing = False
+        self._ignore_game_change = False
 
         self.slot_var = tk.StringVar(value=ALL)
         self.affix_var = tk.StringVar(value=ALL)
@@ -146,20 +163,31 @@ class AffixApp(ctk.CTkToplevel):
             "裝備詞綴",
             on_back=self.go_back,
             right_actions=[
-                ("從 PoEDB 更新資料", self.start_sync),
-                ("開啟 PoEDB 詞綴頁", lambda: webbrowser.open("https://poedb.tw/tw/Modifiers")),
+                ("更新資料", self.start_sync),
+                ("開啟詞綴頁", self.open_source_page),
             ],
-            hint="金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
+            hint="可切換 PoE1 / PoE2　　金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
         )
         _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
         filters = filter_panel(self)
-        ctk.CTkLabel(filters, text="部位", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="遊戲", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.game_switch = GameToggle(
+            filters,
+            values=["PoE1", "PoE2"],
+            width=168,
+            height=30,
+            command=self.on_game_changed,
+        )
+        self.game_switch.grid(row=0, column=1, padx=(0, 16))
+        self.game_switch.set(GAME_LABELS[self.game_id])
+
+        ctk.CTkLabel(filters, text="部位", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, width=22, state="normal")
-        self.slot_combo.grid(row=0, column=1, padx=(0, 16))
+        self.slot_combo.grid(row=0, column=3, padx=(0, 16))
         bind_searchable_combo(self.slot_combo, lambda: self._slot_options, self.on_filters_changed)
 
-        ctk.CTkLabel(filters, text="前後綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="前後綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.affix_combo = ttk.Combobox(
             filters,
             textvariable=self.affix_var,
@@ -167,29 +195,29 @@ class AffixApp(ctk.CTkToplevel):
             values=self._affix_options,
             state="normal",
         )
-        self.affix_combo.grid(row=0, column=3, padx=(0, 16))
+        self.affix_combo.grid(row=0, column=5, padx=(0, 16))
         bind_searchable_combo(self.affix_combo, lambda: self._affix_options, self.refresh_affix_list)
 
-        ctk.CTkLabel(filters, text="來源", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="來源", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
         self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, width=14, state="normal")
-        self.source_combo.grid(row=0, column=5, padx=(0, 16))
+        self.source_combo.grid(row=0, column=7, padx=(0, 16))
         bind_searchable_combo(self.source_combo, lambda: self._source_options, self.refresh_affix_list)
 
-        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=8, sticky="w", padx=(0, 6))
         self.category_combo = ttk.Combobox(filters, textvariable=self.category_var, width=12, state="normal")
-        self.category_combo.grid(row=0, column=7, padx=(0, 16))
+        self.category_combo.grid(row=0, column=9, padx=(0, 16))
         bind_searchable_combo(self.category_combo, lambda: self._category_options, self.refresh_affix_list)
 
-        ctk.CTkLabel(filters, text="篩選詞綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=8, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="篩選詞綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=10, sticky="w", padx=(0, 6))
         search = ttk.Entry(filters, textvariable=self.search_var, width=24)
-        search.grid(row=0, column=9, sticky="ew")
-        filters.grid_columnconfigure(9, weight=1)
+        search.grid(row=0, column=11, sticky="ew")
+        filters.grid_columnconfigure(11, weight=1)
         ctk.CTkLabel(
             filters,
-            text="部位／前後綴／來源／分類可輸入關鍵字（可多字或空格），例如「手套 力」「塑界」；點清單或 Enter 套用",
+            text="遊戲可選 PoE1（poedb.tw）或 PoE2（poe2db.tw）。部位／前後綴／來源／分類可輸入關鍵字（可多字或空格），例如「手套 力」「塑界」；點清單或 Enter 套用",
             font=FONT_SMALL,
             text_color=MUTED,
-        ).grid(row=1, column=0, columnspan=10, sticky="w", pady=(8, 0))
+        ).grid(row=1, column=0, columnspan=12, sticky="w", pady=(8, 0))
 
         legend = ctk.CTkFrame(self, fg_color="transparent")
         legend.pack(fill="x", padx=20, pady=(0, 4))
@@ -337,17 +365,46 @@ class AffixApp(ctk.CTkToplevel):
         self._tag_trees()
 
     def _startup_load(self) -> None:
-        catalog = load_catalog()
+        self.apply_game(prompt_if_missing=True)
+
+    def open_source_page(self) -> None:
+        webbrowser.open(game_spec(self.game_id)["index_url"])
+
+    def on_game_changed(self, value: str) -> None:
+        if getattr(self, "_ignore_game_change", False):
+            return
+        game = GAME_IDS.get(str(value).strip(), "poe1")
+        if game == self.game_id:
+            return
+        self.game_id = game
+        save_settings({"affix_game": game})
+        spec = game_spec(game)
+        self.title(f"{spec['title']} · 裝備詞綴查詢")
+        self.slot_var.set(ALL)
+        self.source_var.set("基底")
+        self.category_var.set(ALL)
+        self.search_var.set("")
+        self.apply_game(prompt_if_missing=True)
+
+    def apply_game(self, *, prompt_if_missing: bool = False) -> None:
+        spec = game_spec(self.game_id)
+        self.title(f"{spec['title']} · 裝備詞綴查詢")
+        catalog = load_catalog(self.game_id)
         if catalog:
             self.set_catalog(catalog)
             return
-        if messagebox.askyesno(
-            "尚未下載詞綴資料",
-            "第一次使用需要從 https://poedb.tw/tw/Modifiers 下載裝備詞綴。\n現在開始更新嗎？",
+        self.catalog = None
+        self.filtered_groups = []
+        self._slot_options = [ALL]
+        self.slot_combo.configure(values=[ALL])
+        self.refresh_affix_list()
+        if prompt_if_missing and messagebox.askyesno(
+            f"尚未下載{spec['title']}詞綴",
+            f"第一次使用需要從 {spec['index_url']} 下載裝備詞綴。\n現在開始更新嗎？",
         ):
             self.start_sync()
-        else:
-            self.status_var.set("沒有本地資料，請按「從 PoEDB 更新資料」。")
+            return
+        self.status_var.set(f"沒有{spec['label']}本地資料，請按「更新資料」。")
 
     @staticmethod
     def _choice_matches(typed: str, candidate: str) -> bool:
@@ -366,7 +423,7 @@ class AffixApp(ctk.CTkToplevel):
 
         sources = [ALL, "基底"]
         seen = {"全部", "基底"}
-        for key in SOURCE_ORDER:
+        for key in source_order_for(self.game_id):
             title = SOURCE_TITLES.get(key, key)
             if title not in seen:
                 sources.append(title)
@@ -408,8 +465,10 @@ class AffixApp(ctk.CTkToplevel):
             self.category_var.set(ALL)
 
         synced = catalog.get("synced_at", "")
+        spec = game_spec(self.game_id)
         self.status_var.set(
-            f"已載入 {catalog.get('slot_count', 0)} 個部位、{catalog.get('group_count', 0)} 組詞綴　更新時間 {synced}"
+            f"{spec['label']}　已載入 {catalog.get('slot_count', 0)} 個部位、"
+            f"{catalog.get('group_count', 0)} 組詞綴　更新時間 {synced}"
         )
         self.refresh_affix_list()
 
@@ -801,17 +860,22 @@ class AffixApp(ctk.CTkToplevel):
         if self._syncing:
             return
         self._syncing = True
+        game = self.game_id
         set_progress(self.progress, 0, 100)
+        try:
+            self.game_switch.configure(state="disabled")
+        except (tk.TclError, ValueError, TypeError):
+            pass
 
         def run() -> None:
             def progress(message: str, current: int, total: int) -> None:
                 self.after(0, lambda: self._on_progress(message, current, total))
 
             try:
-                catalog = sync_catalog(progress=progress)
-                self.after(0, lambda: self._on_sync_done(catalog, None))
+                catalog = sync_catalog(progress=progress, game=game)
+                self.after(0, lambda: self._on_sync_done(catalog, None, game))
             except Exception as error:  # noqa: BLE001
-                self.after(0, lambda: self._on_sync_done(None, error))
+                self.after(0, lambda: self._on_sync_done(None, error, game))
 
         threading.Thread(target=run, daemon=True).start()
 
@@ -819,19 +883,25 @@ class AffixApp(ctk.CTkToplevel):
         self.status_var.set(message)
         set_progress(self.progress, current, total)
 
-    def _on_sync_done(self, catalog: dict | None, error: Exception | None) -> None:
+    def _on_sync_done(self, catalog: dict | None, error: Exception | None, game: str | None = None) -> None:
         self._syncing = False
+        try:
+            self.game_switch.configure(state="normal")
+        except (tk.TclError, ValueError, TypeError):
+            pass
+        spec = game_spec(game or self.game_id)
         if error:
             self.status_var.set(f"更新失敗：{error}")
             messagebox.showerror("更新失敗", str(error))
             return
         assert catalog is not None
         skipped = catalog.get("skipped") or []
-        self.set_catalog(catalog)
         extra = f"\n略過 {len(skipped)} 個沒有詞綴表的頁面。" if skipped else ""
+        if game is None or game == self.game_id:
+            self.set_catalog(catalog)
         messagebox.showinfo(
             "更新完成",
-            f"已從 PoEDB 下載 {catalog.get('slot_count', 0)} 個部位、"
+            f"已從 {spec['site_name']} 下載 {catalog.get('slot_count', 0)} 個部位、"
             f"{catalog.get('group_count', 0)} 組詞綴。{extra}",
         )
 

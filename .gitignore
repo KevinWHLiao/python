@@ -20,3 +20,4 @@ dist/*
 nba_logs/
 .vscode/
 poe_affix_data/chinese_pin.json
+poe_affix_data/settings.json

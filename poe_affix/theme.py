@@ -329,6 +329,85 @@ def ghost_button(parent, text: str, command=None, **kwargs) -> ctk.CTkButton:
     return ctk.CTkButton(parent, **opts)
 
 
+class GameToggle(ctk.CTkFrame):
+    """High-contrast PoE1 / PoE2 switch; selected stays gold, idle stays bright."""
+
+    def __init__(
+        self,
+        master,
+        *,
+        values: list[str],
+        command=None,
+        width: int = 168,
+        height: int = 32,
+    ) -> None:
+        super().__init__(master, fg_color=BG_RAISED, corner_radius=10, border_width=1, border_color=GOLD)
+        self._values = list(values)
+        self._command = command
+        self._selected = values[0] if values else ""
+        self._buttons: dict[str, ctk.CTkButton] = {}
+        btn_width = max(72, width // max(len(values), 1))
+        for index, value in enumerate(values):
+            self.grid_columnconfigure(index, weight=1)
+            button = ctk.CTkButton(
+                self,
+                text=value,
+                width=btn_width,
+                height=height,
+                corner_radius=8,
+                border_width=1,
+                font=(FONT_FAMILY, 13, "bold"),
+                command=lambda v=value: self._on_click(v),
+            )
+            button.grid(row=0, column=index, padx=3, pady=3, sticky="nsew")
+            self._buttons[value] = button
+        self._paint()
+
+    def get(self) -> str:
+        return self._selected
+
+    def set(self, value: str) -> None:
+        if value not in self._buttons:
+            return
+        self._selected = value
+        self._paint()
+
+    def configure(self, **kwargs):  # noqa: A003 - match CTk widget API
+        if "command" in kwargs:
+            self._command = kwargs.pop("command")
+        if "state" in kwargs:
+            state = kwargs.pop("state")
+            for button in self._buttons.values():
+                button.configure(state=state)
+        if kwargs:
+            super().configure(**kwargs)
+
+    def _on_click(self, value: str) -> None:
+        if value == self._selected:
+            return
+        self._selected = value
+        self._paint()
+        if self._command:
+            self._command(value)
+
+    def _paint(self) -> None:
+        for value, button in self._buttons.items():
+            if value == self._selected:
+                button.configure(
+                    fg_color=GOLD,
+                    hover_color=GOLD_HI,
+                    text_color="#1a1408",
+                    border_color=GOLD_HI,
+                )
+            else:
+                button.configure(
+                    fg_color=BG_INPUT,
+                    hover_color="#2a3140",
+                    text_color=TEXT,
+                    border_color=LINE,
+                )
+
+
 def make_header(
     parent,
     title: str,
