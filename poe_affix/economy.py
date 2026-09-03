@@ -90,6 +90,10 @@ EXCHANGE_TYPES_POE2: list[tuple[str, str, str]] = [
     ("Expedition", "探險文物", "expedition"),
     ("Abyss", "深淵之骨", "abyss"),
     ("LineageSupportGems", "族裔寶石", "lineage-support-gems"),
+    ("Ritual", "徵兆", "omens"),
+    ("Breach", "催化劑", "catalysts"),
+    ("Delirium", "液態情緒", "liquid-emotions"),
+    ("Verisium", "維里西姆", "verisium"),
 ]
 
 # PoE2 stash item overview categories (public stash tab prices).
@@ -125,6 +129,10 @@ CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
     "Expedition": ("探險文物", "探險"),
     "Abyss": ("深淵之骨", "深淵骨"),
     "LineageSupportGems": ("族裔寶石", "族裔"),
+    "Ritual": ("徵兆", "預兆"),
+    "Breach": ("催化劑", "裂痕催化劑"),
+    "Delirium": ("液態情緒", "情緒"),
+    "Verisium": ("維里西姆",),
     "UniqueWeapons": ("傳奇武器", "武器"),
     "UniqueArmours": ("傳奇護甲", "護甲"),
     "UniqueAccessories": ("傳奇飾品", "飾品"),

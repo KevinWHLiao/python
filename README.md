@@ -9,7 +9,7 @@ Path of Exile（PoE1）與 Path of Exile 2 用的 Windows 桌面查詢工具。�
 | **詞綴查詢** | 可切換 PoE1／PoE2，依裝備部位查前綴／後綴／固定／汙染詞（階層、物等、權重、勢力來源） |
 | **商店配方** | 商人交易：獎勵、材料、分類 |
 | **工藝解鎖區域** | 工藝台配方解鎖地圖、消耗、適用部位 |
-| **價格查詢** | 可切換 PoE1／PoE2 的 poe.ninja 估價。PoE1：通貨、傳奇、寶石、輿圖等；PoE2：通貨、碎片、精華、符文、魂核、神像、未切割寶石、探險文物、深淵之骨、族裔寶石、傳奇武器／護甲／飾品／藥劑／護符／珠寶／聖物／石板、先驅石板 |
+| **價格查詢** | 可切換 PoE1／PoE2 的 poe.ninja 估價。PoE1：通貨、傳奇、寶石、輿圖等；PoE2：通貨、碎片、精華、符文、魂核、神像、未切割寶石、探險文物、深淵之骨、族裔寶石、徵兆、催化劑、液態情緒、維里西姆、傳奇武器／護甲／飾品／藥劑／護符／珠寶／聖物／石板、先驅石板 |
 | **官方賣場** | pathofexile.com/trade：關鍵字提示、賣家狀態、分類／物等／價格／詞綴過濾、上架預覽 |
 | **流派排名** | poe.ninja 熱門流派、DPS／EHP、逐日占比 |
 | **每季開荒推薦** | 可切換 PoE1／PoE2。PoE1：依類型／手感／預算篩選開荒 Build（本地目錄）；PoE2：Maxroll 開荒昇華 tier list（可線上更新） |
@@ -84,7 +84,7 @@ GUI 內也可分別更新：
 | 商店／工藝 | poedb.tw 表格頁 | 解析 HTML `<table>`，寫入 `vendor.json` / `crafting.json` |
 | 中文化 PIN | poedb.tw/tw/chinese | 下載頁面後以正則解析 |
 | 價格（PoE1） | poe.ninja `/poe1/api/economy` | HTTP JSON（exchange + stash item overview），以混沌石計價 |
-| 價格（PoE2） | poe.ninja `/poe2/api/economy` | HTTP JSON（僅 exchange overview），以神聖石計價 |
+| 價格（PoE2） | poe.ninja `/poe2/api/economy` | HTTP JSON（exchange + stash item overview），以神聖石計價 |
 | 官方賣場 | pathofexile.com/api/trade | HTTP JSON（search + fetch） |
 | 流派 | poe.ninja builds | HTTP（含 protobuf 解析） |
 | 中文物品名（PoE1） | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
