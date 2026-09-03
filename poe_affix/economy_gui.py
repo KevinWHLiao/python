@@ -9,15 +9,18 @@ from tkinter import messagebox, ttk
 
 import customtkinter as ctk
 
+from . import load_settings, save_settings
 from .economy import (
     ALL,
-    CATEGORY_LABELS,
-    ECONOMY_PAGE,
     GAINER_WORKERS,
+    GAME_LABELS,
     MIN_GAIN_PERCENT,
     League,
     PriceRow,
+    category_labels,
     clear_cache,
+    currency_labels,
+    economy_page,
     fetch_leagues,
     fetch_prices,
     matches,
@@ -29,6 +32,7 @@ from .theme import (
     MUTED,
     PREFIX,
     SUFFIX,
+    GameToggle,
     content_panel,
     filter_panel,
     make_header,
@@ -40,7 +44,8 @@ from .theme import (
     sort_tree,
 )
 
-NUMERIC_COLUMNS = {"chaos", "divine", "change", "listings"}
+NUMERIC_COLUMNS = {"primary", "secondary", "change", "listings"}
+GAME_IDS = {label: game_id for game_id, label in GAME_LABELS.items()}
 
 
 def format_price(value: float) -> str:
@@ -83,6 +88,8 @@ class EconomyApp(ctk.CTkToplevel):
         self._loading = False
         self._pending_load: bool | None = None
         self._row_urls: dict[str, str] = {}
+        saved_game = str(load_settings().get("economy_game") or "poe1")
+        self.game_id = saved_game if saved_game in GAME_LABELS else "poe1"
 
         self.league_var = tk.StringVar()
         self.category_var = tk.StringVar(value="通貨")
@@ -92,7 +99,7 @@ class EconomyApp(ctk.CTkToplevel):
         self._allow_all = False
         self._focus_top_gainer = False
         self._league_options: list[str] = []
-        self._category_options: list[str] = [ALL, *CATEGORY_LABELS]
+        self._category_options: list[str] = [ALL, *category_labels(self.game_id)]
 
         self._build()
         self.search_var.trace_add("write", lambda *_: self.refresh())
@@ -109,35 +116,46 @@ class EconomyApp(ctk.CTkToplevel):
             on_back=self.go_back,
             right_actions=[
                 ("重新整理", self.reload_prices),
-                ("開啟 poe.ninja", lambda: webbrowser.open(ECONOMY_PAGE)),
+                ("開啟 poe.ninja", lambda: webbrowser.open(economy_page(self.game_id))),
             ],
         )
         _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
         filters = filter_panel(self)
-        ctk.CTkLabel(filters, text="聯盟", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="遊戲", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.game_switch = GameToggle(
+            filters,
+            values=["PoE1", "PoE2"],
+            width=168,
+            height=30,
+            command=self.on_game_changed,
+        )
+        self.game_switch.grid(row=0, column=1, padx=(0, 16))
+        self.game_switch.set(GAME_LABELS[self.game_id])
+
+        ctk.CTkLabel(filters, text="聯盟", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.league_combo = ttk.Combobox(filters, textvariable=self.league_var, state="normal", width=22)
-        self.league_combo.grid(row=0, column=1, padx=(0, 16))
+        self.league_combo.grid(row=0, column=3, padx=(0, 16))
         bind_searchable_combo(self.league_combo, lambda: self._league_options, self.load_prices)
 
-        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.category_combo = ttk.Combobox(
             filters, textvariable=self.category_var, state="normal", width=16, values=self._category_options
         )
-        self.category_combo.grid(row=0, column=3, padx=(0, 16))
+        self.category_combo.grid(row=0, column=5, padx=(0, 16))
         bind_searchable_combo(self.category_combo, lambda: self._category_options, self.load_prices)
 
-        ctk.CTkLabel(filters, text="搜尋物品", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
-        ttk.Entry(filters, textvariable=self.search_var, width=36).grid(row=0, column=5, sticky="ew")
+        ctk.CTkLabel(filters, text="搜尋物品", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
+        ttk.Entry(filters, textvariable=self.search_var, width=36).grid(row=0, column=7, sticky="ew")
         primary_button(filters, f"漲幅≥{MIN_GAIN_PERCENT:.0f}%", command=self.show_top_gainer, width=110).grid(
-            row=0, column=6, padx=(16, 0)
+            row=0, column=8, padx=(16, 0)
         )
-        filters.grid_columnconfigure(5, weight=1)
+        filters.grid_columnconfigure(7, weight=1)
 
         muted_hint(
             self,
             (
-                "估價來自 poe.ninja。名稱顯示中文與英文，兩邊都能搜。"
+                "估價來自 poe.ninja（PoE1 以混沌石計價，PoE2 以神聖石計價）。名稱顯示中文與英文，兩邊都能搜。"
                 "聯盟／分類可輸入關鍵字後從清單點選。"
                 f"分類選「全部」時可按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」，只列出全部分類裡漲超過 {MIN_GAIN_PERCENT:.0f}% 的物品。雙擊列可開官網。"
             ),
@@ -149,14 +167,15 @@ class EconomyApp(ctk.CTkToplevel):
         wrap = content_panel(self)
         inner = ctk.CTkFrame(wrap, fg_color="transparent")
         inner.pack(fill="both", expand=True, padx=10, pady=10)
-        columns = ("name_zh", "name", "category", "chaos", "divine", "change", "extra", "listings")
+        columns = ("name_zh", "name", "category", "primary", "secondary", "change", "extra", "listings")
         self.tree = ttk.Treeview(inner, columns=columns, show="headings", selectmode="browse")
+        primary_label, secondary_label = currency_labels(self.game_id)
         self.headings = {
             "name_zh": "中文",
             "name": "英文",
             "category": "分類",
-            "chaos": "混沌石",
-            "divine": "神聖石",
+            "primary": primary_label,
+            "secondary": secondary_label,
             "change": "近期漲跌",
             "extra": "細節",
             "listings": "上架數",
@@ -165,8 +184,8 @@ class EconomyApp(ctk.CTkToplevel):
             "name_zh": 220,
             "name": 220,
             "category": 100,
-            "chaos": 80,
-            "divine": 80,
+            "primary": 80,
+            "secondary": 80,
             "change": 80,
             "extra": 220,
             "listings": 70,
@@ -211,17 +230,47 @@ class EconomyApp(ctk.CTkToplevel):
         return None
 
     def _startup(self) -> None:
-        threading.Thread(target=self._load_leagues_worker, daemon=True).start()
+        threading.Thread(target=self._load_leagues_worker, args=(self.game_id,), daemon=True).start()
 
-    def _load_leagues_worker(self) -> None:
+    def on_game_changed(self, value: str) -> None:
+        game = GAME_IDS.get(str(value).strip(), "poe1")
+        if game == self.game_id:
+            return
+        self.game_id = game
+        save_settings({"economy_game": game})
+        self._allow_all = False
+        self._focus_top_gainer = False
+        self.top_gainer_var.set("")
+        self.rows = []
+        self.leagues = []
+        self._league_options = []
+        self.league_combo.configure(values=[])
+        self.league_var.set("")
+        self._category_options = [ALL, *category_labels(game)]
+        self.category_combo.configure(values=self._category_options)
+        if self.category_var.get() not in self._category_options:
+            self.category_var.set("通貨")
+        primary_label, secondary_label = currency_labels(game)
+        self.headings["primary"] = primary_label
+        self.headings["secondary"] = secondary_label
+        self.tree.heading("primary", text=primary_label)
+        self.tree.heading("secondary", text=secondary_label)
+        self.tree.delete(*self.tree.get_children(""))
+        self._row_urls.clear()
+        self.status_var.set(f"正在連線 poe.ninja（{GAME_LABELS[game]}）…")
+        threading.Thread(target=self._load_leagues_worker, args=(game,), daemon=True).start()
+
+    def _load_leagues_worker(self, game: str) -> None:
         try:
-            leagues = fetch_leagues()
+            leagues = fetch_leagues(game=game)
         except RuntimeError as error:
             self.after(0, lambda message=str(error): self._fail(message))
             return
-        self.after(0, lambda: self._on_leagues(leagues))
+        self.after(0, lambda: self._on_leagues(leagues, game))
 
-    def _on_leagues(self, leagues: list[League]) -> None:
+    def _on_leagues(self, leagues: list[League], game: str) -> None:
+        if game != self.game_id:
+            return
         self.leagues = leagues
         names = [league.name for league in leagues]
         self._league_options = names
@@ -233,7 +282,7 @@ class EconomyApp(ctk.CTkToplevel):
     def reload_prices(self) -> None:
         league = self.current_league()
         if league:
-            clear_cache(league.id)
+            clear_cache(league.id, game=self.game_id)
         self.load_prices(force=True)
 
     def load_prices(self, force: bool = False) -> None:
@@ -259,28 +308,41 @@ class EconomyApp(ctk.CTkToplevel):
             return
         self._loading = True
         self._pending_load = None
-        self.status_var.set(f"正在下載 {league.name} / {category}…")
+        self.status_var.set(f"正在下載 {GAME_LABELS[self.game_id]} {league.name} / {category}…")
         set_progress(self.progress, 0, 1)
-        threading.Thread(target=self._load_prices_worker, args=(league, category, force), daemon=True).start()
+        threading.Thread(
+            target=self._load_prices_worker,
+            args=(league, category, force, self.game_id),
+            daemon=True,
+        ).start()
 
-    def _load_prices_worker(self, league: League, category: str, force: bool) -> None:
+    def _load_prices_worker(self, league: League, category: str, force: bool, game: str) -> None:
         def progress(done: int, total: int, message: str) -> None:
             self.after(0, lambda: self._set_progress(done, total, message))
 
         workers = GAINER_WORKERS if category == ALL else None
         try:
-            rows = fetch_prices(league, category, force=force, progress=progress, max_workers=workers)
+            rows = fetch_prices(
+                league,
+                category,
+                force=force,
+                progress=progress,
+                max_workers=workers,
+                game=game,
+            )
         except RuntimeError as error:
             self.after(0, lambda message=str(error): self._fail(message))
             return
-        self.after(0, lambda: self._on_prices(rows, league, category))
+        self.after(0, lambda: self._on_prices(rows, league, category, game))
 
     def _set_progress(self, done: int, total: int, message: str) -> None:
         set_progress(self.progress, done, total)
         self.status_var.set(message)
 
-    def _on_prices(self, rows: list[PriceRow], league: League, category: str) -> None:
+    def _on_prices(self, rows: list[PriceRow], league: League, category: str, game: str) -> None:
         self._loading = False
+        if game != self.game_id:
+            return
         self.rows = rows
         set_progress(self.progress, 1, 1)
         self.refresh()
@@ -325,8 +387,8 @@ class EconomyApp(ctk.CTkToplevel):
                     row.display_zh,
                     row.name,
                     row.category,
-                    format_price(row.chaos),
-                    format_price(row.divine),
+                    format_price(row.primary),
+                    format_price(row.secondary),
                     format_change(row.change),
                     row.extra,
                     format_listings(row.listings),
@@ -337,7 +399,7 @@ class EconomyApp(ctk.CTkToplevel):
         if self._allow_all or self._focus_top_gainer:
             self._sort_change_desc()
         else:
-            self._sort_chaos_desc()
+            self._sort_primary_desc()
         if self._focus_top_gainer and visible:
             self._select_top_gainer(visible)
             self._focus_top_gainer = False
@@ -351,7 +413,9 @@ class EconomyApp(ctk.CTkToplevel):
         elif self.rows:
             league = self.current_league()
             league_name = league.name if league else ""
-            self.status_var.set(f"{league_name} · 顯示 {len(visible):,} / {len(self.rows):,} 筆 · poe.ninja")
+            self.status_var.set(
+                f"{GAME_LABELS[self.game_id]} {league_name} · 顯示 {len(visible):,} / {len(self.rows):,} 筆 · poe.ninja"
+            )
 
     def show_top_gainer(self) -> None:
         self._allow_all = True
@@ -397,20 +461,20 @@ class EconomyApp(ctk.CTkToplevel):
             self.tree.move(item_id, "", index)
         self.tree._sort_state = {"col": "change", "desc": True}
 
-    def _sort_chaos_desc(self) -> None:
+    def _sort_primary_desc(self) -> None:
         rows = list(self.tree.get_children(""))
 
-        def chaos_of(item_id: str) -> float:
-            text = str(self.tree.set(item_id, "chaos")).replace("—", "0").replace(",", "")
+        def primary_of(item_id: str) -> float:
+            text = str(self.tree.set(item_id, "primary")).replace("—", "0").replace(",", "")
             try:
                 return float(text)
             except ValueError:
                 return 0.0
 
-        rows.sort(key=chaos_of, reverse=True)
+        rows.sort(key=primary_of, reverse=True)
         for index, item_id in enumerate(rows):
             self.tree.move(item_id, "", index)
-        self.tree._sort_state = {"col": "chaos", "desc": True}
+        self.tree._sort_state = {"col": "primary", "desc": True}
 
     def sort_by(self, column: str) -> None:
         sort_tree(self.tree, column, numeric=column in NUMERIC_COLUMNS)

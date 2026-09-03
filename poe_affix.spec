@@ -15,6 +15,7 @@ a = Analysis(
         ("poe_affix_data/vendor.json", "poe_affix_data"),
         ("poe_affix_data/names_zh.json", "poe_affix_data"),
         ("poe_affix_data/league_starters.json", "poe_affix_data"),
+        ("poe_affix_data/league_starters_poe2.json", "poe_affix_data"),
         *ctk_datas,
     ],
     hiddenimports=collect_submodules("poe_affix") + ctk_hiddenimports,

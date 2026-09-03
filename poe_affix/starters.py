@@ -9,6 +9,9 @@ from pathlib import Path
 from . import resolve_named_data
 
 STARTERS_FILE = "league_starters.json"
+STARTERS_FILE_POE2 = "league_starters_poe2.json"
+STARTERS_FILES = {"poe1": STARTERS_FILE, "poe2": STARTERS_FILE_POE2}
+GAME_LABELS = {"poe1": "PoE1", "poe2": "PoE2"}
 ALL = "全部"
 
 BUDGET_RANK = {
@@ -55,7 +58,7 @@ class StarterBuild:
     goals: list[str]
     modes: list[str]
     tier: str
-    score_bias: int = 0
+    score_bias: float = 0.0
     pros: list[str] = field(default_factory=list)
     cons: list[str] = field(default_factory=list)
     summary: str = ""
@@ -115,6 +118,8 @@ class StarterCatalog:
     builds: list[StarterBuild]
     budget_options: list[tuple[str, str]] = field(default_factory=list)
     difficulty_options: list[tuple[str, str]] = field(default_factory=list)
+    source: str = ""
+    intro: str = ""
 
 
 @dataclass
@@ -139,8 +144,12 @@ class ScoredBuild:
     reasons: list[str] = field(default_factory=list)
 
 
-def starters_path() -> Path | None:
-    return resolve_named_data(STARTERS_FILE)
+def starters_file(game: str = "poe1") -> str:
+    return STARTERS_FILES.get(game, STARTERS_FILE)
+
+
+def starters_path(game: str = "poe1") -> Path | None:
+    return resolve_named_data(starters_file(game))
 
 
 def _as_list(value: object) -> list[str]:
@@ -168,7 +177,7 @@ def _parse_build(raw: dict) -> StarterBuild:
         goals=_as_list(raw.get("goals")),
         modes=_as_list(raw.get("modes")) or ["trade"],
         tier=str(raw.get("tier") or "B"),
-        score_bias=int(raw.get("score_bias") or 0),
+        score_bias=float(raw.get("score_bias") or 0),
         pros=_as_list(raw.get("pros")),
         cons=_as_list(raw.get("cons")),
         summary=str(raw.get("summary") or ""),
@@ -179,10 +188,10 @@ def _parse_build(raw: dict) -> StarterBuild:
     )
 
 
-def load_catalog(path: Path | None = None) -> StarterCatalog:
-    target = path or starters_path()
+def load_catalog(path: Path | None = None, game: str = "poe1") -> StarterCatalog:
+    target = path or starters_path(game)
     if not target or not target.exists():
-        raise RuntimeError(f"找不到開荒推薦資料：{STARTERS_FILE}")
+        raise RuntimeError(f"找不到開荒推薦資料：{starters_file(game)}")
     payload = json.loads(target.read_text(encoding="utf-8"))
     builds = [_parse_build(item) for item in payload.get("builds") or [] if isinstance(item, dict)]
     builds = [build for build in builds if build.id and build.name_zh]
@@ -210,6 +219,8 @@ def load_catalog(path: Path | None = None) -> StarterCatalog:
         builds=builds,
         budget_options=budgets,
         difficulty_options=difficulties,
+        source=str(payload.get("source") or ""),
+        intro=str(payload.get("intro") or ""),
     )
 
 

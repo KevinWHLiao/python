@@ -9,7 +9,11 @@ from collections import defaultdict
 from typing import Any, Iterable
 
 GEN_NAMES = {"1": "前綴", "2": "後綴", "3": "固定", "5": "汙染"}
-CORRUPT_SOURCE_KEYS = {"corrupted", "graft_corrupted", "corruption_upgrade"}
+CORRUPT_SOURCE_KEYS = {"corrupted"}
+
+# Sources that PoEDB lists next to corruption but that are their own mechanic.
+# They grant implicit (固定) mods, so they must not be folded into 汙染詞.
+IMPLICIT_SOURCE_KEYS = {"corruption_upgrade", "graft_corrupted"}
 
 SOURCE_TITLES = {
     "normal": "基底",
@@ -31,6 +35,8 @@ SOURCE_TITLES = {
     "synthesis": "尋夢追憶",
     "synthesis_corrupted": "尋夢追憶已汙染",
     "corrupted": "已汙染",
+    "corruption_upgrade": "奉獻寶珠",
+    "graft_corrupted": "不穩定植入物",
     "enchant": "附魔",
     "infamous": "萬惡",
     "sentinel": "重組裝置",
@@ -72,6 +78,8 @@ SOURCE_ORDER = [
     "bestiary",
     "synthesis",
     "corrupted",
+    "corruption_upgrade",
+    "graft_corrupted",
     "infamous",
     "enchant",
 ]
@@ -95,6 +103,8 @@ SOURCE_ORDER_POE2 = [
     "berserking",
     "master",
     "corrupted",
+    "corruption_upgrade",
+    "graft_corrupted",
     "infamous",
     "enchant",
 ]
@@ -659,8 +669,44 @@ def _refine_split_tags(label: str, family: str, original_tags: list[str]) -> lis
     return kept or heuristic or list(original_tags)
 
 
+def repair_source_classification(catalog: dict[str, Any]) -> dict[str, Any]:
+    """Un-mark implicit-granting sources that older syncs stored as 汙染詞."""
+    changed = False
+    slots_out: list[dict[str, Any]] = []
+    for slot in catalog.get("slots") or []:
+        if not isinstance(slot, dict):
+            continue
+        groups_out: list[dict[str, Any]] = []
+        for group in slot.get("groups") or []:
+            if not isinstance(group, dict):
+                groups_out.append(group)
+                continue
+            source_key = str(group.get("source_key") or "")
+            if source_key in IMPLICIT_SOURCE_KEYS and (
+                group.get("is_corrupt") or group.get("affix") == "汙染"
+            ):
+                fixed = dict(group)
+                fixed["is_corrupt"] = False
+                fixed["affix"] = "固定"
+                fixed["source"] = SOURCE_TITLES.get(source_key, source_key)
+                groups_out.append(fixed)
+                changed = True
+            else:
+                groups_out.append(group)
+        groups_out.sort(key=lambda item: (item.get("affix") or "", item.get("source") or "", item.get("label") or ""))
+        slot_out = dict(slot)
+        slot_out["groups"] = groups_out
+        slots_out.append(slot_out)
+    if not changed:
+        return catalog
+    result = dict(catalog)
+    result["slots"] = slots_out
+    return result
+
+
 def rematerialize_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
     """Re-split already-synced groups by generalized mod text (no network)."""
+    changed = False
     slots_out: list[dict[str, Any]] = []
     for slot in catalog.get("slots") or []:
         if not isinstance(slot, dict):
@@ -681,6 +727,7 @@ def rematerialize_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
             if len(buckets) <= 1:
                 rebuilt.append(group)
                 continue
+            changed = True
             family = str(group.get("family") or "")
             affix = str(group.get("affix") or "")
             original_tags = [str(tag) for tag in (group.get("categories") or []) if tag]
@@ -708,6 +755,8 @@ def rematerialize_catalog(catalog: dict[str, Any]) -> dict[str, Any]:
         slot_out = dict(slot)
         slot_out["groups"] = rebuilt
         slots_out.append(slot_out)
+    if not changed:
+        return catalog
     result = dict(catalog)
     result["slots"] = slots_out
     result["group_count"] = sum(len(slot.get("groups") or []) for slot in slots_out)

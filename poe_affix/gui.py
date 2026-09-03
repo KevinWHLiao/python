@@ -56,11 +56,11 @@ def load_catalog(game: str = "poe1") -> dict | None:
     path = resolve_data_file(game)
     if not path:
         return None
-    from .catalog import rematerialize_catalog
+    from .catalog import rematerialize_catalog, repair_source_classification
 
     catalog = json.loads(path.read_text(encoding="utf-8"))
-    fixed = rematerialize_catalog(catalog)
-    if fixed.get("group_count") != catalog.get("group_count"):
+    fixed = repair_source_classification(rematerialize_catalog(catalog))
+    if fixed is not catalog:
         try:
             path.write_text(json.dumps(fixed, ensure_ascii=False), encoding="utf-8")
         except OSError:
@@ -130,7 +130,7 @@ class AffixApp(ctk.CTkToplevel):
         self.tier_sort_desc = True
         self.corrupt_sort_desc = True
         self._slot_options: list[str] = [ALL]
-        self._affix_options: list[str] = [ALL, "前綴", "後綴", "汙染"]
+        self._affix_options: list[str] = [ALL, "前綴", "後綴", "固定", "汙染"]
         self._source_options: list[str] = [ALL, "基底"]
         self._category_options: list[str] = [ALL]
 

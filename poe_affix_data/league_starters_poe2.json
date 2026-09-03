@@ -1,0 +1,718 @@
+{
+  "game": "poe2",
+  "league": "Return of the Ancients 0.5.4",
+  "league_zh": "流亡黯道 2 · Return of the Ancients 0.5.4",
+  "updated": "2026-09-03",
+  "source": "https://maxroll.gg/poe2/tierlists/league-starter-ascendancy-tier-list",
+  "notes": "資料來源：Maxroll 開荒昇華 tier list　·　Return of the Ancients 0.5.4　·　作者 Crouching_Tuna　·　Maxroll 更新 August 31, 2026",
+  "intro": "This Ascendancy Tier List ranks the most powerful and popular Ascendancies in the game with links to Build Guides. Path of Exile has an incredible amount of Build variety, and generally every single Ascendancy is powerful if build correctly. Important The Endgame Meta is never static.",
+  "styles": [
+    "女獵人",
+    "女術者",
+    "戰士",
+    "德魯伊",
+    "遊俠",
+    "僧侶",
+    "傭兵",
+    "女巫"
+  ],
+  "damage_types": [],
+  "playstyles": [],
+  "goals": [],
+  "budgets": [
+    {
+      "id": "league_start",
+      "label": "開荒零成本"
+    }
+  ],
+  "difficulties": [
+    {
+      "id": "medium",
+      "label": "中等"
+    }
+  ],
+  "builds": [
+    {
+      "id": "poe2-spirit-walker",
+      "name": "Spirit Walker",
+      "name_zh": "魂靈行者（Spirit Walker）",
+      "ascendancy": "Spirit Walker",
+      "ascendancy_zh": "魂靈行者",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": -0.0,
+      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Spirit Walker 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=huntress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=spirit-walker",
+      "pob_url": "",
+      "tags": [
+        "S",
+        "女獵人",
+        "Spirit Walker"
+      ]
+    },
+    {
+      "id": "poe2-disciple-of-varashta",
+      "name": "Disciple of Varashta",
+      "name_zh": "瓦拉什塔門徒（Disciple of Varashta）",
+      "ascendancy": "Disciple of Varashta",
+      "ascendancy_zh": "瓦拉什塔門徒",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女術者"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": -0.1,
+      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Disciple of Varashta 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=sorceress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=disciple-of-varashta",
+      "pob_url": "",
+      "tags": [
+        "S",
+        "女術者",
+        "Disciple of Varashta"
+      ]
+    },
+    {
+      "id": "poe2-titan",
+      "name": "Titan",
+      "name_zh": "泰坦（Titan）",
+      "ascendancy": "Titan",
+      "ascendancy_zh": "泰坦",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "戰士"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": -0.2,
+      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Titan 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=warrior&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=titan",
+      "pob_url": "",
+      "tags": [
+        "S",
+        "戰士",
+        "Titan"
+      ]
+    },
+    {
+      "id": "poe2-oracle",
+      "name": "Oracle",
+      "name_zh": "先知（Oracle）",
+      "ascendancy": "Oracle",
+      "ascendancy_zh": "先知",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": -0.3,
+      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Oracle 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=druid&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=oracle",
+      "pob_url": "",
+      "tags": [
+        "S",
+        "德魯伊",
+        "Oracle"
+      ]
+    },
+    {
+      "id": "poe2-deadeye",
+      "name": "Deadeye",
+      "name_zh": "銳眼（Deadeye）",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": -0.4,
+      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Deadeye 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=ranger&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=deadeye",
+      "pob_url": "",
+      "tags": [
+        "S",
+        "遊俠",
+        "Deadeye"
+      ]
+    },
+    {
+      "id": "poe2-martial-artist",
+      "name": "Martial Artist",
+      "name_zh": "武聖（Martial Artist）",
+      "ascendancy": "Martial Artist",
+      "ascendancy_zh": "武聖",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": -0.5,
+      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Martial Artist 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=monk&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=martial-artist",
+      "pob_url": "",
+      "tags": [
+        "S",
+        "僧侶",
+        "Martial Artist"
+      ]
+    },
+    {
+      "id": "poe2-gemling-legionnaire",
+      "name": "Gemling Legionnaire",
+      "name_zh": "古靈軍團（Gemling Legionnaire）",
+      "ascendancy": "Gemling Legionnaire",
+      "ascendancy_zh": "古靈軍團",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "傭兵"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.0,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Gemling Legionnaire 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=mercenary&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=gemling-legionnaire",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "傭兵",
+        "Gemling Legionnaire"
+      ]
+    },
+    {
+      "id": "poe2-witchhunter",
+      "name": "Witchhunter",
+      "name_zh": "女巫獵人（Witchhunter）",
+      "ascendancy": "Witchhunter",
+      "ascendancy_zh": "女巫獵人",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "傭兵"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.1,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Witchhunter 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=mercenary&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=witchhunter",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "傭兵",
+        "Witchhunter"
+      ]
+    },
+    {
+      "id": "poe2-amazon",
+      "name": "Amazon",
+      "name_zh": "亞馬遜（Amazon）",
+      "ascendancy": "Amazon",
+      "ascendancy_zh": "亞馬遜",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.2,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Amazon 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=huntress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=amazon",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "女獵人",
+        "Amazon"
+      ]
+    },
+    {
+      "id": "poe2-tactician",
+      "name": "Tactician",
+      "name_zh": "智勇軍師（Tactician）",
+      "ascendancy": "Tactician",
+      "ascendancy_zh": "智勇軍師",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "傭兵"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.3,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Tactician 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=mercenary&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=tactician",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "傭兵",
+        "Tactician"
+      ]
+    },
+    {
+      "id": "poe2-smith-of-kitava",
+      "name": "Smith of Kitava",
+      "name_zh": "奇塔弗工匠（Smith of Kitava）",
+      "ascendancy": "Smith of Kitava",
+      "ascendancy_zh": "奇塔弗工匠",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "戰士"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.4,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Smith of Kitava 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=warrior&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=smith-of-kitava",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "戰士",
+        "Smith of Kitava"
+      ]
+    },
+    {
+      "id": "poe2-shaman",
+      "name": "Shaman",
+      "name_zh": "薩滿（Shaman）",
+      "ascendancy": "Shaman",
+      "ascendancy_zh": "薩滿",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.5,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Shaman 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=druid&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=shaman",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "德魯伊",
+        "Shaman"
+      ]
+    },
+    {
+      "id": "poe2-lich",
+      "name": "Lich",
+      "name_zh": "巫妖（Lich）",
+      "ascendancy": "Lich",
+      "ascendancy_zh": "巫妖",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.6,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Lich 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=witch&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=lich",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "女巫",
+        "Lich"
+      ]
+    },
+    {
+      "id": "poe2-pathfinder",
+      "name": "Pathfinder",
+      "name_zh": "追獵者（Pathfinder）",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.7,
+      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Pathfinder 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=ranger&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=pathfinder",
+      "pob_url": "",
+      "tags": [
+        "A",
+        "遊俠",
+        "Pathfinder"
+      ]
+    },
+    {
+      "id": "poe2-acolyte-of-chayula",
+      "name": "Acolyte of Chayula",
+      "name_zh": "夏烏拉侍僧（Acolyte of Chayula）",
+      "ascendancy": "Acolyte of Chayula",
+      "ascendancy_zh": "夏烏拉侍僧",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.0,
+      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Acolyte of Chayula 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=monk&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=acolyte-of-chayula",
+      "pob_url": "",
+      "tags": [
+        "B",
+        "僧侶",
+        "Acolyte of Chayula"
+      ]
+    },
+    {
+      "id": "poe2-stormweaver",
+      "name": "Stormweaver",
+      "name_zh": "風暴編織者（Stormweaver）",
+      "ascendancy": "Stormweaver",
+      "ascendancy_zh": "風暴編織者",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女術者"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.1,
+      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Stormweaver 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=sorceress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=stormweaver",
+      "pob_url": "",
+      "tags": [
+        "B",
+        "女術者",
+        "Stormweaver"
+      ]
+    },
+    {
+      "id": "poe2-infernalist",
+      "name": "Infernalist",
+      "name_zh": "獄火師（Infernalist）",
+      "ascendancy": "Infernalist",
+      "ascendancy_zh": "獄火師",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.2,
+      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Infernalist 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=witch&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=infernalist",
+      "pob_url": "",
+      "tags": [
+        "B",
+        "女巫",
+        "Infernalist"
+      ]
+    },
+    {
+      "id": "poe2-blood-mage",
+      "name": "Bloodmage",
+      "name_zh": "血法師（Bloodmage）",
+      "ascendancy": "Bloodmage",
+      "ascendancy_zh": "血法師",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.3,
+      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Bloodmage 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=witch&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=blood-mage",
+      "pob_url": "",
+      "tags": [
+        "B",
+        "女巫",
+        "Bloodmage"
+      ]
+    },
+    {
+      "id": "poe2-ritualist",
+      "name": "Ritualist",
+      "name_zh": "儀式行者（Ritualist）",
+      "ascendancy": "Ritualist",
+      "ascendancy_zh": "儀式行者",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.0,
+      "summary": "Maxroll 開荒評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Ritualist 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=huntress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=ritualist",
+      "pob_url": "",
+      "tags": [
+        "C",
+        "女獵人",
+        "Ritualist"
+      ]
+    },
+    {
+      "id": "poe2-invoker",
+      "name": "Invoker",
+      "name_zh": "祈靈者（Invoker）",
+      "ascendancy": "Invoker",
+      "ascendancy_zh": "祈靈者",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.1,
+      "summary": "Maxroll 開荒評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Invoker 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=monk&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=invoker",
+      "pob_url": "",
+      "tags": [
+        "C",
+        "僧侶",
+        "Invoker"
+      ]
+    },
+    {
+      "id": "poe2-warbringer",
+      "name": "Warbringer",
+      "name_zh": "戰爭使者（Warbringer）",
+      "ascendancy": "Warbringer",
+      "ascendancy_zh": "戰爭使者",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "戰士"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.2,
+      "summary": "Maxroll 開荒評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Warbringer 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=warrior&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=warbringer",
+      "pob_url": "",
+      "tags": [
+        "C",
+        "戰士",
+        "Warbringer"
+      ]
+    },
+    {
+      "id": "poe2-chronomancer",
+      "name": "Chronomancer",
+      "name_zh": "時空幻術師（Chronomancer）",
+      "ascendancy": "Chronomancer",
+      "ascendancy_zh": "時空幻術師",
+      "skill": "",
+      "skill_zh": "",
+      "styles": [
+        "女術者"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "D",
+      "score_bias": -0.0,
+      "summary": "Maxroll 開荒評級 D 級。 不建議開荒，通常要等裝備成型。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Chronomancer 的 Maxroll 攻略清單。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=sorceress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=chronomancer",
+      "pob_url": "",
+      "tags": [
+        "D",
+        "女術者",
+        "Chronomancer"
+      ]
+    }
+  ]
+}

@@ -2,14 +2,17 @@
 
 from __future__ import annotations
 
+import threading
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
 import customtkinter as ctk
 
+from . import load_settings, save_settings
 from .starters import (
     ALL,
+    GAME_LABELS,
     MODE_LABEL,
     RecommendQuery,
     ScoredBuild,
@@ -30,6 +33,7 @@ from .theme import (
     MUTED,
     PREFIX,
     TEXT,
+    GameToggle,
     content_panel,
     filter_panel,
     ghost_button,
@@ -41,6 +45,8 @@ from .theme import (
 )
 
 RESULT_LIMITS = ("8", "12", "20", "全部")
+GAME_IDS = {label: game_id for game_id, label in GAME_LABELS.items()}
+MAXROLL_TIERLIST_URL = "https://maxroll.gg/poe2/tierlists/league-starter-ascendancy-tier-list"
 
 
 class CheckGroup(ctk.CTkFrame):
@@ -100,6 +106,9 @@ class StartersApp(ctk.CTkToplevel):
         self.results: list[ScoredBuild] = []
         self._row_by_id: dict[str, ScoredBuild] = {}
         self._selected: ScoredBuild | None = None
+        saved_game = str(load_settings().get("starters_game") or "poe1")
+        self.game_id = saved_game if saved_game in GAME_LABELS else "poe1"
+        self._syncing = False
 
         self.budget_var = tk.StringVar(value=ALL)
         self.difficulty_var = tk.StringVar(value=ALL)
@@ -134,6 +143,7 @@ class StartersApp(ctk.CTkToplevel):
             hint="依類型／流派手感／預算篩選，一次給多個方向",
             right_actions=[
                 ("重新整理推薦", self.refresh),
+                ("更新 PoE2 資料", self.start_poe2_sync),
                 ("清除條件", self.clear_filters),
             ],
         )
@@ -144,29 +154,40 @@ class StartersApp(ctk.CTkToplevel):
 
         top = ctk.CTkFrame(filters, fg_color="transparent")
         top.grid(row=0, column=0, columnspan=2, sticky="ew")
-        for col in range(8):
-            top.grid_columnconfigure(col, weight=1 if col in {1, 3, 5, 7} else 0)
+        for col in range(10):
+            top.grid_columnconfigure(col, weight=1 if col in {3, 5, 7, 9} else 0)
 
-        ctk.CTkLabel(top, text="預算上限", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(top, text="遊戲", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.game_switch = GameToggle(
+            top,
+            values=["PoE1", "PoE2"],
+            width=168,
+            height=30,
+            command=self.on_game_changed,
+        )
+        self.game_switch.grid(row=0, column=1, sticky="w", padx=(0, 14))
+        self.game_switch.set(GAME_LABELS[self.game_id])
+
+        ctk.CTkLabel(top, text="預算上限", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.budget_combo = ttk.Combobox(top, textvariable=self.budget_var, state="readonly", width=16, values=self._budget_labels)
-        self.budget_combo.grid(row=0, column=1, sticky="w", padx=(0, 14))
+        self.budget_combo.grid(row=0, column=3, sticky="w", padx=(0, 14))
         self.budget_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh())
 
-        ctk.CTkLabel(top, text="難度", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(top, text="難度", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.difficulty_combo = ttk.Combobox(
             top, textvariable=self.difficulty_var, state="readonly", width=10, values=self._difficulty_labels
         )
-        self.difficulty_combo.grid(row=0, column=3, sticky="w", padx=(0, 14))
+        self.difficulty_combo.grid(row=0, column=5, sticky="w", padx=(0, 14))
         self.difficulty_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh())
 
-        ctk.CTkLabel(top, text="模式", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(top, text="模式", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
         self.mode_combo = ttk.Combobox(top, textvariable=self.mode_var, state="readonly", width=12, values=self._mode_labels)
-        self.mode_combo.grid(row=0, column=5, sticky="w", padx=(0, 14))
+        self.mode_combo.grid(row=0, column=7, sticky="w", padx=(0, 14))
         self.mode_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh())
 
-        ctk.CTkLabel(top, text="顯示數量", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(top, text="顯示數量", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=8, sticky="w", padx=(0, 6))
         self.limit_combo = ttk.Combobox(top, textvariable=self.limit_var, state="readonly", width=8, values=RESULT_LIMITS)
-        self.limit_combo.grid(row=0, column=7, sticky="w")
+        self.limit_combo.grid(row=0, column=9, sticky="w")
         self.limit_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh())
 
         search_row = ctk.CTkFrame(filters, fg_color="transparent")
@@ -210,8 +231,8 @@ class StartersApp(ctk.CTkToplevel):
 
         muted_hint(
             self,
-            "可多選類型／傷害／手感／目標。新增「傭兵」「Wander」「新機制」等標籤。"
-            "預算是上限：選低預算不會出現高投資後期。顯示數量可改「全部」一次看完。",
+            "可多選類型／傷害／手感／目標。預算是上限：選低預算不會出現高投資後期。顯示數量可改「全部」一次看完。"
+            "PoE2 是 Maxroll 開荒昇華 tier list（依角色分類，梯隊即 Maxroll 評級），按「更新 PoE2 資料」可重新抓最新版。",
         )
 
         body = content_panel(self)
@@ -306,12 +327,74 @@ class StartersApp(ctk.CTkToplevel):
         ghost_button(actions, "開啟 PoB", command=self.open_pob, width=100).pack(side="left", padx=8)
         ghost_button(actions, "複製摘要", command=self.copy_detail, width=100).pack(side="left")
 
+    def on_game_changed(self, value: str) -> None:
+        game = GAME_IDS.get(str(value).strip(), "poe1")
+        if game == self.game_id:
+            return
+        self.game_id = game
+        save_settings({"starters_game": game})
+        self.clear_filters(refresh=False)
+        self._load()
+
+    def start_poe2_sync(self) -> None:
+        if self._syncing:
+            return
+        if not messagebox.askyesno(
+            "更新 PoE2 開荒推薦",
+            "要從 Maxroll 重新抓取 PoE2 開荒昇華 tier list 嗎？\n"
+            "昇華名稱會再向 poe2db.tw 對應繁中，約需 30 秒。",
+            parent=self,
+        ):
+            return
+        self._syncing = True
+        self.status_var.set("正在從 Maxroll 下載 PoE2 開荒 tier list…")
+        threading.Thread(target=self._poe2_sync_worker, daemon=True).start()
+
+    def _poe2_sync_worker(self) -> None:
+        from .starters_sync import sync_league_starters_poe2
+
+        def progress(done: int, total: int, message: str) -> None:
+            self.after(0, lambda: self.status_var.set(f"[{done}/{total}] {message}"))
+
+        try:
+            sync_league_starters_poe2(progress=progress)
+        except (RuntimeError, OSError) as error:
+            self.after(0, lambda message=str(error): self._sync_failed(message))
+            return
+        self.after(0, self._sync_done)
+
+    def _sync_failed(self, message: str) -> None:
+        self._syncing = False
+        self.status_var.set(f"更新失敗：{message}")
+        messagebox.showerror("更新 PoE2 開荒推薦", message, parent=self)
+
+    def _sync_done(self) -> None:
+        self._syncing = False
+        self.game_id = "poe2"
+        save_settings({"starters_game": "poe2"})
+        self.game_switch.set(GAME_LABELS["poe2"])
+        self.clear_filters(refresh=False)
+        self._load()
+
     def _load(self) -> None:
         try:
-            catalog = load_catalog()
+            catalog = load_catalog(game=self.game_id)
         except RuntimeError as error:
             self.status_var.set(str(error))
-            messagebox.showerror("開荒推薦", str(error), parent=self)
+            if self.game_id == "poe2":
+                if messagebox.askyesno(
+                    "還沒有 PoE2 開荒資料",
+                    f"{error}\n\n要現在從 Maxroll 下載 PoE2 開荒昇華 tier list 嗎？",
+                    parent=self,
+                ):
+                    self.start_poe2_sync()
+                    return
+                self.game_id = "poe1"
+                save_settings({"starters_game": "poe1"})
+                self.game_switch.set(GAME_LABELS["poe1"])
+                self._load()
+            else:
+                messagebox.showerror("開荒推薦", str(error), parent=self)
             return
         self.catalog = catalog
         self._budget_id_by_label = {label: key for key, label in catalog.budget_options}
@@ -341,10 +424,14 @@ class StartersApp(ctk.CTkToplevel):
         for group in (self.style_group, self.damage_group, self.play_group, self.goal_group):
             group.bind_change(self.refresh)
 
-        self.status_var.set(catalog_summary(catalog) + (f"　·　{catalog.notes}" if catalog.notes else ""))
+        self.status_var.set(
+            f"{GAME_LABELS[self.game_id]}　·　"
+            + catalog_summary(catalog)
+            + (f"　·　{catalog.notes}" if catalog.notes else "")
+        )
         self.refresh()
 
-    def clear_filters(self) -> None:
+    def clear_filters(self, refresh: bool = True) -> None:
         self.budget_var.set(ALL)
         self.difficulty_var.set(ALL)
         self.mode_var.set(ALL)
@@ -354,7 +441,8 @@ class StartersApp(ctk.CTkToplevel):
         self.prefer_start_var.set(True)
         for group in (self.style_group, self.damage_group, self.play_group, self.goal_group):
             group.clear()
-        self.refresh()
+        if refresh:
+            self.refresh()
 
     def _query(self) -> RecommendQuery:
         budget_label = self.budget_var.get()
@@ -411,7 +499,7 @@ class StartersApp(ctk.CTkToplevel):
         total = len(self.catalog.builds)
         shown = len(self.results)
         self.status_var.set(
-            f"{catalog_summary(self.catalog)}　·　符合 {shown}/{total}"
+            f"{GAME_LABELS[self.game_id]}　·　{catalog_summary(self.catalog)}　·　符合 {shown}/{total}"
             + ("　·　已啟用多樣化" if query.diversify else "")
         )
         children = self.tree.get_children("")
@@ -440,13 +528,14 @@ class StartersApp(ctk.CTkToplevel):
         self.detail_title_var.set(f"{build.name_zh}　·　{build.tier} 梯隊　·　分數 {item.score:.0f}")
         self.detail_summary_var.set(build.summary or build.name)
 
-        meta_lines = [
-            f"昇華：{build.ascendancy_zh}（{build.ascendancy}）",
-            f"主技能：{build.skill_zh}（{build.skill}）",
-            f"類型：{'、'.join(build.styles) or '—'}",
-            f"傷害：{'、'.join(build.damage) or '—'}",
-            f"手感：{'、'.join(build.playstyles) or '—'}",
-            f"目標：{'、'.join(build.goals) or '—'}",
+        meta_lines = [f"昇華：{build.ascendancy_zh}（{build.ascendancy}）"]
+        if build.skill or build.skill_zh:
+            meta_lines.append(f"主技能：{build.skill_zh}（{build.skill}）")
+        meta_lines.append(f"類型：{'、'.join(build.styles) or '—'}")
+        for title, values in (("傷害", build.damage), ("手感", build.playstyles), ("目標", build.goals)):
+            if values:
+                meta_lines.append(f"{title}：{'、'.join(values)}")
+        meta_lines += [
             f"預算：{build.budget_label}",
             f"難度：{build.difficulty_label}",
             f"模式：{format_mode_list(build.modes)}",

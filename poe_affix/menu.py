@@ -34,10 +34,10 @@ MENU_CARDS = [
     ("詞綴查詢", "查 PoE1／PoE2 裝備詞綴階層、物等、部位、權重與汙染詞", "open_affix", True),
     ("商店配方", "查商人交易配方：獎勵、需要物品與分類", "open_vendor", True),
     ("工藝解鎖區域", "查工藝台配方解鎖區域、消耗與適用部位", "open_craft", True),
-    ("價格查詢", "poe.ninja 估價：通貨、傳奇、寶石與輿圖", "open_economy", True),
+    ("價格查詢", "poe.ninja 估價：PoE1 通貨傳奇輿圖、PoE2 通貨符文魂核", "open_economy", True),
     ("官方賣場", "pathofexile.com/trade：即時上架、價格與密語", "open_trade", True),
     ("流派排名", "poe.ninja 熱門流派、DPS、EHP 與逐日占比", "open_builds", True),
-    ("每季開荒推薦", "依類型／手感／預算篩選開荒 Build，一次給多個方向", "open_starters", True),
+    ("每季開荒推薦", "PoE1 開荒 Build 篩選，PoE2 為 Maxroll 開荒昇華 tier list", "open_starters", True),
     ("中文化 PIN", "poedb.tw 繁中／簡中 PIN 與遊戲版本", "open_chinese", True),
     ("Craft of Exile", "開啟做裝模擬器（Calculator / Simulator）", "open_craftofexile", False),
     ("軍團珠寶查詢", "開啟 Timeless Jewel 天賦樹與 Seed 查詢", "open_timeless_jewels", False),
@@ -81,7 +81,10 @@ class MenuApp(ctk.CTk):
 
         ctk.CTkLabel(
             self,
-            text="資料來源：poedb.tw  ·  poe2db.tw  ·  poe.ninja  ·  pathofexile.com/trade　　中文化 PIN：poedb.tw/tw/chinese",
+            text=(
+                "資料來源：poedb.tw  ·  poe2db.tw  ·  poe.ninja  ·  maxroll.gg  ·  pathofexile.com/trade"
+                "　　中文化 PIN：poedb.tw/tw/chinese"
+            ),
             font=FONT_SMALL,
             text_color=MUTED,
         ).pack(side="bottom", fill="x", pady=(4, 16), padx=28)
