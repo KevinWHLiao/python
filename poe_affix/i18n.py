@@ -337,19 +337,41 @@ def name_map() -> dict[str, str]:
     return mapping
 
 
+# PoE2 items that poe2db.tw does not yet have a 繁中 page for (league-specific,
+# or the slug leads to a stats page instead of an item page).  Update when
+# poe2db catches up, then run ``py -3 -m poe_affix.i18n_sync`` to move them
+# into the auto-generated ``names_zh_poe2.json``.
+EXTRA_NAMES_POE2: dict[str, str] = {
+    "Perfect Jeweller's Orb": "完美寶匠石",
+    "Aldur's Legacy": "阿德爾的遺贈",
+    "Betrayal of Aldur": "阿德爾的背叛",
+    "Breath of Aldur": "阿德爾的吐息",
+    "Ire of Aldur": "阿德爾的憤怒",
+    "Passion of Aldur": "阿德爾的熱情",
+    "Aldur's Saga": "阿德爾的傳說",
+    "Thaumaturgic Flux": "魔能熔劑",
+    "Azmeri Reliquary Key": "愛茲麥里的寶庫鑰匙",
+    "Ancient Rune of Control": "遠古控制符文",
+    "Citaqualotl's Thesis": "希特克拉多的論點",
+}
+
+
 @lru_cache(maxsize=1)
 def name_map_poe2() -> dict[str, str]:
     """PoE2-only names harvested from poe2db (see i18n_sync.py)."""
     path = resolve_named_data("names_zh_poe2.json")
     if not path:
-        return {}
+        return dict(EXTRA_NAMES_POE2)
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {}
+        return dict(EXTRA_NAMES_POE2)
     if not isinstance(data, dict):
-        return {}
-    return {str(key): str(value) for key, value in data.items() if key and value}
+        return dict(EXTRA_NAMES_POE2)
+    merged = dict(EXTRA_NAMES_POE2)
+    # File entries take priority over the hardcoded fallbacks.
+    merged.update({str(key): str(value) for key, value in data.items() if key and value})
+    return merged
 
 
 def _translate_temple_room(english: str, mapping: dict[str, str]) -> str:

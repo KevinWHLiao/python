@@ -78,7 +78,7 @@ ITEM_TYPES: list[tuple[str, str, str]] = [
     ("ScryingOrb", "占卜寶珠", "scrying-orbs"),
 ]
 
-# PoE2 publishes exchange overviews only; poe.ninja has no PoE2 stash item API.
+# PoE2 exchange overview categories.
 EXCHANGE_TYPES_POE2: list[tuple[str, str, str]] = [
     ("Currency", "通貨", "currency"),
     ("Fragments", "碎片", "fragments"),
@@ -88,11 +88,27 @@ EXCHANGE_TYPES_POE2: list[tuple[str, str, str]] = [
     ("Idols", "神像", "idols"),
     ("UncutGems", "未切割寶石", "uncut-gems"),
     ("Expedition", "探險文物", "expedition"),
+    ("Abyss", "深淵之骨", "abyss"),
+    ("LineageSupportGems", "族裔寶石", "lineage-support-gems"),
+]
+
+# PoE2 stash item overview categories (public stash tab prices).
+ITEM_TYPES_POE2: list[tuple[str, str, str]] = [
+    ("UniqueWeapons", "傳奇武器", "unique-weapons"),
+    ("UniqueArmours", "傳奇護甲", "unique-armours"),
+    ("UniqueAccessories", "傳奇飾品", "unique-accessories"),
+    ("UniqueFlasks", "傳奇藥劑", "unique-flasks"),
+    ("UniqueCharms", "傳奇護符", "unique-charms"),
+    ("UniqueJewels", "傳奇珠寶", "unique-jewels"),
+    ("UniqueSanctumRelics", "傳奇聖物", "unique-relics"),
+    ("UniqueTablets", "傳奇石板", "unique-tablets"),
+    ("PrecursorTablets", "先驅石板", "precursor-tablets"),
 ]
 
 CATEGORIES = EXCHANGE_TYPES + ITEM_TYPES
 CATEGORY_LABELS = [label for _key, label, _slug in CATEGORIES]
-CATEGORY_LABELS_POE2 = [label for _key, label, _slug in EXCHANGE_TYPES_POE2]
+CATEGORIES_POE2 = EXCHANGE_TYPES_POE2 + ITEM_TYPES_POE2
+CATEGORY_LABELS_POE2 = [label for _key, label, _slug in CATEGORIES_POE2]
 # Extra search tokens so informal / older spellings still match price rows.
 CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
     "Ducat": ("達克特", "杜卡特"),
@@ -107,6 +123,17 @@ CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
     "Idols": ("神像", "偶像"),
     "UncutGems": ("未切割寶石", "未切割", "寶石"),
     "Expedition": ("探險文物", "探險"),
+    "Abyss": ("深淵之骨", "深淵骨"),
+    "LineageSupportGems": ("族裔寶石", "族裔"),
+    "UniqueWeapons": ("傳奇武器", "武器"),
+    "UniqueArmours": ("傳奇護甲", "護甲"),
+    "UniqueAccessories": ("傳奇飾品", "飾品"),
+    "UniqueFlasks": ("傳奇藥劑",),
+    "UniqueCharms": ("傳奇護符", "護符"),
+    "UniqueJewels": ("傳奇珠寶", "珠寶"),
+    "UniqueSanctumRelics": ("傳奇聖物", "聖物"),
+    "UniqueTablets": ("傳奇石板", "石板"),
+    "PrecursorTablets": ("先驅石板", "先驅"),
 }
 GAME_LABELS = {"poe1": "PoE1", "poe2": "PoE2"}
 CURRENCY_NAMES_ZH = {"chaos": "混沌石", "divine": "神聖石", "exalted": "崇高石"}
@@ -129,7 +156,7 @@ GAMES: dict[str, dict] = {
         "realm": "poe2",
         "label": "PoE2",
         "exchange": EXCHANGE_TYPES_POE2,
-        "item": [],
+        "item": ITEM_TYPES_POE2,
         "page": ECONOMY_PAGE_POE2,
         "deep_links": False,
         "primary": "divine",
@@ -389,6 +416,15 @@ def _item_extra(line: dict) -> str:
 def _parse_items(game: str, league: League, api_type: str, payload: dict) -> list[PriceRow]:
     label, slug = _lookups(game)["item_by_key"][api_type]
     aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
+
+    # PoE1 stash items carry chaosValue / divineValue directly on each line.
+    # PoE2 stash items use primaryValue (divine) + core.rates for the secondary.
+    core = payload.get("core") or {}
+    rates = core.get("rates") or {}
+    use_primary = game != "poe1"  # PoE2 stash API
+    secondary_id = str(core.get("secondary") or game_spec(game)["secondary"])
+    secondary_per_primary = _to_float(rates.get(secondary_id), 0.0) if use_primary else 0.0
+
     rows: list[PriceRow] = []
     for line in payload.get("lines") or []:
         if not isinstance(line, dict):
@@ -404,13 +440,19 @@ def _parse_items(game: str, league: League, api_type: str, payload: dict) -> lis
         else:
             name_zh = translate_name(name, game)
         base_zh = translate_name(str(line.get("baseType") or ""), game)
+        if use_primary:
+            primary = _to_float(line.get("primaryValue"))
+            secondary = primary * secondary_per_primary if secondary_per_primary else 0.0
+        else:
+            primary = _to_float(line.get("chaosValue"))
+            secondary = _to_float(line.get("divineValue"))
         rows.append(
             PriceRow(
                 name=name,
                 name_zh=name_zh,
                 category=label,
-                primary=_to_float(line.get("chaosValue")),
-                secondary=_to_float(line.get("divineValue")),
+                primary=primary,
+                secondary=secondary,
                 change=_spark_change(line.get("sparkLine")),
                 extra=extra,
                 listings=int(line["listingCount"]) if line.get("listingCount") not in (None, "") else None,
