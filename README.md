@@ -61,6 +61,9 @@ py -3 -m poe_affix.sync poe2
 
 # PoE2 開荒昇華 tier list（Maxroll）→ poe_affix_data/league_starters_poe2.json
 py -3 -m poe_affix.starters_sync
+
+# PoE2 物品中文名（poe.ninja 名稱 → poe2db 繁中）→ poe_affix_data/names_zh_poe2.json
+py -3 -m poe_affix.i18n_sync
 ```
 
 GUI 內也可分別更新：
@@ -84,7 +87,8 @@ GUI 內也可分別更新：
 | 價格（PoE2） | poe.ninja `/poe2/api/economy` | HTTP JSON（僅 exchange overview），以神聖石計價 |
 | 官方賣場 | pathofexile.com/api/trade | HTTP JSON（search + fetch） |
 | 流派 | poe.ninja builds | HTTP（含 protobuf 解析） |
-| 中文物品名 | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
+| 中文物品名（PoE1） | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
+| 中文物品名（PoE2） | poe2db.tw 物品頁 ＋ `names_zh_poe2.json` | 以 poe.ninja 回傳的英文名逐一查 poe2db 頁面標題，寫入對照表 |
 | 每季開荒推薦（PoE1） | `league_starters.json` | 本地標籤目錄＋篩選推薦（可手動更新） |
 | 每季開荒推薦（PoE2） | maxroll.gg 開荒昇華 tier list ＋ poe2db.tw | 解析 Maxroll 伺服器端渲染的 tier list，昇華名稱再向 poe2db 取繁中，寫入 `league_starters_poe2.json` |
 
@@ -114,13 +118,15 @@ poe_affix/
   economy*.py / builds*.py / trade*.py  # 價格、流派、官方賣場
   starters*.py                    # 每季開荒推薦（含 starters_sync.py：Maxroll PoE2 tier list）
   chinese*.py                     # 中文化 PIN
-  i18n.py / theme.py / net.py
+  i18n.py / i18n_sync.py          # 中文名對照（i18n_sync.py：向 poe2db 補 PoE2 名稱）
+  theme.py / net.py
 poe_affix_data/
   mods.json
   mods_poe2.json
   vendor.json
   crafting.json
   names_zh.json
+  names_zh_poe2.json              # PoE2 物品中文名（poe2db）
   league_starters.json            # PoE1 開荒 Build 標籤目錄
   league_starters_poe2.json       # PoE2 開荒昇華 tier list（Maxroll）
 ```
@@ -128,7 +134,8 @@ poe_affix_data/
 ## 改版後建議維護順序
 
 1. 等 PoEDB／PoE2DB 更新後，同步對應遊戲的詞綴（工藝／商店仍為 PoE1）
-2. 查價若出現英文／空白名稱，補 `names_zh.json` 或 `i18n.py` 的 `EXTRA_NAMES`
+2. 查價若出現英文／空白名稱：PoE1 補 `names_zh.json` 或 `i18n.py` 的 `EXTRA_NAMES`；
+   PoE2 跑 `py -3 -m poe_affix.i18n_sync`（新聯盟物品 poe2db 可能還沒有繁中，會保留英文）
 3. poe.ninja 新增經濟分類時，更新 `economy.py` 的 `EXCHANGE_TYPES`／`ITEM_TYPES`／`EXCHANGE_TYPES_POE2`
 4. 新聯盟開季時更新 `league_starters.json`（標籤、梯隊、Guide／PoB 連結）；PoE2 直接按「更新 PoE2 資料」重抓 Maxroll
 5. 同步或 PIN／流派整頁失敗時，再檢查 HTML／API 解析程式

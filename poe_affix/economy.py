@@ -338,7 +338,7 @@ def _parse_exchange(game: str, league: League, api_type: str, payload: dict) -> 
         primary = _to_float(line.get("primaryValue"))
         secondary = primary * secondary_per_primary if secondary_per_primary else 0.0
         details_id = str(meta.get("detailsId") or item_id or "")
-        name_zh = translate_name(name)
+        name_zh = translate_name(name, game)
         aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
         rows.append(
             PriceRow(
@@ -400,10 +400,10 @@ def _parse_items(game: str, league: League, api_type: str, payload: dict) -> lis
         extra = _item_extra(line)
         # Scrying orbs are keyed by bare map names on poe.ninja (e.g. "Beach").
         if api_type == "ScryingOrb":
-            name_zh = translate_name(f"{name} Map") or translate_name(name)
+            name_zh = translate_name(f"{name} Map", game) or translate_name(name, game)
         else:
-            name_zh = translate_name(name)
-        base_zh = translate_name(str(line.get("baseType") or ""))
+            name_zh = translate_name(name, game)
+        base_zh = translate_name(str(line.get("baseType") or ""), game)
         rows.append(
             PriceRow(
                 name=name,

@@ -4,6 +4,7 @@ Sources:
 - PoeCharm zh-rTW item maps
 - POE Ninja 中文化 extension index (yuh926323/poe-ninja-translator, from poedb.tw)
 - poedb.tw item pages for leftovers
+- poe2db.tw item pages for PoE2 (`names_zh_poe2.json`, see i18n_sync.py)
 """
 
 from __future__ import annotations
@@ -24,6 +25,8 @@ PREFIXES = (
 _MAP_TIER_RE = re.compile(r"^(?:(.*) )?Map \(Tier (\d+)\)$")
 _VAAL_TEMPLE_RE = re.compile(r"^(.*) Vaal Temple Map$")
 _TEMPLE_ROOM_TIER_RE = re.compile(r"^(.*) \(Tier (\d+)\)$")
+# poe.ninja tags PoE2 gems / flux with a level, e.g. "Uncut Skill Gem (Level 12)".
+LEVEL_SUFFIX_RE = re.compile(r"^(.*?)\s*\(Level (\d+)\)$")
 
 MAP_NAME_PARTS: dict[str, str] = {
     "Al-Hezmin": "奧赫茲明",
@@ -334,6 +337,21 @@ def name_map() -> dict[str, str]:
     return mapping
 
 
+@lru_cache(maxsize=1)
+def name_map_poe2() -> dict[str, str]:
+    """PoE2-only names harvested from poe2db (see i18n_sync.py)."""
+    path = resolve_named_data("names_zh_poe2.json")
+    if not path:
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    return {str(key): str(value) for key, value in data.items() if key and value}
+
+
 def _translate_temple_room(english: str, mapping: dict[str, str]) -> str:
     """Translate Atzoatl room names, including poe.ninja ``(Tier N)`` suffixes."""
     tier_match = _TEMPLE_ROOM_TIER_RE.match(english)
@@ -381,22 +399,31 @@ def _translate_map_label(english: str, mapping: dict[str, str]) -> str:
     return ""
 
 
-def translate_name(english: str) -> str:
+def translate_name(english: str, game: str = "poe1") -> str:
     if not english:
         return ""
+    if game == "poe2":
+        hit = name_map_poe2().get(english)
+        if hit:
+            return hit
     mapping = name_map()
     hit = mapping.get(english)
     if hit:
         return hit
     for prefix_en, prefix_zh in PREFIXES:
         if english.startswith(prefix_en):
-            rest = translate_name(english[len(prefix_en) :])
+            rest = translate_name(english[len(prefix_en) :], game)
             if rest:
                 return prefix_zh + rest
     if english.startswith("Deafening Essence of "):
         stat = english.removeprefix("Deafening Essence of ")
         if stat in {"Horror", "Delirium", "Hysteria", "Insanity"}:
-            return translate_name(f"Essence of {stat}")
+            return translate_name(f"Essence of {stat}", game)
+    level_match = LEVEL_SUFFIX_RE.match(english)
+    if level_match:
+        base_zh = translate_name(level_match.group(1), game)
+        if base_zh:
+            return f"{base_zh}（等級 {level_match.group(2)}）"
     map_zh = _translate_map_label(english, mapping)
     if map_zh:
         return map_zh
