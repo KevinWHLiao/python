@@ -80,6 +80,10 @@ class CheckGroup(ctk.CTkFrame):
         for col in range(columns):
             self.grid_columnconfigure(col, weight=1)
 
+    @property
+    def options(self) -> list[str]:
+        return list(self._vars)
+
     def selected(self) -> list[str]:
         return [label for label, var in self._vars.items() if var.get()]
 
@@ -295,6 +299,8 @@ class StartersApp(ctk.CTkToplevel):
         ).pack(fill="x", pady=(0, 8))
 
         self._detail_labels: dict[str, ctk.CTkLabel] = {}
+        self._detail_blocks: dict[str, ctk.CTkFrame] = {}
+        self._detail_order = ("meta", "reasons", "pros", "cons", "leveling")
         for key, title in (
             ("meta", "基本資訊"),
             ("reasons", "為什麼推薦你"),
@@ -306,6 +312,7 @@ class StartersApp(ctk.CTkToplevel):
                 self.detail_scroll, fg_color="#12161f", corner_radius=10, border_width=1, border_color=LINE_SOFT
             )
             block.pack(fill="x", pady=4)
+            self._detail_blocks[key] = block
             ctk.CTkLabel(block, text=title, font=(FONT_FAMILY, 12, "bold"), text_color=GOLD_HI, anchor="w").pack(
                 fill="x", padx=10, pady=(8, 2)
             )
@@ -321,7 +328,7 @@ class StartersApp(ctk.CTkToplevel):
             label.pack(fill="x", padx=10, pady=(0, 8))
             self._detail_labels[key] = label
 
-        actions = ctk.CTkFrame(self.detail_scroll, fg_color="transparent")
+        actions = self._detail_actions = ctk.CTkFrame(self.detail_scroll, fg_color="transparent")
         actions.pack(fill="x", pady=(10, 0))
         primary_button(actions, "開啟 Guide", command=self.open_guide, width=120).pack(side="left")
         ghost_button(actions, "開啟 PoB", command=self.open_pob, width=100).pack(side="left", padx=8)
@@ -413,15 +420,16 @@ class StartersApp(ctk.CTkToplevel):
             child.destroy()
 
         self.style_group = CheckGroup(self.chip_host, "類型流派", catalog.styles or [], columns=4)
-        self.style_group.pack(fill="x", pady=(0, 8))
         self.damage_group = CheckGroup(self.chip_host, "傷害類型", catalog.damage_types or [], columns=5)
-        self.damage_group.pack(fill="x", pady=(0, 8))
         self.play_group = CheckGroup(self.chip_host, "手感標籤", catalog.playstyles or [], columns=4)
-        self.play_group.pack(fill="x", pady=(0, 8))
         self.goal_group = CheckGroup(self.chip_host, "目標", catalog.goals or [], columns=4)
-        self.goal_group.pack(fill="x")
 
-        for group in (self.style_group, self.damage_group, self.play_group, self.goal_group):
+        groups = (self.style_group, self.damage_group, self.play_group, self.goal_group)
+        # Maxroll's PoE2 tier list has no damage / playstyle / goal tags; skip those rows.
+        visible = [group for group in groups if group.options]
+        for index, group in enumerate(visible):
+            group.pack(fill="x", pady=(0, 8) if index < len(visible) - 1 else 0)
+        for group in groups:
             group.bind_change(self.refresh)
 
         self.status_var.set(
@@ -511,8 +519,7 @@ class StartersApp(ctk.CTkToplevel):
             self._selected = None
             self.detail_title_var.set("沒有符合條件的 Build")
             self.detail_summary_var.set("試著少選幾個標籤，或把預算／難度改回「全部」。")
-            for label in self._detail_labels.values():
-                label.configure(text="—")
+            self._fill_detail({})
 
     def _on_select(self, _event=None) -> None:
         selected = self.tree.selection()
@@ -540,11 +547,29 @@ class StartersApp(ctk.CTkToplevel):
             f"難度：{build.difficulty_label}",
             f"模式：{format_mode_list(build.modes)}",
         ]
-        self._detail_labels["meta"].configure(text="\n".join(meta_lines))
-        self._detail_labels["reasons"].configure(text="\n".join(f"· {reason}" for reason in item.reasons) or "—")
-        self._detail_labels["pros"].configure(text="\n".join(f"· {text}" for text in build.pros) or "—")
-        self._detail_labels["cons"].configure(text="\n".join(f"· {text}" for text in build.cons) or "—")
-        self._detail_labels["leveling"].configure(text=build.leveling or "—")
+        self._fill_detail(
+            {
+                "meta": "\n".join(meta_lines),
+                "reasons": "\n".join(f"· {reason}" for reason in item.reasons),
+                "pros": "\n".join(f"· {text}" for text in build.pros),
+                "cons": "\n".join(f"· {text}" for text in build.cons),
+                "leveling": build.leveling,
+            }
+        )
+
+    def _fill_detail(self, texts: dict[str, str]) -> None:
+        """Fill the detail blocks, hiding the ones whose field is empty.
+
+        Maxroll's PoE2 entries carry no pros / cons / leveling notes, so those
+        blocks would otherwise render as empty boxes.
+        """
+        for key in self._detail_order:
+            self._detail_blocks[key].pack_forget()
+        for key in self._detail_order:
+            text = texts.get(key) or ""
+            self._detail_labels[key].configure(text=text or "—")
+            if text:
+                self._detail_blocks[key].pack(fill="x", pady=4, before=self._detail_actions)
 
     def open_guide(self, _event=None) -> None:
         item = self._selected
