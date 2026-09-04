@@ -12,7 +12,7 @@ Path of Exile（PoE1）與 Path of Exile 2 用的 Windows 桌面查詢工具。�
 | **價格查詢** | 可切換 PoE1／PoE2 的 poe.ninja 估價。PoE1：通貨、傳奇、寶石、輿圖等；PoE2：通貨、碎片、精華、符文、魂核、神像、未切割寶石、探險文物、深淵之骨、族裔寶石、徵兆、催化劑、液態情緒、維里西姆、傳奇武器／護甲／飾品／藥劑／護符／珠寶／聖物／石板、先驅石板 |
 | **官方賣場** | pathofexile.com/trade：關鍵字提示、賣家狀態、分類／物等／價格／詞綴過濾、上架預覽 |
 | **流派排名** | poe.ninja 熱門流派、DPS／EHP、逐日占比 |
-| **每季開荒推薦** | 可切換 PoE1／PoE2。PoE1：依類型／手感／預算篩選開荒 Build（本地目錄）；PoE2：Maxroll 開荒昇華 tier list（可線上更新） |
+| **每季開荒推薦** | 可切換 PoE1／PoE2。PoE1：依類型／手感／預算篩選開荒 Build（本地目錄）；PoE2：Maxroll 開荒 Build tier list（含 Guide 優缺點、Planner，可線上更新） |
 | **中文化 PIN** | poedb.tw 繁中／簡中 PIN 與遊戲版本 |
 | **外部連結** | Craft of Exile、軍團珠寶（Timeless Jewel）查詢 |
 
@@ -90,7 +90,7 @@ GUI 內也可分別更新：
 | 中文物品名（PoE1） | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |
 | 中文物品名（PoE2） | poe2db.tw 物品頁 ＋ `names_zh_poe2.json` | 以 poe.ninja 回傳的英文名逐一查 poe2db 頁面標題，寫入對照表 |
 | 每季開荒推薦（PoE1） | `league_starters.json` | 本地標籤目錄＋篩選推薦（可手動更新） |
-| 每季開荒推薦（PoE2） | maxroll.gg 開荒昇華 tier list ＋ poe2db.tw | 解析 Maxroll 伺服器端渲染的 tier list，昇華名稱再向 poe2db 取繁中，寫入 `league_starters_poe2.json` |
+| 每季開荒推薦（PoE2） | maxroll.gg 開荒 Build tier list ＋ poe2db.tw | 解析 Maxroll Build 評級與 Guide（介紹／優缺點／Planner），昇華名稱再向 poe2db 取繁中，寫入 `league_starters_poe2.json` |
 
 本地資料目錄：`poe_affix_data/`。
 
@@ -116,8 +116,8 @@ poe_affix/
   gui.py / catalog.py / sync.py   # 詞綴查詢與同步
   vendor*.py / craft*.py          # 商店、工藝
   economy*.py / builds*.py / trade*.py  # 價格、流派、官方賣場
-  starters*.py                    # 每季開荒推薦（含 starters_sync.py：Maxroll PoE2 tier list）
-  chinese*.py                     # 中文化 PIN
+  starters*.py                    # 每季開荒推薦（含 starters_sync.py：Maxroll PoE2 Build tier list）
+  chinese*.py / poe2_version.py   # 中文化 PIN、PoE2 遊戲版本
   i18n.py / i18n_sync.py          # 中文名對照（i18n_sync.py：向 poe2db 補 PoE2 名稱）
   theme.py / net.py
 poe_affix_data/

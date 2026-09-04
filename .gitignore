@@ -20,4 +20,5 @@ dist/*
 nba_logs/
 .vscode/
 poe_affix_data/chinese_pin.json
+poe_affix_data/poe2_version.json
 poe_affix_data/settings.json

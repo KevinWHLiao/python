@@ -1,24 +1,26 @@
 {
   "game": "poe2",
-  "league": "Return of the Ancients 0.5.4",
-  "league_zh": "流亡黯道 2 · Return of the Ancients 0.5.4",
-  "updated": "2026-09-03",
-  "source": "https://maxroll.gg/poe2/tierlists/league-starter-ascendancy-tier-list",
-  "notes": "資料來源：Maxroll 開荒昇華 tier list　·　Return of the Ancients 0.5.4　·　作者 Crouching_Tuna　·　Maxroll 更新 August 31, 2026",
-  "intro": "This Ascendancy Tier List ranks the most powerful and popular Ascendancies in the game with links to Build Guides. Path of Exile has an incredible amount of Build variety, and generally every single Ascendancy is powerful if build correctly. Important The Endgame Meta is never static.",
+  "league": "Forbidden Rites 0.5.5",
+  "league_zh": "流亡黯道 2 · Forbidden Rites 0.5.5",
+  "updated": "2026-09-04",
+  "source": "https://maxroll.gg/poe2/tierlists/league-starter-build-tier-list",
+  "notes": "資料來源：Maxroll 開荒 Build tier list　·　總表 https://maxroll.gg/poe2/tierlists　·　Forbidden Rites 0.5.5　·　Maxroll 更新 September 3, 2026",
+  "intro": "This League Starter Build Tier List ranks our most powerful and popular builds with links to Build Guides. Path of Exile 2 has an incredible amount of build variety, generally every single Ascendancy is powerful if build correctly. While the team is working hard to create and cover all meta builds, some are still missing.",
   "styles": [
-    "女獵人",
-    "女術者",
-    "戰士",
-    "德魯伊",
-    "遊俠",
-    "僧侶",
     "傭兵",
+    "女術者",
+    "德魯伊",
+    "僧侶",
+    "女獵人",
+    "遊俠",
+    "戰士",
     "女巫"
   ],
   "damage_types": [],
   "playstyles": [],
-  "goals": [],
+  "goals": [
+    "開荒推圖"
+  ],
   "budgets": [
     {
       "id": "league_start",
@@ -27,484 +29,987 @@
   ],
   "difficulties": [
     {
+      "id": "easy",
+      "label": "簡單"
+    },
+    {
       "id": "medium",
       "label": "中等"
+    },
+    {
+      "id": "hard",
+      "label": "進階"
     }
   ],
   "builds": [
     {
-      "id": "poe2-spirit-walker",
-      "name": "Spirit Walker",
-      "name_zh": "魂靈行者（Spirit Walker）",
-      "ascendancy": "Spirit Walker",
-      "ascendancy_zh": "魂靈行者",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-flameblast-oil-grenade-gemling-build-guide",
+      "name": "Flameblast Oil Grenade Gemling",
+      "name_zh": "Flameblast Oil Grenade Gemling（古靈軍團）",
+      "ascendancy": "Gemling Legionnaire",
+      "ascendancy_zh": "古靈軍團",
+      "skill": "Flameblast Oil Grenade",
+      "skill_zh": "Flameblast Oil Grenade",
       "styles": [
-        "女獵人"
+        "傭兵"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "S",
       "score_bias": -0.0,
-      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Spirit Walker 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=huntress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=spirit-walker",
-      "pob_url": "",
+      "pros": [
+        "Amazing for Ritual, Simulacrum, Abyss and more",
+        "Very High DPS, Mobility and AoE",
+        "No expensive Lineage Gems",
+        "Near 0 APM Bossing"
+      ],
+      "cons": [
+        "Might take some getting used to",
+        "%less Cooldown Recovery Waystones feel bad",
+        "Potential FPS Problems"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 This Flameblast Oil Grenade Gemling Build Guide teaches you how to gear your Mercenary to spread absurdly high DPS, full screen AoE ignited ground across the entire map, causing every mob that walks onto your toasty warm oil carpet to disappear almost immediately. Close your eyes and get some rest as you click your only button once every 10 seconds during stationary content such as Ritual or Simulacrum. Alternativ…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/flameblast-oil-grenade-gemling-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/nwgl0t0i",
       "tags": [
         "S",
-        "女獵人",
-        "Spirit Walker"
+        "傭兵",
+        "Gemling Legionnaire",
+        "Flameblast Oil Grenade",
+        "Flameblast Oil Grenade Gemling",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-disciple-of-varashta",
-      "name": "Disciple of Varashta",
-      "name_zh": "瓦拉什塔門徒（Disciple of Varashta）",
+      "id": "poe2-disciple-of-varashta-minion-build-guide",
+      "name": "Disciple of Varashta Minion",
+      "name_zh": "Disciple of Varashta Minion（瓦拉什塔門徒）",
       "ascendancy": "Disciple of Varashta",
       "ascendancy_zh": "瓦拉什塔門徒",
-      "skill": "",
-      "skill_zh": "",
+      "skill": "Minion",
+      "skill_zh": "Minion",
       "styles": [
         "女術者"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "S",
       "score_bias": -0.1,
-      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Disciple of Varashta 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=sorceress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=disciple-of-varashta",
-      "pob_url": "",
+      "pros": [
+        "Very tanky",
+        "Very high damage",
+        "Can be button intensive"
+      ],
+      "cons": [
+        "Minions",
+        "Visual Clarity"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 This Disciple of Varashta Minion Build Guide for the Sorceress Class uses a variety of Djinns, Minions, Spells and Curses to deal with enemies. You can follow it from the start of the campaign and continue all the way into the endgame. During the campaign, you summon Raging Spirits by casting Volcano . Then, use the Minion command skills provided by Skeletal Snipers , Kelari, the Tainted Sands and Ruzhan, the Blaz…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/disciple-of-varashta-minion-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/lo2p80kj",
       "tags": [
         "S",
         "女術者",
-        "Disciple of Varashta"
+        "Disciple of Varashta",
+        "Minion",
+        "Disciple of Varashta Minion",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-titan",
-      "name": "Titan",
-      "name_zh": "泰坦（Titan）",
-      "ascendancy": "Titan",
-      "ascendancy_zh": "泰坦",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-gemling-legionnaire-twister-build-guide",
+      "name": "Twister Gemling",
+      "name_zh": "Twister Gemling（古靈軍團）",
+      "ascendancy": "Gemling Legionnaire",
+      "ascendancy_zh": "古靈軍團",
+      "skill": "Twister",
+      "skill_zh": "Twister",
       "styles": [
-        "戰士"
+        "傭兵"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "S",
       "score_bias": -0.2,
-      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Titan 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=warrior&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=titan",
-      "pob_url": "",
+      "pros": [
+        "Very Fast Mobility",
+        "Insane DPS",
+        "Fun Minmax"
+      ],
+      "cons": [
+        "More Than 1 Button",
+        "No Walls Hurts Single Target"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 The Gemling Legionnaire Twister build is an absolute demon in terms of speed. This build quickly dashes across maps by using Whirling Slash for movement, instead of sprinting normally.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/gemling-legionnaire-twister-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/7l9yt0po",
       "tags": [
         "S",
-        "戰士",
-        "Titan"
+        "傭兵",
+        "Gemling Legionnaire",
+        "Twister",
+        "Twister Gemling",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-oracle",
-      "name": "Oracle",
-      "name_zh": "先知（Oracle）",
+      "id": "poe2-grim-pillars-spell-totem-oracle-build-guide",
+      "name": "Grim Pillars Spell Totem Oracle",
+      "name_zh": "Grim Pillars Spell Totem Oracle（先知）",
       "ascendancy": "Oracle",
       "ascendancy_zh": "先知",
-      "skill": "",
-      "skill_zh": "",
+      "skill": "Grim Pillars Spell Totem",
+      "skill_zh": "Grim Pillars Spell Totem",
       "styles": [
         "德魯伊"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "S",
       "score_bias": -0.3,
-      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Oracle 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=druid&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=oracle",
-      "pob_url": "",
+      "pros": [
+        "Easily one of the best Leaguestarters in the game",
+        "Absurd damage and clearspeed on little Gear",
+        "Extremely defensive playstyle"
+      ],
+      "cons": [
+        "Not everyone likes the Totem playstyle",
+        "Hard on your GPU/CPU (lots of effects)"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 Ever wanted to place down spellcasting Totems and see your whole screen light up with Icy Explosions? Well today's your lucky day!",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/grim-pillars-spell-totem-oracle-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/z7coxn0y",
       "tags": [
         "S",
         "德魯伊",
-        "Oracle"
+        "Oracle",
+        "Grim Pillars Spell Totem",
+        "Grim Pillars Spell Totem Oracle",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-deadeye",
-      "name": "Deadeye",
-      "name_zh": "銳眼（Deadeye）",
-      "ascendancy": "Deadeye",
-      "ascendancy_zh": "銳眼",
-      "skill": "",
-      "skill_zh": "",
-      "styles": [
-        "遊俠"
-      ],
-      "damage": [],
-      "playstyles": [],
-      "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
-      "modes": [
-        "trade",
-        "ssf"
-      ],
-      "tier": "S",
-      "score_bias": -0.4,
-      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Deadeye 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=ranger&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=deadeye",
-      "pob_url": "",
-      "tags": [
-        "S",
-        "遊俠",
-        "Deadeye"
-      ]
-    },
-    {
-      "id": "poe2-martial-artist",
-      "name": "Martial Artist",
-      "name_zh": "武聖（Martial Artist）",
+      "id": "poe2-hollow-form-whirling-assault-martial-artist-build-guide",
+      "name": "Hollow Form Whirling Assault Martial Artist",
+      "name_zh": "Hollow Form Whirling Assault Martial Artist（武聖）",
       "ascendancy": "Martial Artist",
       "ascendancy_zh": "武聖",
-      "skill": "",
-      "skill_zh": "",
+      "skill": "Hollow Form Whirling Assault",
+      "skill_zh": "Hollow Form Whirling Assault",
       "styles": [
         "僧侶"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "S",
-      "score_bias": -0.5,
-      "summary": "Maxroll 開荒評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Martial Artist 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=monk&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=martial-artist",
-      "pob_url": "",
+      "score_bias": -0.4,
+      "pros": [
+        "Mostly a 1-button build",
+        "well rounded Clear, DPS and Defenses"
+      ],
+      "cons": [
+        "Poor Visual Clarity"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 S 級。 最強開荒選擇，容錯高、成長曲線平穩。 The Hollow Form Whirling Assault Martial Artist Build guide revolves around channelling Hollow Form to summon clones of yourself that attack with Whirling Assault . Just tap Hollow Form and the images use the full Whirling Assault attack sequence, making for a smooth and convenient playstyle.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/hollow-form-whirling-assault-martial-artist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/lq6fv0yy",
       "tags": [
         "S",
         "僧侶",
-        "Martial Artist"
+        "Martial Artist",
+        "Hollow Form Whirling Assault",
+        "Hollow Form Whirling Assault Martial Artist",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-gemling-legionnaire",
-      "name": "Gemling Legionnaire",
-      "name_zh": "古靈軍團（Gemling Legionnaire）",
-      "ascendancy": "Gemling Legionnaire",
-      "ascendancy_zh": "古靈軍團",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-whirling-assault-martial-artist-build-guide",
+      "name": "Whirling Assault Martial Artist",
+      "name_zh": "Whirling Assault Martial Artist（武聖）",
+      "ascendancy": "Martial Artist",
+      "ascendancy_zh": "武聖",
+      "skill": "Whirling Assault",
+      "skill_zh": "Whirling Assault",
       "styles": [
-        "傭兵"
+        "僧侶"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "A",
       "score_bias": -0.0,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Gemling Legionnaire 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=mercenary&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=gemling-legionnaire",
-      "pob_url": "",
+      "pros": [
+        "SSF Campaign ~4Hours, Arbiter ~8Hours",
+        "Strong AoE Clear",
+        "Large ES Pool"
+      ],
+      "cons": [
+        "Don't Get Hit Playstyle"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Whirling Assault Martial Artist Build Guide teaches you the most efficient way to level your character, progress the Atlas, and scale into Endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/whirling-assault-martial-artist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/yu2okf0n",
       "tags": [
         "A",
-        "傭兵",
-        "Gemling Legionnaire"
+        "僧侶",
+        "Martial Artist",
+        "Whirling Assault",
+        "Whirling Assault Martial Artist",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-witchhunter",
-      "name": "Witchhunter",
-      "name_zh": "女巫獵人（Witchhunter）",
-      "ascendancy": "Witchhunter",
-      "ascendancy_zh": "女巫獵人",
-      "skill": "",
-      "skill_zh": "",
-      "styles": [
-        "傭兵"
-      ],
-      "damage": [],
-      "playstyles": [],
-      "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
-      "modes": [
-        "trade",
-        "ssf"
-      ],
-      "tier": "A",
-      "score_bias": -0.1,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Witchhunter 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=mercenary&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=witchhunter",
-      "pob_url": "",
-      "tags": [
-        "A",
-        "傭兵",
-        "Witchhunter"
-      ]
-    },
-    {
-      "id": "poe2-amazon",
-      "name": "Amazon",
-      "name_zh": "亞馬遜（Amazon）",
-      "ascendancy": "Amazon",
-      "ascendancy_zh": "亞馬遜",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-minion-army-spirit-walker-build-guide",
+      "name": "Minion Army Spirit Walker",
+      "name_zh": "Minion Army Spirit Walker（魂靈行者）",
+      "ascendancy": "Spirit Walker",
+      "ascendancy_zh": "魂靈行者",
+      "skill": "Minion Army",
+      "skill_zh": "Minion Army",
       "styles": [
         "女獵人"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.1,
+      "pros": [
+        "Minions",
+        "Tanky (With CI)",
+        "Very high damage",
+        "Few buttons with Minions",
+        "Early Minion swap in Act 2"
+      ],
+      "cons": [
+        "Minions",
+        "Many buttons in Act 1 & 2",
+        "Non-Minion leveling in Act 1 & 2",
+        "Must Tame Specific Companions"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Minion Army Spirit Walker Build Guide for the Huntress class levels up with Twister in Act 1 and at the start of Act 2, but then as soon as you finish your first Ascendancy in Act 2 you swap over to a full Minion play-style. Then use Wild Protector , to crush everything in the campaign. Later when you finish your second Ascendancy in Act 3 you gain access to The Natural Order which is when you tame the Mighty…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/minion-army-spirit-walker-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/cm547b06",
+      "tags": [
+        "A",
+        "女獵人",
+        "Spirit Walker",
+        "Minion Army",
+        "Minion Army Spirit Walker",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-falling-thunder-martial-artist-build-guide",
+      "name": "Falling Thunder Martial Artist",
+      "name_zh": "Falling Thunder Martial Artist（武聖）",
+      "ascendancy": "Martial Artist",
+      "ascendancy_zh": "武聖",
+      "skill": "Falling Thunder",
+      "skill_zh": "Falling Thunder",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "A",
       "score_bias": -0.2,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Amazon 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=huntress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=amazon",
-      "pob_url": "",
+      "pros": [
+        "Great Scaling",
+        "Herald Explosions",
+        "High Boss Damage"
+      ],
+      "cons": [
+        "Melee",
+        "Rough Act 1",
+        "Combo Based"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 The Falling Thunder Martial Artist teaches you how to take your character from Level 1 all the way to Pinnacle Endgame content. The build utilizes multiple methods of generating Power Charges throughout progression which are spent on Falling Thunder to deal massive damage. In the endgame, the build takes the Martial Master Acsendancy Notable, causing your Herald of Thunder , Herald of Ice and Charged Staff to gene…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/falling-thunder-martial-artist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/r8cq6j0y",
       "tags": [
         "A",
-        "女獵人",
-        "Amazon"
+        "僧侶",
+        "Martial Artist",
+        "Falling Thunder",
+        "Falling Thunder Martial Artist",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-tactician",
-      "name": "Tactician",
-      "name_zh": "智勇軍師（Tactician）",
-      "ascendancy": "Tactician",
-      "ascendancy_zh": "智勇軍師",
-      "skill": "",
-      "skill_zh": "",
-      "styles": [
-        "傭兵"
-      ],
-      "damage": [],
-      "playstyles": [],
-      "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
-      "modes": [
-        "trade",
-        "ssf"
-      ],
-      "tier": "A",
-      "score_bias": -0.3,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Tactician 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=mercenary&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=tactician",
-      "pob_url": "",
-      "tags": [
-        "A",
-        "傭兵",
-        "Tactician"
-      ]
-    },
-    {
-      "id": "poe2-smith-of-kitava",
-      "name": "Smith of Kitava",
-      "name_zh": "奇塔弗工匠（Smith of Kitava）",
-      "ascendancy": "Smith of Kitava",
-      "ascendancy_zh": "奇塔弗工匠",
-      "skill": "",
-      "skill_zh": "",
-      "styles": [
-        "戰士"
-      ],
-      "damage": [],
-      "playstyles": [],
-      "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
-      "modes": [
-        "trade",
-        "ssf"
-      ],
-      "tier": "A",
-      "score_bias": -0.4,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Smith of Kitava 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=warrior&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=smith-of-kitava",
-      "pob_url": "",
-      "tags": [
-        "A",
-        "戰士",
-        "Smith of Kitava"
-      ]
-    },
-    {
-      "id": "poe2-shaman",
-      "name": "Shaman",
-      "name_zh": "薩滿（Shaman）",
-      "ascendancy": "Shaman",
-      "ascendancy_zh": "薩滿",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-entangle-oracle-build-guide",
+      "name": "Entangle Oracle",
+      "name_zh": "Entangle Oracle（先知）",
+      "ascendancy": "Oracle",
+      "ascendancy_zh": "先知",
+      "skill": "Entangle",
+      "skill_zh": "Entangle",
       "styles": [
         "德魯伊"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.3,
+      "pros": [
+        "Easy Map Clear",
+        "Auto Targetting",
+        "Cheap Leaguestart"
+      ],
+      "cons": [
+        "Visual Clutter",
+        "Pinnacles Require Investment"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 The Entangle Oracle build invokes nature's fury to destroy enemies with storms and vines! Oracles with Entwined Realities can allocate high value notables near allocated Keystones, gaining more power for less passives. Cast Entangle to spread vines and Thunderstorm to make them Overgrown for more damage. Accelerated Growth II adds nature explosions and applies Blind. Thrashing Vines creates bigger vines to slam bo…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/entangle-oracle-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/sm2mcf0n",
+      "tags": [
+        "A",
+        "德魯伊",
+        "Oracle",
+        "Entangle",
+        "Entangle Oracle",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-hollow-focus-storm-wave-martial-artist-build-guide",
+      "name": "Hollow Focus Storm Wave Martial Artist",
+      "name_zh": "Hollow Focus Storm Wave Martial Artist（武聖）",
+      "ascendancy": "Martial Artist",
+      "ascendancy_zh": "武聖",
+      "skill": "Hollow Focus Storm Wave",
+      "skill_zh": "Hollow Focus Storm Wave",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.4,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 The Hollow Focus Storm Wave Martial Artist Build obliterates maps by exploding the bells it generates with Hollow Focus. Shattering Palm is the main source of clear later on in combination with Herald of Ice Armor Explosions. Storm Wave cleans up any leftovers and does extremely well by overlapping it's fissures for single target damage. Tempest Bell ties everything together helping both Single Target and Clear.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/hollow-focus-storm-wave-martial-artist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/b83abp0y",
+      "tags": [
+        "A",
+        "僧侶",
+        "Martial Artist",
+        "Hollow Focus Storm Wave",
+        "Hollow Focus Storm Wave Martial Artist",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-spirit-walker-twisters",
+      "name": "Twisters Spirit Walker",
+      "name_zh": "Twisters Spirit Walker（魂靈行者）",
+      "ascendancy": "Spirit Walker",
+      "ascendancy_zh": "魂靈行者",
+      "skill": "Twisters",
+      "skill_zh": "Twisters",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "A",
       "score_bias": -0.5,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Shaman 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=druid&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=shaman",
-      "pob_url": "",
+      "pros": [
+        "Huge offscreen clear",
+        "Fast",
+        "Big Single Target"
+      ],
+      "cons": [
+        "Combo-style gameplay",
+        "Can be vulnerable due to long setup time for damage"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Spirit Walker Twisters Build Guide for the Huntress class is capable of massive single target and clear using the same combo. This guide takes you from level 1 all the way into the endgame. You get both of your main skills at level 1, so you can begin your endgame build right away! Whirling Slash spins up a storm around you. After three attacks, you unleash a volley of Twister s. Barrage gives you more tornad…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/spirit-walker-twisters",
+      "pob_url": "https://maxroll.gg/poe2/planner/hs2fcr0n",
       "tags": [
         "A",
-        "德魯伊",
-        "Shaman"
+        "女獵人",
+        "Spirit Walker",
+        "Twisters",
+        "Twisters Spirit Walker",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-lich",
-      "name": "Lich",
-      "name_zh": "巫妖（Lich）",
-      "ascendancy": "Lich",
-      "ascendancy_zh": "巫妖",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-ice-shot-deadeye-build-guide",
+      "name": "Ice Shot Deadeye",
+      "name_zh": "Ice Shot Deadeye（銳眼）",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Ice Shot",
+      "skill_zh": "Ice Shot",
       "styles": [
-        "女巫"
+        "遊俠"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "A",
       "score_bias": -0.6,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Lich 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=witch&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=lich",
-      "pob_url": "",
+      "pros": [
+        "Fast",
+        "Great Clear",
+        "Chunky Single Target",
+        "Avoids most damage"
+      ],
+      "cons": [
+        "Snipe can be tricky",
+        "Weak to Damage Over Time"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Ice Shot Deadeye Build Guide on the Ranger Class provides massive freezes and chunky cold damage to shatter her enemies. Quickly clear the area with Icy projectiles and huge cold explosions. Unleash a devastating volley of cold damage with Ice Shot and Ice-Tipped Arrows to clear massive packs of enemies.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/ice-shot-deadeye-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/3511pr0g",
       "tags": [
         "A",
-        "女巫",
-        "Lich"
+        "遊俠",
+        "Deadeye",
+        "Ice Shot",
+        "Ice Shot Deadeye",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-pathfinder",
-      "name": "Pathfinder",
-      "name_zh": "追獵者（Pathfinder）",
-      "ascendancy": "Pathfinder",
-      "ascendancy_zh": "追獵者",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-shield-wall-warbringer-build-guide",
+      "name": "Shield Wall Warbringer",
+      "name_zh": "Shield Wall Warbringer（戰爭使者）",
+      "ascendancy": "Warbringer",
+      "ascendancy_zh": "戰爭使者",
+      "skill": "Shield Wall",
+      "skill_zh": "Shield Wall",
       "styles": [
-        "遊俠"
+        "戰士"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
-      "difficulty": "medium",
-      "goals": [],
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "A",
       "score_bias": -0.7,
-      "summary": "Maxroll 開荒評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Pathfinder 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=ranger&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=pathfinder",
-      "pob_url": "",
+      "pros": [
+        "Easy to acquire gear",
+        "Corpse explosions",
+        "Good damage and speed on low budget"
+      ],
+      "cons": [
+        "Slow animations early on",
+        "Lower scaling in the very endgame"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 The Shield Wall Warbringer raises massive walls spanning across the entire screen and detonates them in giant, earthshaking explosions. Ahn's Citadel and Kaom's Madness lineage support gems allow Shield Wall to be cast as multiple branching fissures instead, causing it to cover a much larger area.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/shield-wall-warbringer-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/m0ghn10i",
       "tags": [
         "A",
-        "遊俠",
-        "Pathfinder"
+        "戰士",
+        "Warbringer",
+        "Shield Wall",
+        "Shield Wall Warbringer",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-acolyte-of-chayula",
-      "name": "Acolyte of Chayula",
-      "name_zh": "夏烏拉侍僧（Acolyte of Chayula）",
-      "ascendancy": "Acolyte of Chayula",
-      "ascendancy_zh": "夏烏拉侍僧",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-supporting-fire-tactician-build-guide",
+      "name": "Supporting Fire Tactician",
+      "name_zh": "Supporting Fire Tactician（智勇軍師）",
+      "ascendancy": "Tactician",
+      "ascendancy_zh": "智勇軍師",
+      "skill": "Supporting Fire",
+      "skill_zh": "Supporting Fire",
+      "styles": [
+        "傭兵"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.8,
+      "pros": [
+        "1 Button Build",
+        "Phenomenal Clear",
+        "Great Defensive Scaling",
+        "Amazing League Starter",
+        "Scales Offense + Defense with One Stat"
+      ],
+      "cons": [
+        "Minion Tax on Gear",
+        "Suffix Pressure Endgame",
+        "Have To Play Crossbows Early On"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 Have you ever wanted to have an endless rain of arrows surround your presence, killing monsters before you even get a chance to see them? The Supporting Fire Tactician for the Mercenary Class is the build for you!",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/supporting-fire-tactician-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/s7555r0w",
+      "tags": [
+        "A",
+        "傭兵",
+        "Tactician",
+        "Supporting Fire",
+        "Supporting Fire Tactician",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-glacial-lance-deadeye",
+      "name": "Glacial Lance Deadeye",
+      "name_zh": "Glacial Lance Deadeye（銳眼）",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Glacial Lance",
+      "skill_zh": "Glacial Lance",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -0.9,
+      "pros": [
+        "Great Clear Speed",
+        "Good Boss Damage",
+        "Full Screen Freezes"
+      ],
+      "cons": [
+        "Not Made To Facetank Bosses",
+        "Needs Some Gear for Deep Endgame"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Glacial Lance Deadeye Build Guide for the Ranger Class provides massive freezes and chunky cold damage to shatter your enemies, allowing you to quickly clear the area with icy projectiles and huge cold explosions. Unleash an army of Mirages to clear the screen and burst down single targets using Mirage Archer and Mirage Deadeye .",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/glacial-lance-deadeye",
+      "pob_url": "https://maxroll.gg/poe2/planner/4h6gzj0x",
+      "tags": [
+        "A",
+        "遊俠",
+        "Deadeye",
+        "Glacial Lance",
+        "Glacial Lance Deadeye",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-twister-deadeye-build-guide",
+      "name": "Twister Deadeye",
+      "name_zh": "Twister Deadeye（銳眼）",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Twister",
+      "skill_zh": "Twister",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -1.0,
+      "pros": [
+        "Big Coverage",
+        "Satisfying Freezes and Shatters",
+        "Versatile for both bossing and Mapping"
+      ],
+      "cons": [
+        "Vulnrable during boss fights while waiting for cooldowns",
+        "Squishy Early"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 Looking to fill the screen with a barrage of elemental infused tornados that shatter your enemies? You came to the right place! The Twister Deadeye build guide for the Ranger class utilizes Whirling Slash and Twister to change the battlefield into a hurricane. You can begin this build at level 1 and play it all the way into the endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/twister-deadeye-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/hz5kac0n",
+      "tags": [
+        "A",
+        "遊俠",
+        "Deadeye",
+        "Twister",
+        "Twister Deadeye",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-companion-spirit-walker-build-guide",
+      "name": "Companion Spirit Walker",
+      "name_zh": "Companion Spirit Walker（魂靈行者）",
+      "ascendancy": "Spirit Walker",
+      "ascendancy_zh": "魂靈行者",
+      "skill": "Companion",
+      "skill_zh": "Companion",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -1.1,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Companion Spirit Walker for the Huntress class summons the Mighty Silverfist boss as a beast Companion: {0} to unleash his might, slamming your enemies with his massive Totem! As with every minion build, this offers a very simple playstyle where you can sit back and let your minions do the job for you.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/companion-spirit-walker-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/7c456i0y",
+      "tags": [
+        "A",
+        "女獵人",
+        "Spirit Walker",
+        "Companion",
+        "Companion Spirit Walker",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-oil-barrage-martial-artist-build-guide",
+      "name": "Oil Barrage Martial Artist",
+      "name_zh": "Oil Barrage Martial Artist（武聖）",
+      "ascendancy": "Martial Artist",
+      "ascendancy_zh": "武聖",
+      "skill": "Oil Barrage",
+      "skill_zh": "Oil Barrage",
       "styles": [
         "僧侶"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -1.2,
+      "pros": [
+        "SSF Campaign ~4Hours, Arbiter ~8Hours",
+        "Big Single Target Damage",
+        "Screen-Wide Clear",
+        "Layered Defences"
+      ],
+      "cons": [
+        "Don't Get Hit Playstyle",
+        "Channeling Delay (bypassed Late Game with Skill Speed)"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 This Oil Barrage Martial Artist Build Guide teaches you the most efficient way to level your character, progress the Atlas, and scale into Endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/oil-barrage-martial-artist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/bl5b6d0w",
+      "tags": [
+        "A",
+        "僧侶",
+        "Martial Artist",
+        "Oil Barrage",
+        "Oil Barrage Martial Artist",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-frostbolt-cast-on-crit-comet-oracle",
+      "name": "Frostbolt Cast On Crit Comet Oracle",
+      "name_zh": "Frostbolt Cast On Crit Comet Oracle（先知）",
+      "ascendancy": "Oracle",
+      "ascendancy_zh": "先知",
+      "skill": "Frostbolt Cast On Crit Comet",
+      "skill_zh": "Frostbolt Cast On Crit Comet",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -1.3,
+      "pros": [
+        "Freezes everything",
+        "High single target damage",
+        "Easy to play once using Frostbolt"
+      ],
+      "cons": [
+        "Can't use Frostbolt early",
+        "Relies on Infusion Remnants during the Campaign"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 A Frostbolt Cast On Crit Comet Oracle for the Druid class unleashes a volley of Frostbolt s exploding across the battlefield and freezing everything in sight. Comet s automatically fall down from the sky whenever you deal critical strikes, dealing massive amounts of damage.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/frostbolt-cast-on-crit-comet-oracle",
+      "pob_url": "https://maxroll.gg/poe2/planner/pm39d0py",
+      "tags": [
+        "A",
+        "德魯伊",
+        "Oracle",
+        "Frostbolt Cast On Crit Comet",
+        "Frostbolt Cast On Crit Comet Oracle",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-frostbolt-cast-on-crit-comet-disciple-of-varashta-build-guide",
+      "name": "Frostbolt Cast on Crit Comet Disciple Of Varashta",
+      "name_zh": "Frostbolt Cast on Crit Comet Disciple Of Varashta（瓦拉什塔門徒）",
+      "ascendancy": "Disciple of Varashta",
+      "ascendancy_zh": "瓦拉什塔門徒",
+      "skill": "Frostbolt Cast on Crit Comet",
+      "skill_zh": "Frostbolt Cast on Crit Comet",
+      "styles": [
+        "女術者"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": -1.4,
+      "pros": [
+        "Freezes everything",
+        "High single target damage",
+        "Easy to play once using Frostbolt"
+      ],
+      "cons": [
+        "Can't use Frostbolt early",
+        "Relies on Infusion Remnants during the Campaign"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 A 級。 很好的開荒選擇，稍微吃裝備或操作。 A Frostbolt Cast On Crit Comet Disciple Of Varashta Build for the Sorceress class unleashes volleys of Frostbolt s that explode across the battlefield freezing everything in sight. Comet s automatically fall down from the sky whenever you deal critical strikes, dealing massive amounts of damage.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/frostbolt-cast-on-crit-comet-disciple-of-varashta-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/ga1h3c0e",
+      "tags": [
+        "A",
+        "女術者",
+        "Disciple of Varashta",
+        "Frostbolt Cast on Crit Comet",
+        "Frostbolt Cast on Crit Comet Disciple Of Varashta",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-lightning-minion-shaman-build-guide",
+      "name": "Lightning Minion Shaman",
+      "name_zh": "Lightning Minion Shaman（薩滿）",
+      "ascendancy": "Shaman",
+      "ascendancy_zh": "薩滿",
+      "skill": "Lightning Minion",
+      "skill_zh": "Lightning Minion",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "B",
       "score_bias": -0.0,
-      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Acolyte of Chayula 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=monk&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=acolyte-of-chayula",
-      "pob_url": "",
+      "pros": [
+        "Very tanky",
+        "Not very button intensive at the Mid setup"
+      ],
+      "cons": [
+        "Minions",
+        "Visual Clarity"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Lightning Minion Shaman Build Guide for the Druid Class uses a variety of Minions, Spells and Curses to deal with enemies. You can follow it from the start of the campaign and continue all the way into the endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/lightning-minion-shaman-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/6urr00u6",
       "tags": [
         "B",
-        "僧侶",
-        "Acolyte of Chayula"
+        "德魯伊",
+        "Shaman",
+        "Lightning Minion",
+        "Lightning Minion Shaman",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-stormweaver",
-      "name": "Stormweaver",
-      "name_zh": "風暴編織者（Stormweaver）",
+      "id": "poe2-cold-snap-frostbolt-stormweaver-leveling-guide",
+      "name": "Ice Nova Snap Stormweaver",
+      "name_zh": "Ice Nova Snap Stormweaver（風暴編織者）",
       "ascendancy": "Stormweaver",
       "ascendancy_zh": "風暴編織者",
-      "skill": "",
-      "skill_zh": "",
+      "skill": "Ice Nova Snap",
+      "skill_zh": "Ice Nova Snap",
       "styles": [
         "女術者"
       ],
@@ -512,61 +1017,85 @@
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "B",
       "score_bias": -0.1,
-      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Stormweaver 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=sorceress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=stormweaver",
-      "pob_url": "",
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 點「開啟 Guide」可看 Ice Nova Snap Stormweaver 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/cold-snap-frostbolt-stormweaver-leveling-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/npjwb00k",
       "tags": [
         "B",
         "女術者",
-        "Stormweaver"
+        "Stormweaver",
+        "Ice Nova Snap",
+        "Ice Nova Snap Stormweaver",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-infernalist",
-      "name": "Infernalist",
-      "name_zh": "獄火師（Infernalist）",
-      "ascendancy": "Infernalist",
-      "ascendancy_zh": "獄火師",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-disciple-of-varashta-plant-build-guide",
+      "name": "Disciple of Varashta Plant",
+      "name_zh": "Disciple of Varashta Plant（瓦拉什塔門徒）",
+      "ascendancy": "Disciple of Varashta",
+      "ascendancy_zh": "瓦拉什塔門徒",
+      "skill": "Plant",
+      "skill_zh": "Plant",
       "styles": [
-        "女巫"
+        "女術者"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "B",
       "score_bias": -0.2,
-      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Infernalist 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=witch&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=infernalist",
-      "pob_url": "",
+      "pros": [
+        "Great Clear",
+        "Scaling is Great",
+        "Very Tanky with ES/Armor"
+      ],
+      "cons": [
+        "Leveling Early is a bit weak",
+        "Screen Clutter",
+        "2-Button Build"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 The Disciple of Varashta plant build wields nature by summoning vines and storms, while at the same time commanding powerful Djinns to use destructive spells. The Storms cause your plants to grow out of control and decimate enemies.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/disciple-of-varashta-plant-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/37dv0ueq",
       "tags": [
         "B",
-        "女巫",
-        "Infernalist"
+        "女術者",
+        "Disciple of Varashta",
+        "Plant",
+        "Disciple of Varashta Plant",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-blood-mage",
-      "name": "Bloodmage",
-      "name_zh": "血法師（Bloodmage）",
-      "ascendancy": "Bloodmage",
-      "ascendancy_zh": "血法師",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-minion-army-lich-build-guide",
+      "name": "Minion Army Lich Build Guide",
+      "name_zh": "Minion Army Lich Build Guide（巫妖）",
+      "ascendancy": "Lich",
+      "ascendancy_zh": "巫妖",
+      "skill": "Minion Army",
+      "skill_zh": "Minion Army",
       "styles": [
         "女巫"
       ],
@@ -574,30 +1103,46 @@
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "B",
       "score_bias": -0.3,
-      "summary": "Maxroll 開荒評級 B 級。 可以開荒，但需要更多資源或熟練度。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Bloodmage 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=witch&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=blood-mage",
-      "pob_url": "",
+      "pros": [
+        "Minions",
+        "High Damage",
+        "Great clear in Mid setup"
+      ],
+      "cons": [
+        "Minions",
+        "Button intensive early on",
+        "Visual clutter Early on"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Minion Army Lich Build Guide for the Witch Class uses a variety of Minions, Spells and Curses to deal with enemies. You can follow it from the start of the campaign and continue all the way into the endgame. If you're into commanding an army of minions this is the build for you!",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/minion-army-lich-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/56dw80q4",
       "tags": [
         "B",
         "女巫",
-        "Bloodmage"
+        "Lich",
+        "Minion Army",
+        "Minion Army Lich Build Guide",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-ritualist",
-      "name": "Ritualist",
-      "name_zh": "儀式行者（Ritualist）",
-      "ascendancy": "Ritualist",
-      "ascendancy_zh": "儀式行者",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-ice-shot-amazon-build-guide",
+      "name": "Ice Shot Amazon",
+      "name_zh": "Ice Shot Amazon（亞馬遜）",
+      "ascendancy": "Amazon",
+      "ascendancy_zh": "亞馬遜",
+      "skill": "Ice Shot",
+      "skill_zh": "Ice Shot",
       "styles": [
         "女獵人"
       ],
@@ -605,92 +1150,498 @@
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
-      "tier": "C",
-      "score_bias": -0.0,
-      "summary": "Maxroll 開荒評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Ritualist 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=huntress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=ritualist",
-      "pob_url": "",
+      "tier": "B",
+      "score_bias": -0.4,
+      "pros": [
+        "Clearspeed",
+        "Freezing enemies",
+        "Tanky for a bow build",
+        "Snipe!"
+      ],
+      "cons": [
+        "Not able to facetank",
+        "Snipe can be tricky"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Ice Shot Amazon Build Guide on the Huntress Class provides massive freezes and chunky cold damage to shatter her enemies. Unleash a devastating volley of cold damage with Ice Shot and Ice-Tipped Arrows to clear massive packs of enemies.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/ice-shot-amazon-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/0pgpe000",
       "tags": [
-        "C",
+        "B",
         "女獵人",
-        "Ritualist"
+        "Amazon",
+        "Ice Shot",
+        "Ice Shot Amazon",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-invoker",
-      "name": "Invoker",
-      "name_zh": "祈靈者（Invoker）",
-      "ascendancy": "Invoker",
-      "ascendancy_zh": "祈靈者",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-permafrost-bolt-witchhunter-build-guide",
+      "name": "Permafrost Bolt Witchhunter",
+      "name_zh": "Permafrost Bolt Witchhunter（女巫獵人）",
+      "ascendancy": "Witchhunter",
+      "ascendancy_zh": "女巫獵人",
+      "skill": "Permafrost Bolt",
+      "skill_zh": "Permafrost Bolt",
       "styles": [
-        "僧侶"
+        "傭兵"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
-      "tier": "C",
-      "score_bias": -0.1,
-      "summary": "Maxroll 開荒評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Invoker 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=monk&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=invoker",
-      "pob_url": "",
+      "tier": "B",
+      "score_bias": -0.5,
+      "pros": [
+        "Very Easy Campaign",
+        "Same Skills From Level 1-100",
+        "Huge Defensive Shield"
+      ],
+      "cons": [
+        "Crossbow Playstyle isn't for Everyone",
+        "Can get overrun with bad positioning"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 The Permafrost Bolt Witchhunter for the Mercenary class fires piercing shards of ice to freeze enemies. Fragmentation Rounds causes frozen enemies to explode, dealing huge area damage to their surroundings. Drop Explosive Grenades to deal with tanky enemies likeRaresandBosses.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/permafrost-bolt-witchhunter-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/pf3po064",
       "tags": [
-        "C",
-        "僧侶",
-        "Invoker"
+        "B",
+        "傭兵",
+        "Witchhunter",
+        "Permafrost Bolt",
+        "Permafrost Bolt Witchhunter",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-warbringer",
-      "name": "Warbringer",
-      "name_zh": "戰爭使者（Warbringer）",
-      "ascendancy": "Warbringer",
-      "ascendancy_zh": "戰爭使者",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-infernal-legion-lich-build-guide",
+      "name": "Infernal Legion Lich",
+      "name_zh": "Infernal Legion Lich（巫妖）",
+      "ascendancy": "Lich",
+      "ascendancy_zh": "巫妖",
+      "skill": "Infernal Legion",
+      "skill_zh": "Infernal Legion",
       "styles": [
-        "戰士"
+        "女巫"
       ],
       "damage": [],
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
-      "tier": "C",
-      "score_bias": -0.2,
-      "summary": "Maxroll 開荒評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Warbringer 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=warrior&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=warbringer",
-      "pob_url": "",
+      "tier": "B",
+      "score_bias": -0.6,
+      "pros": [
+        "Minions",
+        "Solid Clear",
+        "Simple Gearing",
+        "Zero Button Playstyle",
+        "Excellent Defensive Scaling"
+      ],
+      "cons": [
+        "Minions",
+        "Not Screen-Wide AoE",
+        "Forced to be in Close Range",
+        "Must Tame Specific Companion"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Infernal Legion Lich Build Guide teaches you the most efficient way to level your character through the Campaign and progress into maps and the Endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/infernal-legion-lich-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/o51rz206",
       "tags": [
-        "C",
-        "戰士",
-        "Warbringer"
+        "B",
+        "女巫",
+        "Lich",
+        "Infernal Legion",
+        "Infernal Legion Lich",
+        "Maxroll Build"
       ]
     },
     {
-      "id": "poe2-chronomancer",
-      "name": "Chronomancer",
-      "name_zh": "時空幻術師（Chronomancer）",
-      "ascendancy": "Chronomancer",
-      "ascendancy_zh": "時空幻術師",
-      "skill": "",
-      "skill_zh": "",
+      "id": "poe2-lightning-arrow-deadeye",
+      "name": "Lightning Arrow Deadeye",
+      "name_zh": "Lightning Arrow Deadeye（銳眼）",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Lightning Arrow",
+      "skill_zh": "Lightning Arrow",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.7,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 點「開啟 Guide」可看 Lightning Arrow Deadeye 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/lightning-arrow-deadeye",
+      "pob_url": "https://maxroll.gg/poe2/planner/ubdwz0vd",
+      "tags": [
+        "B",
+        "遊俠",
+        "Deadeye",
+        "Lightning Arrow",
+        "Lightning Arrow Deadeye",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-oil-grenade-witchhunter-build-guide",
+      "name": "Oil Grenade Witchhunter",
+      "name_zh": "Oil Grenade Witchhunter（女巫獵人）",
+      "ascendancy": "Witchhunter",
+      "ascendancy_zh": "女巫獵人",
+      "skill": "Oil Grenade",
+      "skill_zh": "Oil Grenade",
+      "styles": [
+        "傭兵"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.8,
+      "pros": [
+        "Fast",
+        "Cheap",
+        "Simple Progression",
+        "Strong Early Damage",
+        "Very Tanky in Endgame",
+        "Strong vs Abyss and Breach (demons)"
+      ],
+      "cons": [
+        "Low ceiling",
+        "Cooldowns",
+        "Gear Reliant",
+        "Fire Ground Lag",
+        "Early Grenade Delay",
+        "Button Intensive Bossing"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 The Oil Grenade Witchhunter Build Guide is ideal for beginners and advanced players alike. Its an easy League Starter with grenade gameplay starting directly from level 1. Then you make consistent upgrades to your gear all the way through to the endgame. High defensive scaling provides a forgiving playstyle during boss encounters that helps you succeed against all endgame content in Path of Exile 2. Oil Grenade de…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/oil-grenade-witchhunter-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/3s2kwf0y",
+      "tags": [
+        "B",
+        "傭兵",
+        "Witchhunter",
+        "Oil Grenade",
+        "Oil Grenade Witchhunter",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-lightning-spear-amazon",
+      "name": "Lightning Spear Amazon",
+      "name_zh": "Lightning Spear Amazon（亞馬遜）",
+      "ascendancy": "Amazon",
+      "ascendancy_zh": "亞馬遜",
+      "skill": "Lightning Spear",
+      "skill_zh": "Lightning Spear",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -0.9,
+      "pros": [
+        "Lighting Spear",
+        "Fast Map Clear",
+        "Smooth Gameplay",
+        "Consistent Damage",
+        "Ascendancy Power Spike"
+      ],
+      "cons": [
+        "Tough act 1",
+        "Gear Reliant",
+        "Squishy Early",
+        "Gets Outscaled Late"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 The Lightning Spear Amazon for the Huntress Clas has great map clear and single target damage. When you throw a Lightning Spear primary projectiles burst into secondary projectiles on impact . These send arcs of lighting to monsters within a large area around the impact. For single-target you rotate Storm Lance and Explosive Spear to deliver high burst damage. This build opts for raw power over charge generation,…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/lightning-spear-amazon",
+      "pob_url": "https://maxroll.gg/poe2/planner/ij1dg50e",
+      "tags": [
+        "B",
+        "女獵人",
+        "Amazon",
+        "Lightning Spear",
+        "Lightning Spear Amazon",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-storm-mage-lich-build-guide",
+      "name": "Lightning Minion Lich Build",
+      "name_zh": "Lightning Minion Lich Build（巫妖）",
+      "ascendancy": "Lich",
+      "ascendancy_zh": "巫妖",
+      "skill": "Lightning Minion",
+      "skill_zh": "Lightning Minion",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -1.0,
+      "pros": [
+        "Very tanky",
+        "Not very button intensive at the Mid setup"
+      ],
+      "cons": [
+        "Minions",
+        "Visual Clarity"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Lightning Minion Lich Build Guide for the Witch Class uses a variety of Minions, Spells and Curses to deal with enemies. You can follow it from the start of the campaign and continue all the way into the endgame. During the campaign, you summon Raging Spirits by casting Volcano . Then, use the Minion command skill provided by Skeletal Sniper to deal damage in a wide area. You also cast Elemental Weakness to i…",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/storm-mage-lich-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/6ke1l0gb",
+      "tags": [
+        "B",
+        "女巫",
+        "Lich",
+        "Lightning Minion",
+        "Lightning Minion Lich Build",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-essence-drain-lich-build-guide",
+      "name": "Essence Drain Lich",
+      "name_zh": "Essence Drain Lich（巫妖）",
+      "ascendancy": "Lich",
+      "ascendancy_zh": "巫妖",
+      "skill": "Essence Drain",
+      "skill_zh": "Essence Drain",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -1.1,
+      "pros": [
+        "SSF Campaign ~5Hours, Arbiter ~10 Hours",
+        "Amazing AoE Clear",
+        "Large ES Pool"
+      ],
+      "cons": [
+        "Don't Get Hit Playstyle"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Essence Drain Lich Build Guide teaches you the most efficient way to level your character, progress the Atlas, and scale into Endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/essence-drain-lich-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/3d3vl0yn",
+      "tags": [
+        "B",
+        "女巫",
+        "Lich",
+        "Essence Drain",
+        "Essence Drain Lich",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-minion-army-shaman-build-guide",
+      "name": "Minion Army Shaman",
+      "name_zh": "Minion Army Shaman（薩滿）",
+      "ascendancy": "Shaman",
+      "ascendancy_zh": "薩滿",
+      "skill": "Minion Army",
+      "skill_zh": "Minion Army",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -1.2,
+      "pros": [
+        "Very tanky",
+        "Not very button intensive at early setup",
+        "Great visual clarity at mid setup"
+      ],
+      "cons": [
+        "Minions",
+        "Visual clutter Early on"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Minion Army Shaman Build Guide for the Druid Class uses a variety of Minions, Spells and Curses to deal with enemies. You can follow it from the start of the campaign and continue all the way into the endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/minion-army-shaman-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/czazd00i",
+      "tags": [
+        "B",
+        "德魯伊",
+        "Shaman",
+        "Minion Army",
+        "Minion Army Shaman",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-walking-calamity-shaman-build-guide",
+      "name": "Walking Calamity Shaman",
+      "name_zh": "Walking Calamity Shaman（薩滿）",
+      "ascendancy": "Shaman",
+      "ascendancy_zh": "薩滿",
+      "skill": "Walking Calamity",
+      "skill_zh": "Walking Calamity",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -1.3,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 點「開啟 Guide」可看 Walking Calamity Shaman 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/walking-calamity-shaman-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/q8jx000i",
+      "tags": [
+        "B",
+        "德魯伊",
+        "Shaman",
+        "Walking Calamity",
+        "Walking Calamity Shaman",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-demon-calamity-bear-shaman-build-guide",
+      "name": "Demon Calamity Shaman",
+      "name_zh": "Demon Calamity Shaman（薩滿）",
+      "ascendancy": "Shaman",
+      "ascendancy_zh": "薩滿",
+      "skill": "Demon Calamity",
+      "skill_zh": "Demon Calamity",
+      "styles": [
+        "德魯伊"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -1.4,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 點「開啟 Guide」可看 Demon Calamity Shaman 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/demon-calamity-bear-shaman-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/l0e5t000",
+      "tags": [
+        "B",
+        "德魯伊",
+        "Shaman",
+        "Demon Calamity",
+        "Demon Calamity Shaman",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-arc-stormweaver-build-guide",
+      "name": "Arc Stormweaver",
+      "name_zh": "Arc Stormweaver（風暴編織者）",
+      "ascendancy": "Stormweaver",
+      "ascendancy_zh": "風暴編織者",
+      "skill": "Arc",
+      "skill_zh": "Arc",
       "styles": [
         "女術者"
       ],
@@ -698,21 +1649,429 @@
       "playstyles": [],
       "budget": "league_start",
       "difficulty": "medium",
-      "goals": [],
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": -1.5,
+      "pros": [
+        "SSF Campaign ~4Hours, Arbiter ~8Hours",
+        "Strong AoE Clear",
+        "Large ES Pool"
+      ],
+      "cons": [
+        "Don't Get Hit Playstyle"
+      ],
+      "summary": "Maxroll 開荒 Build 評級 B 級。 可以開荒，但需要更多資源或熟練度。 This Arc Stormweaver Build Guide teaches you the most efficient way to level your character, progress the Atlas, and scale into Endgame.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/arc-stormweaver-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/ir20u90w",
+      "tags": [
+        "B",
+        "女術者",
+        "Stormweaver",
+        "Arc",
+        "Arc Stormweaver",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-skeletal-sniper-infernalist-build-guide",
+      "name": "Skeletal Sniper Infernalist",
+      "name_zh": "Skeletal Sniper Infernalist（獄火師）",
+      "ascendancy": "Infernalist",
+      "ascendancy_zh": "獄火師",
+      "skill": "Skeletal Sniper",
+      "skill_zh": "Skeletal Sniper",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.0,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Skeletal Sniper Infernalist 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/skeletal-sniper-infernalist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/h06uy0c2",
+      "tags": [
+        "C",
+        "女巫",
+        "Infernalist",
+        "Skeletal Sniper",
+        "Skeletal Sniper Infernalist",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-minion-army-infernalist-build-guide",
+      "name": "Minion Army Infernalist",
+      "name_zh": "Minion Army Infernalist（獄火師）",
+      "ascendancy": "Infernalist",
+      "ascendancy_zh": "獄火師",
+      "skill": "Minion Army",
+      "skill_zh": "Minion Army",
+      "styles": [
+        "女巫"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.1,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Minion Army Infernalist 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/minion-army-infernalist-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/pufby0g9",
+      "tags": [
+        "C",
+        "女巫",
+        "Infernalist",
+        "Minion Army",
+        "Minion Army Infernalist",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-cold-spark-pathfinder-build-guide",
+      "name": "Cold Spark Pathfinder",
+      "name_zh": "Cold Spark Pathfinder（追獵者）",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "Cold Spark",
+      "skill_zh": "Cold Spark",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.2,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Cold Spark Pathfinder 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/cold-spark-pathfinder-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/wplvo0ur",
+      "tags": [
+        "C",
+        "遊俠",
+        "Pathfinder",
+        "Cold Spark",
+        "Cold Spark Pathfinder",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-poisonburst-arrow-pathfinder",
+      "name": "Poisonburst Arrow Pathfinder",
+      "name_zh": "Poisonburst Arrow Pathfinder（追獵者）",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "Poisonburst Arrow",
+      "skill_zh": "Poisonburst Arrow",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.3,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Poisonburst Arrow Pathfinder 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/poisonburst-arrow-pathfinder",
+      "pob_url": "https://maxroll.gg/poe2/planner/v12ch0yh",
+      "tags": [
+        "C",
+        "遊俠",
+        "Pathfinder",
+        "Poisonburst Arrow",
+        "Poisonburst Arrow Pathfinder",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-spiral-volley-poison-pathfinder",
+      "name": "Spiral Volley Poison Pathfinder",
+      "name_zh": "Spiral Volley Poison Pathfinder（追獵者）",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "Spiral Volley Poison",
+      "skill_zh": "Spiral Volley Poison",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.4,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Spiral Volley Poison Pathfinder 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/spiral-volley-poison-pathfinder",
+      "pob_url": "https://maxroll.gg/poe2/planner/x93tl069",
+      "tags": [
+        "C",
+        "遊俠",
+        "Pathfinder",
+        "Spiral Volley Poison",
+        "Spiral Volley Poison Pathfinder",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-boneshatter-titan-leveling-guide",
+      "name": "Boneshatter Titan",
+      "name_zh": "Boneshatter Titan（泰坦）",
+      "ascendancy": "Titan",
+      "ascendancy_zh": "泰坦",
+      "skill": "Boneshatter",
+      "skill_zh": "Boneshatter",
+      "styles": [
+        "戰士"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.5,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Boneshatter Titan 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/boneshatter-titan-leveling-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/2c1df0yv",
+      "tags": [
+        "C",
+        "戰士",
+        "Titan",
+        "Boneshatter",
+        "Boneshatter Titan",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-tempest-flurry-invoker-leveling-guide",
+      "name": "Ice Strike Invoker",
+      "name_zh": "Ice Strike Invoker（祈靈者）",
+      "ascendancy": "Invoker",
+      "ascendancy_zh": "祈靈者",
+      "skill": "Ice Strike",
+      "skill_zh": "Ice Strike",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.6,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Ice Strike Invoker 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/tempest-flurry-invoker-leveling-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/e8mux0gb",
+      "tags": [
+        "C",
+        "僧侶",
+        "Invoker",
+        "Ice Strike",
+        "Ice Strike Invoker",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-spiral-volley-deadeye-build-guide",
+      "name": "Spiral Volley Deadeye",
+      "name_zh": "Spiral Volley Deadeye（銳眼）",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Spiral Volley",
+      "skill_zh": "Spiral Volley",
+      "styles": [
+        "遊俠"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "C",
+      "score_bias": -0.7,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 C 級。 偏弱的開荒選擇，建議有經驗再玩。 點「開啟 Guide」可看 Spiral Volley Deadeye 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/spiral-volley-deadeye-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/0mvh0qyx",
+      "tags": [
+        "C",
+        "遊俠",
+        "Deadeye",
+        "Spiral Volley",
+        "Spiral Volley Deadeye",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-bleed-rake-amazon-build-guide",
+      "name": "Bleed Rake Amazon",
+      "name_zh": "Bleed Rake Amazon（亞馬遜）",
+      "ascendancy": "Amazon",
+      "ascendancy_zh": "亞馬遜",
+      "skill": "Bleed Rake",
+      "skill_zh": "Bleed Rake",
+      "styles": [
+        "女獵人"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
       "modes": [
         "trade",
         "ssf"
       ],
       "tier": "D",
       "score_bias": -0.0,
-      "summary": "Maxroll 開荒評級 D 級。 不建議開荒，通常要等裝備成型。 同梯隊內 Maxroll 由上而下排序；點「開啟 Guide」可看 Chronomancer 的 Maxroll 攻略清單。",
-      "guide_url": "https://maxroll.gg/poe2/build-guides?filter[build_guide_type][filters][0][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][0][value]=archive&filter[build_guide_type][filters][0][operation]=!%3D&filter[build_guide_type][filters][1][taxonomy]=taxonomies.build_guide_type&filter[build_guide_type][filters][1][value]=%20&filter[build_guide_type][filters][1][operation]=NOT%20EXISTS&filter[classes][taxonomy]=taxonomies.classes&filter[classes][value]=sorceress&filter[classes][filters][0][taxonomy]=taxonomies.classes&filter[classes][filters][0][value]=chronomancer",
-      "pob_url": "",
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 D 級。 不建議開荒，通常要等裝備成型。 點「開啟 Guide」可看 Bleed Rake Amazon 的完整 Maxroll 攻略與配點。",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/bleed-rake-amazon-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/oqe5o00p",
       "tags": [
         "D",
-        "女術者",
-        "Chronomancer"
+        "女獵人",
+        "Amazon",
+        "Bleed Rake",
+        "Bleed Rake Amazon",
+        "Maxroll Build"
+      ]
+    },
+    {
+      "id": "poe2-poisonburst-arrow-acolyte-of-chayula-build-guide",
+      "name": "Poisonburst Arrow Acolyte of Chayula",
+      "name_zh": "Poisonburst Arrow Acolyte of Chayula（夏烏拉侍僧）",
+      "ascendancy": "Acolyte of Chayula",
+      "ascendancy_zh": "夏烏拉侍僧",
+      "skill": "Poisonburst Arrow",
+      "skill_zh": "Poisonburst Arrow",
+      "styles": [
+        "僧侶"
+      ],
+      "damage": [],
+      "playstyles": [],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "D",
+      "score_bias": -0.1,
+      "pros": [],
+      "cons": [],
+      "summary": "Maxroll 開荒 Build 評級 D 級。 不建議開荒，通常要等裝備成型。 The Poisonburst Arrow Acolyte of Chayula build obliterates monsters by causing an absolute ruckus of poison, bleed, and chaos explosions. Once the Acolyte of Chayula \"awakens\" from his dream, the build ramps further by becoming the Archon of Chayula , which is a buff that summons Chaos Tornadoes, and these create even more havoc.",
+      "leveling": "開荒建議：依 Maxroll Guide 的 Campaign / Leveling 章節推進；成型前先求穩定清圖與容錯，再補傷害。",
+      "guide_url": "https://maxroll.gg/poe2/build-guides/poisonburst-arrow-acolyte-of-chayula-build-guide",
+      "pob_url": "https://maxroll.gg/poe2/planner/w675g80h",
+      "tags": [
+        "D",
+        "僧侶",
+        "Acolyte of Chayula",
+        "Poisonburst Arrow",
+        "Poisonburst Arrow Acolyte of Chayula",
+        "Maxroll Build"
       ]
     }
-  ]
+  ],
+  "related": {
+    "ascendancy_tierlist": "https://maxroll.gg/poe2/tierlists/league-starter-ascendancy-tier-list",
+    "hub": "https://maxroll.gg/poe2/tierlists"
+  }
 }

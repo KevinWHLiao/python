@@ -37,7 +37,7 @@ MENU_CARDS = [
     ("價格查詢", "poe.ninja 估價：PoE1 通貨傳奇輿圖寶石、PoE2 通貨徵兆催化劑族裔寶石傳奇裝備等", "open_economy", True),
     ("官方賣場", "pathofexile.com/trade：即時上架、價格與密語", "open_trade", True),
     ("流派排名", "poe.ninja 熱門流派、DPS、EHP 與逐日占比", "open_builds", True),
-    ("每季開荒推薦", "PoE1 開荒 Build 篩選，PoE2 為 Maxroll 開荒昇華 tier list", "open_starters", True),
+    ("每季開荒推薦", "PoE1 開荒 Build 篩選；PoE2 為 Maxroll 開荒 Build tier list（含 Guide／Planner）", "open_starters", True),
     ("中文化 PIN", "poedb.tw 繁中／簡中 PIN 與遊戲版本", "open_chinese", True),
     ("Craft of Exile", "開啟做裝模擬器（Calculator / Simulator）", "open_craftofexile", False),
     ("軍團珠寶查詢", "開啟 Timeless Jewel 天賦樹與 Seed 查詢", "open_timeless_jewels", False),
@@ -49,8 +49,8 @@ class MenuApp(ctk.CTk):
         setup_appearance()
         super().__init__()
         self.title("流亡黯道 · 查詢工具")
-        self.geometry("820x880")
-        self.minsize(640, 640)
+        self.geometry("900x900")
+        self.minsize(700, 680)
         setup_window(self)
         self._child = None
         self.path_var = tk.StringVar(value=f"資料路徑：{ROOT}")
@@ -139,22 +139,38 @@ class MenuApp(ctk.CTk):
         threading.Thread(target=self._version_worker, daemon=True).start()
 
     def _version_worker(self) -> None:
+        poe1_text = ""
+        poe2_text = ""
+        used_cache = False
         try:
             from .chinese import fetch_pins
 
             pins = fetch_pins()
             info = pins.tw or pins.cn
-            if not info:
-                raise RuntimeError("頁面上沒有版本")
-            same = info.server_version == info.patch_version
-            if same:
-                text = f"遊戲版本：{info.server_version}"
+            if info:
+                same = info.server_version == info.patch_version
+                if same:
+                    poe1_text = f"PoE1 {info.server_version}"
+                else:
+                    poe1_text = f"PoE1 {info.server_version}（中文化 {info.patch_version}）"
+                used_cache = used_cache or pins.from_cache
             else:
-                text = f"遊戲版本：{info.server_version}　中文化：{info.patch_version}"
-            if pins.from_cache:
-                text += "　（快取）"
+                poe1_text = "PoE1 無法讀取"
         except Exception as error:  # noqa: BLE001
-            text = f"遊戲版本：無法讀取（{error}）"
+            poe1_text = f"PoE1 無法讀取（{error}）"
+
+        try:
+            from .poe2_version import fetch_poe2_version
+
+            poe2 = fetch_poe2_version()
+            poe2_text = f"PoE2 {poe2.display}"
+            used_cache = used_cache or poe2.from_cache
+        except Exception as error:  # noqa: BLE001
+            poe2_text = f"PoE2 無法讀取（{error}）"
+
+        text = f"遊戲版本：{poe1_text}　·　{poe2_text}"
+        if used_cache:
+            text += "　（快取）"
         self.after(0, lambda message=text: self.version_var.set(message))
 
     def show_menu(self) -> None:

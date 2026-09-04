@@ -46,7 +46,8 @@ from .theme import (
 
 RESULT_LIMITS = ("8", "12", "20", "全部")
 GAME_IDS = {label: game_id for game_id, label in GAME_LABELS.items()}
-MAXROLL_TIERLIST_URL = "https://maxroll.gg/poe2/tierlists/league-starter-ascendancy-tier-list"
+MAXROLL_TIERLIST_URL = "https://maxroll.gg/poe2/tierlists/league-starter-build-tier-list"
+MAXROLL_HUB_URL = "https://maxroll.gg/poe2/tierlists"
 
 
 class CheckGroup(ctk.CTkFrame):
@@ -236,7 +237,8 @@ class StartersApp(ctk.CTkToplevel):
         muted_hint(
             self,
             "可多選類型／傷害／手感／目標。預算是上限：選低預算不會出現高投資後期。顯示數量可改「全部」一次看完。"
-            "PoE2 是 Maxroll 開荒昇華 tier list（依角色分類，梯隊即 Maxroll 評級），按「更新 PoE2 資料」可重新抓最新版。",
+            "PoE2 來自 Maxroll 開荒 Build tier list（含 Guide 優缺點與 Planner）；"
+            "按「更新 PoE2 資料」可從 maxroll.gg/poe2/tierlists 重抓最新版。",
         )
 
         body = content_panel(self)
@@ -257,7 +259,7 @@ class StartersApp(ctk.CTkToplevel):
             "tier": "梯隊",
             "why": "匹配理由",
         }
-        widths = {"rank": 40, "score": 54, "name": 200, "style": 90, "budget": 90, "diff": 60, "tier": 48, "why": 260}
+        widths = {"rank": 40, "score": 54, "name": 260, "style": 80, "budget": 90, "diff": 60, "tier": 48, "why": 220}
         for key, title in headings.items():
             self.tree.heading(key, text=title)
             stretch = key in {"name", "why"}
@@ -331,7 +333,8 @@ class StartersApp(ctk.CTkToplevel):
         actions = self._detail_actions = ctk.CTkFrame(self.detail_scroll, fg_color="transparent")
         actions.pack(fill="x", pady=(10, 0))
         primary_button(actions, "開啟 Guide", command=self.open_guide, width=120).pack(side="left")
-        ghost_button(actions, "開啟 PoB", command=self.open_pob, width=100).pack(side="left", padx=8)
+        self.pob_button = ghost_button(actions, "開啟 PoB", command=self.open_pob, width=110)
+        self.pob_button.pack(side="left", padx=8)
         ghost_button(actions, "複製摘要", command=self.copy_detail, width=100).pack(side="left")
 
     def on_game_changed(self, value: str) -> None:
@@ -348,13 +351,13 @@ class StartersApp(ctk.CTkToplevel):
             return
         if not messagebox.askyesno(
             "更新 PoE2 開荒推薦",
-            "要從 Maxroll 重新抓取 PoE2 開荒昇華 tier list 嗎？\n"
-            "昇華名稱會再向 poe2db.tw 對應繁中，約需 30 秒。",
+            "要從 Maxroll 重新抓取開荒 Build tier list 嗎？\n"
+            "會一併讀取各 Build 的 Guide（優缺點、介紹、Planner），約需 1～2 分鐘。",
             parent=self,
         ):
             return
         self._syncing = True
-        self.status_var.set("正在從 Maxroll 下載 PoE2 開荒 tier list…")
+        self.status_var.set("正在從 Maxroll 下載 PoE2 開荒 Build tier list…")
         threading.Thread(target=self._poe2_sync_worker, daemon=True).start()
 
     def _poe2_sync_worker(self) -> None:
@@ -425,7 +428,7 @@ class StartersApp(ctk.CTkToplevel):
         self.goal_group = CheckGroup(self.chip_host, "目標", catalog.goals or [], columns=4)
 
         groups = (self.style_group, self.damage_group, self.play_group, self.goal_group)
-        # Maxroll's PoE2 tier list has no damage / playstyle / goal tags; skip those rows.
+        # Maxroll's PoE2 catalog may omit damage / playstyle tags; skip empty filter rows.
         visible = [group for group in groups if group.options]
         for index, group in enumerate(visible):
             group.pack(fill="x", pady=(0, 8) if index < len(visible) - 1 else 0)
@@ -547,6 +550,11 @@ class StartersApp(ctk.CTkToplevel):
             f"難度：{build.difficulty_label}",
             f"模式：{format_mode_list(build.modes)}",
         ]
+        if build.guide_url:
+            meta_lines.append("Guide：Maxroll Build Guide")
+        if build.pob_url:
+            planner_label = "Maxroll Planner" if "maxroll.gg" in build.pob_url else "PoB"
+            meta_lines.append(f"配點：{planner_label}")
         self._fill_detail(
             {
                 "meta": "\n".join(meta_lines),
@@ -556,6 +564,9 @@ class StartersApp(ctk.CTkToplevel):
                 "leveling": build.leveling,
             }
         )
+        if hasattr(self, "pob_button"):
+            label = "開啟 Planner" if build.pob_url and "maxroll.gg" in build.pob_url else "開啟 PoB"
+            self.pob_button.configure(text=label)
 
     def _fill_detail(self, texts: dict[str, str]) -> None:
         """Fill the detail blocks, hiding the ones whose field is empty.
@@ -587,7 +598,8 @@ class StartersApp(ctk.CTkToplevel):
             return
         url = item.build.pob_url
         if not url:
-            messagebox.showinfo("沒有 PoB", "這一筆尚未填 PoB 連結。", parent=self)
+            label = "Planner" if self.game_id == "poe2" else "PoB"
+            messagebox.showinfo(f"沒有 {label}", f"這一筆尚未填 {label} 連結。", parent=self)
             return
         webbrowser.open(url)
 
