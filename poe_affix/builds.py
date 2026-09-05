@@ -16,15 +16,20 @@ from dataclasses import dataclass, field
 from .i18n import translate_name
 
 NINJA_BASE = "https://poe.ninja"
-BUILDS_PAGE = f"{NINJA_BASE}/poe1/builds"
-CACHE_TTL = 15 * 60
-COMBO_CLASSES = 12
+CACHE_TTL = 30 * 60
+COMBO_CLASSES = 10
 COMBO_SKILLS_PER_CLASS = 2
-COMBO_LIMIT = 20
-COMBO_WORKERS = 6
-CLASS_STAT_LIMIT = 16
-SKILL_STAT_LIMIT = 16
+COMBO_LIMIT = 16
+COMBO_WORKERS = 2
+CLASS_STAT_LIMIT = 0  # lazy: fill on row select
+SKILL_STAT_LIMIT = 0
+COMBO_STAT_PREFETCH = 3  # only top combos get DPS/items at load
+COMBO_TREND_PREFETCH = 0  # combo day trends: on-demand only
+ITEM_DETAIL_LIMIT = 12
+REQUEST_MIN_INTERVAL = 0.45  # seconds between poe.ninja calls
+REQUEST_MAX_CONCURRENT = 2
 _PRIVATE_LEAGUE_RE = re.compile(r"\(PL\d+\)", re.I)
+_RETRY_AFTER_RE = re.compile(r"(?:try again|retry)(?:\s+in)?\s+(\d+)\s*s", re.I)
 DPS_ELEMENTS = (
     ("physical", "物理"),
     ("fire", "火焰"),
@@ -33,6 +38,7 @@ DPS_ELEMENTS = (
     ("chaos", "混沌"),
 )
 TREND_DAYS = ("day-6", "day-5", "day-4", "day-3", "day-2", "day-1")
+TREND_DAY_LABELS = ("6日前", "5日前", "4日前", "3日前", "2日前", "昨日", "今日")
 GENERIC_ITEM_PREFIXES = ("Rare ", "Magic ", "Normal ", "White ")
 USER_AGENT = "PoELookupTool/1.0 (Windows desktop; personal local app)"
 
@@ -43,6 +49,7 @@ LADDER_LABELS = {
     "exp": LADDER_EXP,
     "depthsolo": LADDER_DELVE,
 }
+GAME_LABELS = {"poe1": "PoE1", "poe2": "PoE2"}
 
 CLASS_ZH = {
     "Scion": "貴族",
@@ -76,6 +83,53 @@ CLASS_ZH = {
     "Reliquarian": "遺守使徒",
 }
 
+# PoE2 base / ascendancy names from poe2db.tw Ascendancy_class.
+CLASS_ZH_POE2 = {
+    "Warrior": "戰士",
+    "Mercenary": "傭兵",
+    "Ranger": "遊俠",
+    "Monk": "僧侶",
+    "Sorceress": "女術者",
+    "Witch": "女巫",
+    "Huntress": "女獵人",
+    "Martial Artist": "武聖",
+    "Gemling Legionnaire": "古靈軍團",
+    "Spirit Walker": "魂靈行者",
+    "Deadeye": "銳眼",
+    "Oracle": "天啟先知",
+    "Stormweaver": "風暴編織者",
+    "Infernalist": "獄火師",
+    "Disciple of Varashta": "瓦拉什塔門徒",
+    "Blood Mage": "血法師",
+    "Titan": "泰坦",
+    "Abyssal Lich": "深淵妖巫",
+    "Pathfinder": "追獵者",
+    "Shaman": "狂徒薩滿",
+    "Witchhunter": "女巫獵人",
+    "Tactician": "智勇軍師",
+    "Chronomancer": "時空幻術師",
+    "Amazon": "亞馬遜",
+    "Acolyte of Chayula": "夏烏拉侍僧",
+    "Warbringer": "戰爭使者",
+    "Smith of Kitava": "奇塔弗工匠",
+    "Invoker": "祈靈者",
+    "Lich": "巫妖",
+    "Ritualist": "儀式行者",
+}
+
+
+def builds_page(game: str = "poe1") -> str:
+    realm = "poe2" if game == "poe2" else "poe1"
+    return f"{NINJA_BASE}/{realm}/builds"
+
+
+def api_root(game: str = "poe1") -> str:
+    realm = "poe2" if game == "poe2" else "poe1"
+    return f"{NINJA_BASE}/{realm}/api"
+
+
+BUILDS_PAGE = builds_page("poe1")
+
 _ISLAND_RE = re.compile(r"<astro-island\b([^>]*)>", re.I)
 _ATTR_RE = re.compile(r'([a-zA-Z0-9:-]+)="([^"]*)"')
 
@@ -89,6 +143,7 @@ class BuildLeague:
     ladder: str
     character_count: int | None = None
     time_labels: list[str] = field(default_factory=list)
+    game: str = "poe1"
 
     @property
     def ladder_label(self) -> str:
@@ -96,7 +151,11 @@ class BuildLeague:
 
     @property
     def page_url(self) -> str:
-        return f"{BUILDS_PAGE}/{self.url}"
+        return f"{builds_page(self.game)}/{self.url}"
+
+    @property
+    def game_label(self) -> str:
+        return GAME_LABELS.get(self.game, self.game)
 
 
 @dataclass
@@ -146,6 +205,8 @@ class RankRow:
     weapon_modes: list[str] = field(default_factory=list)
     anointed: list[str] = field(default_factory=list)
     samples: list[SampleChar] = field(default_factory=list)
+    spirit_gems: list[str] = field(default_factory=list)
+    traits: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -154,26 +215,88 @@ class BuildIndex:
 
 
 _cache_lock = threading.Lock()
-_index_cache: tuple[float, BuildIndex] | None = None
+_index_cache: dict[str, tuple[float, BuildIndex]] = {}
 _rank_cache: dict[
-    tuple[str, str],
+    tuple[str, str, str],
     tuple[float, tuple[int, list[RankRow], list[RankRow], list[RankRow], dict[str, int]]],
 ] = {}
 _dict_cache: dict[str, list[str]] = {}
-_history_cache: dict[tuple[str, str, str], tuple[float, tuple[int, dict[str, float], dict[str, float]]]] = {}
+_history_cache: dict[tuple[str, str, str, str], tuple[float, tuple[int, dict[str, float], dict[str, float]]]] = {}
+
+
+class _NinjaGate:
+    """Limit concurrent / burst requests so the shared IP isn't banned from the site."""
+
+    def __init__(self, min_interval: float, max_concurrent: int) -> None:
+        self._min_interval = min_interval
+        self._max_concurrent = max_concurrent
+        self._lock = threading.Lock()
+        self._cond = threading.Condition(self._lock)
+        self._inflight = 0
+        self._next_slot = 0.0
+        self._cooldown_until = 0.0
+
+    def acquire(self) -> None:
+        with self._cond:
+            while True:
+                now = time.monotonic()
+                wait = max(
+                    0.0,
+                    self._cooldown_until - now,
+                    self._next_slot - now,
+                )
+                if wait <= 0 and self._inflight < self._max_concurrent:
+                    self._inflight += 1
+                    self._next_slot = now + self._min_interval
+                    return
+                self._cond.wait(timeout=max(wait, 0.05) if wait > 0 else 0.05)
+
+    def release(self) -> None:
+        with self._cond:
+            self._inflight = max(0, self._inflight - 1)
+            self._cond.notify_all()
+
+    def cooldown(self, seconds: float) -> None:
+        if seconds <= 0:
+            return
+        with self._cond:
+            self._cooldown_until = max(self._cooldown_until, time.monotonic() + seconds)
+            self._cond.notify_all()
+
+
+_ninja_gate = _NinjaGate(REQUEST_MIN_INTERVAL, REQUEST_MAX_CONCURRENT)
+
+
+def _retry_wait_seconds(error: urllib.error.HTTPError) -> float:
+    header = error.headers.get("Retry-After") if error.headers else None
+    if header:
+        try:
+            return float(header)
+        except ValueError:
+            pass
+    try:
+        body = error.read().decode("utf-8", "replace")
+    except Exception:
+        body = ""
+    match = _RETRY_AFTER_RE.search(body or "")
+    if match:
+        return float(match.group(1))
+    return 20.0 if error.code == 429 else 2.0
 
 
 def _request(url: str, timeout: int = 45, accept: str = "application/json") -> bytes:
+    referer = builds_page("poe2") if "/poe2/" in url else builds_page("poe1")
     request = urllib.request.Request(
         url,
         headers={
             "User-Agent": USER_AGENT,
             "Accept": accept,
-            "Referer": BUILDS_PAGE,
+            "Referer": referer,
         },
     )
     last_error: Exception | None = None
-    for attempt in range(3):
+    for attempt in range(5):
+        _ninja_gate.acquire()
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
                 return response.read()
@@ -181,10 +304,17 @@ def _request(url: str, timeout: int = 45, accept: str = "application/json") -> b
             if error.code == 404:
                 return b""
             last_error = error
-            time.sleep(1.0 * (attempt + 1))
+            if error.code in {429, 503}:
+                wait = min(_retry_wait_seconds(error), 180.0)
+                _ninja_gate.cooldown(wait)
+                time.sleep(min(wait, 5.0) if attempt < 2 else wait)
+            else:
+                time.sleep(1.0 * (attempt + 1))
         except (urllib.error.URLError, TimeoutError) as error:
             last_error = error
             time.sleep(1.0 * (attempt + 1))
+        finally:
+            _ninja_gate.release()
     raise RuntimeError(f"無法讀取 poe.ninja：{last_error}")
 
 
@@ -192,12 +322,24 @@ def _fresh(stamp: float) -> bool:
     return (time.time() - stamp) < CACHE_TTL
 
 
-def translate_class(name: str) -> str:
-    return CLASS_ZH.get(name) or translate_name(name) or name
+def translate_class(name: str, game: str = "poe1") -> str:
+    if game == "poe2":
+        hit = CLASS_ZH_POE2.get(name)
+        if hit:
+            return hit
+    return CLASS_ZH.get(name) or translate_name(name, game=game) or name
 
 
-def translate_skill(name: str) -> str:
-    return translate_name(name) or name
+def translate_skill(name: str, game: str = "poe1") -> str:
+    return translate_name(name, game=game) or name
+
+
+def format_daily_trend(row: RankRow) -> str:
+    """Human-readable day-by-day share line for detail / copy."""
+    if not row.trend:
+        return ""
+    labels = list(TREND_DAY_LABELS[-len(row.trend) :])
+    return " → ".join(f"{label} {value:.1f}%" for label, value in zip(labels, row.trend))
 
 
 def matches(row: RankRow, query: str) -> bool:
@@ -355,12 +497,21 @@ def _dps_strings(columns: dict[str, dict[str, object]], skill: str = "") -> list
     return picked
 
 
-def _unique_names(result: list[tuple[int, str, object]], dim_id: str, dict_name: str, limit: int = 4) -> list[str]:
+def _unique_names(
+    result: list[tuple[int, str, object]],
+    dim_id: str,
+    dict_name: str,
+    limit: int = 4,
+    *,
+    total: int = 0,
+    with_share: bool = False,
+    game: str = "poe1",
+) -> list[str]:
     dicts = _dictionaries(result)
-    names = _dictionary_names(dicts.get(dict_name, ""))
+    names = _dictionary_names(dicts.get(dict_name, ""), game=game)
     ordered = sorted(_dimension_counts(result, dim_id), key=lambda item: item[1], reverse=True)
     picked: list[str] = []
-    for key, _count in ordered:
+    for key, count in ordered:
         if key < 0 or key >= len(names):
             continue
         name = names[key]
@@ -368,7 +519,9 @@ def _unique_names(result: list[tuple[int, str, object]], dim_id: str, dict_name:
             continue
         if name in {"None", "無", ""}:
             continue
-        label = translate_name(name) or translate_class(name) or name
+        label = translate_name(name, game=game) or translate_class(name, game=game) or name
+        if with_share and total > 0 and count > 0:
+            label = f"{label} {count / total * 100:.1f}%"
         if label not in picked:
             picked.append(label)
         if len(picked) >= limit:
@@ -409,6 +562,8 @@ def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]
     ehp_text = _column_strings(columns, "ehp__str")
     names = _column_strings(columns, "name")
     accounts = _column_strings(columns, "account")
+    total = _result_total(result) or row.count
+    game = league.game
     row.level = int(_median(levels)) if levels else 0
     row.life = int(_median(lives)) if lives else 0
     row.es = int(_median(shields)) if shields else 0
@@ -417,15 +572,44 @@ def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]
     row.dps = _median(dps_values)
     row.ehp = _median(ehp_values)
     row.dps_share = _dps_share_map(columns, row.extra)
-    row.items = _unique_names(result, "items", "item", limit=8)
-    row.keystones = _unique_names(result, "keypassives", "keypassive", limit=8)
-    row.skills = _unique_names(result, "skills", "gem", limit=10)
-    row.supports = [name for name in _unique_names(result, "allgems", "gem", limit=16) if name not in row.skills][:10]
-    row.second_ascendancy = _unique_names(result, "secondascendancy", "secondascendancy", limit=5)
-    row.bandit = _unique_names(result, "bandit", "bandit", limit=4)
-    row.pantheon = _unique_names(result, "pantheon", "pantheon", limit=6)
-    row.weapon_modes = _unique_names(result, "weaponmode", "weaponmode", limit=5)
-    row.anointed = _unique_names(result, "anointed", "anointed", limit=6)
+    row.items = _unique_names(
+        result, "items", "item", limit=ITEM_DETAIL_LIMIT, total=total, with_share=True, game=game
+    )
+    row.keystones = _unique_names(
+        result,
+        "keypassives",
+        "keypassive",
+        limit=ITEM_DETAIL_LIMIT,
+        total=total,
+        with_share=True,
+        game=game,
+    )
+    if not row.keystones:
+        row.keystones = _unique_names(
+            result, "keystones", "keystone", limit=ITEM_DETAIL_LIMIT, total=total, with_share=True, game=game
+        )
+    row.skills = _unique_names(result, "skills", "gem", limit=10, total=total, with_share=True, game=game)
+    row.spirit_gems = _unique_names(
+        result, "spiritgems", "gem", limit=8, total=total, with_share=True, game=game
+    )
+    row.traits = _unique_names(result, "traits", "skilltrait", limit=8, total=total, with_share=True, game=game)
+    supports = [
+        name
+        for name in _unique_names(result, "allgems", "gem", limit=16, total=total, with_share=True, game=game)
+        if name not in row.skills
+    ][:10]
+    if not supports and row.spirit_gems:
+        supports = [name for name in row.spirit_gems if name not in row.skills][:10]
+    row.supports = supports
+    row.second_ascendancy = _unique_names(result, "secondascendancy", "secondascendancy", limit=5, game=game)
+    row.bandit = _unique_names(result, "bandit", "bandit", limit=4, game=game)
+    row.pantheon = _unique_names(result, "pantheon", "pantheon", limit=6, game=game)
+    row.weapon_modes = _unique_names(
+        result, "weaponmode", "weaponmode", limit=5, total=total, with_share=True, game=game
+    )
+    row.anointed = _unique_names(
+        result, "anointed", "anointed", limit=6, total=total, with_share=True, game=game
+    )
     weapons = row.weapon_modes
     main_skill = row.extra_zh or row.extra or (row.skills[0] if row.skills else "")
     samples: list[SampleChar] = []
@@ -454,6 +638,8 @@ def _apply_table_stats(league: BuildLeague, result: list[tuple[int, str, object]
         *row.keystones,
         *row.skills,
         *row.supports,
+        *row.spirit_gems,
+        *row.traits,
         *row.second_ascendancy,
         *row.bandit,
         *row.pantheon,
@@ -546,15 +732,71 @@ def _parse_snapshots(html: str) -> list[BuildLeague]:
                     version=version,
                     ladder=ladder,
                     time_labels=time_labels,
+                    game="poe1",
                 )
             )
     return leagues
 
 
+def _parse_poe2_index() -> list[BuildLeague]:
+    payload = _request(f"{api_root('poe2')}/data/index-state", accept="application/json")
+    if not payload:
+        raise RuntimeError("poe.ninja 沒有回傳 PoE2 聯盟索引。")
+    data = json.loads(payload.decode("utf-8"))
+    versions = data.get("snapshotVersions") if isinstance(data, dict) else None
+    if not isinstance(versions, list) or not versions:
+        raise RuntimeError("poe.ninja PoE2 索引沒有聯盟快照。")
+    totals: dict[str, int] = {}
+    try:
+        meta = json.loads(
+            _request(f"{api_root('poe2')}/data/build-index-state", accept="application/json").decode("utf-8")
+        )
+        for item in meta.get("leagueBuilds") or []:
+            if isinstance(item, dict) and item.get("leagueUrl"):
+                totals[str(item["leagueUrl"])] = int(item.get("total") or 0)
+    except Exception:
+        totals = {}
+    leagues: list[BuildLeague] = []
+    seen: set[str] = set()
+    for item in versions:
+        if not isinstance(item, dict):
+            continue
+        name = str(item.get("name") or "")
+        url = str(item.get("url") or "")
+        version = str(item.get("version") or "")
+        snapshot = str(item.get("snapshotName") or url)
+        labels = item.get("timeMachineLabels") if isinstance(item.get("timeMachineLabels"), list) else []
+        time_labels = [str(label) for label in labels]
+        if not (name and url and version) or url in seen:
+            continue
+        seen.add(url)
+        leagues.append(
+            BuildLeague(
+                name=name,
+                url=url,
+                snapshot_name=snapshot,
+                version=version,
+                ladder="exp",
+                time_labels=time_labels,
+                game="poe2",
+                character_count=totals.get(url),
+            )
+        )
+    leagues.sort(
+        key=lambda league: (
+            0 if (league.character_count or 0) > 1000 else 1,
+            0 if not any(token in (league.name or "") for token in ("Qualifier", "Race", "Exilecon")) else 1,
+            -(league.character_count or 0),
+            *_league_sort_key(league),
+        )
+    )
+    return leagues
+
+
 def _league_sort_key(league: BuildLeague) -> tuple:
-    """Prefer public challenge leagues, then Standard, then private (PLxxxxx)."""
+    """Prefer public challenge leagues, then Standard, then private (PLxxxxx) / races."""
     name = league.name or ""
-    if _PRIVATE_LEAGUE_RE.search(name):
+    if _PRIVATE_LEAGUE_RE.search(name) or "Race" in name or name.startswith("0."):
         group = 2
     elif "Standard" in name or name in {"Hardcore", "Solo Self-Found"}:
         group = 1
@@ -568,28 +810,31 @@ def is_private_league(name: str) -> bool:
     return bool(_PRIVATE_LEAGUE_RE.search(name or ""))
 
 
-def fetch_index(force: bool = False) -> BuildIndex:
-    global _index_cache
+def fetch_index(game: str = "poe1", force: bool = False) -> BuildIndex:
+    game = "poe2" if game == "poe2" else "poe1"
     with _cache_lock:
-        if not force and _index_cache and _fresh(_index_cache[0]):
-            return _index_cache[1]
-    html = _request(BUILDS_PAGE, accept="text/html").decode("utf-8", "replace")
-    if not html:
-        raise RuntimeError("poe.ninja 沒有回傳流派頁。")
-    leagues = _parse_snapshots(html)
+        cached = _index_cache.get(game)
+        if not force and cached and _fresh(cached[0]):
+            return cached[1]
+    if game == "poe2":
+        leagues = _parse_poe2_index()
+    else:
+        html = _request(builds_page("poe1"), accept="text/html").decode("utf-8", "replace")
+        if not html:
+            raise RuntimeError("poe.ninja 沒有回傳流派頁。")
+        leagues = _parse_snapshots(html)
+        leagues.sort(key=_league_sort_key)
     if not leagues:
         raise RuntimeError("poe.ninja 頁面上沒有聯盟榜資料。")
-    leagues.sort(key=_league_sort_key)
     index = BuildIndex(leagues=leagues)
     with _cache_lock:
-        _index_cache = (time.time(), index)
+        _index_cache[game] = (time.time(), index)
     return index
 
 
 def clear_cache() -> None:
-    global _index_cache
     with _cache_lock:
-        _index_cache = None
+        _index_cache.clear()
         _rank_cache.clear()
         _dict_cache.clear()
         _history_cache.clear()
@@ -675,14 +920,14 @@ def _decode_native_strings(blob: bytes) -> list[str]:
     return names
 
 
-def _dictionary_names(hash_value: str) -> list[str]:
+def _dictionary_names(hash_value: str, game: str = "poe1") -> list[str]:
     if not hash_value:
         return []
     with _cache_lock:
         cached = _dict_cache.get(hash_value)
         if cached is not None:
             return cached
-    blob = _request(f"{NINJA_BASE}/poe1/api/builds/dictionary/{hash_value}", accept="*/*")
+    blob = _request(f"{api_root(game)}/builds/dictionary/{hash_value}", accept="*/*")
     names = _decode_native_strings(blob)
     with _cache_lock:
         _dict_cache[hash_value] = names
@@ -743,7 +988,7 @@ def _rank_rows(
         if key < 0 or key >= len(names):
             continue
         name = names[key]
-        name_zh = translate_class(name) if kind == "class" else translate_skill(name)
+        name_zh = translate_class(name, league.game) if kind == "class" else translate_skill(name, league.game)
         query = urllib.parse.urlencode({query_key: name})
         percent = (count / total * 100) if total else 0.0
         rows.append(
@@ -766,7 +1011,7 @@ def _search_result(league: BuildLeague, extra: dict[str, str] | None = None) -> 
     if extra:
         params.update(extra)
     query = urllib.parse.urlencode(params)
-    url = f"{NINJA_BASE}/poe1/api/builds/{urllib.parse.quote(league.version)}/search?{query}"
+    url = f"{api_root(league.game)}/builds/{urllib.parse.quote(league.version)}/search?{query}"
     payload = _request(url, accept="application/x-protobuf,*/*")
     if not payload:
         return []
@@ -803,13 +1048,13 @@ def _combo_for_class(
     ordered = sorted(counts, key=lambda item: item[1], reverse=True)
     if any(key < 0 or key >= len(names) for key, _count in ordered[:COMBO_SKILLS_PER_CLASS]):
         dicts = _dictionaries(result)
-        names = _dictionary_names(dicts.get("gem", ""))
+        names = _dictionary_names(dicts.get("gem", ""), game=league.game)
     rows: list[RankRow] = []
     for key, count in ordered[:COMBO_SKILLS_PER_CLASS]:
         if key < 0 or key >= len(names):
             continue
         skill = names[key]
-        skill_zh = translate_skill(skill)
+        skill_zh = translate_skill(skill, league.game)
         query = urllib.parse.urlencode({"class": class_row.name, "skills": skill})
         percent = (count / global_total * 100) if global_total else 0.0
         rows.append(
@@ -901,7 +1146,7 @@ def enrich_row(league: BuildLeague, row: RankRow) -> RankRow:
 
 
 def _history_snapshot(league: BuildLeague, label: str) -> tuple[str, int, dict[str, float], dict[str, float]]:
-    cache_key = (league.version, league.ladder, label)
+    cache_key = (league.game, league.version, league.ladder, label)
     with _cache_lock:
         cached = _history_cache.get(cache_key)
         if cached and _fresh(cached[0]):
@@ -915,8 +1160,8 @@ def _history_snapshot(league: BuildLeague, label: str) -> tuple[str, int, dict[s
         return label, 0, {}, {}
     total = _result_total(result)
     dicts = _dictionaries(result)
-    class_names = _dictionary_names(dicts.get("class", ""))
-    gem_names = _dictionary_names(dicts.get("gem", ""))
+    class_names = _dictionary_names(dicts.get("class", ""), game=league.game)
+    gem_names = _dictionary_names(dicts.get("gem", ""), game=league.game)
     class_pcts = _dim_percents(result, "class", class_names, total)
     skill_pcts = _dim_percents(result, "skills", gem_names, total)
     if not skill_pcts:
@@ -961,9 +1206,16 @@ def fetch_combo_trends(
     league: BuildLeague,
     combo_rows: list[RankRow],
     day_totals: dict[str, int],
+    *,
+    limit: int | None = None,
 ) -> list[RankRow]:
     labels = [label for label in TREND_DAYS if label in day_totals]
     if not labels or not combo_rows:
+        return combo_rows
+    pending = [row for row in combo_rows if not row.trend]
+    if limit is not None:
+        pending = pending[: max(0, limit)]
+    if not pending:
         return combo_rows
 
     def one(row: RankRow) -> RankRow:
@@ -972,15 +1224,28 @@ def fetch_combo_trends(
         _set_trend(row, points)
         return row
 
+    # Sequential-ish: gate already serializes network; keep workers low.
     with ThreadPoolExecutor(max_workers=COMBO_WORKERS) as pool:
-        list(pool.map(one, combo_rows))
+        list(pool.map(one, pending))
     return combo_rows
+
+
+def enrich_combo_trend(
+    league: BuildLeague,
+    row: RankRow,
+    day_totals: dict[str, int],
+) -> RankRow:
+    """Fill day-by-day share for one combo row (avoids blasting all combos at once)."""
+    if row.kind != "combo" or row.trend or not day_totals:
+        return row
+    fetch_combo_trends(league, [row], day_totals, limit=1)
+    return row
 
 
 def fetch_ranks(
     league: BuildLeague, force: bool = False
 ) -> tuple[int, list[RankRow], list[RankRow], list[RankRow], dict[str, int]]:
-    cache_key = (league.version, league.ladder)
+    cache_key = (league.game, league.version, league.ladder)
     with _cache_lock:
         cached = _rank_cache.get(cache_key)
         if not force and cached and _fresh(cached[0]):
@@ -990,8 +1255,8 @@ def fetch_ranks(
         raise RuntimeError("poe.ninja 沒有回傳這個聯盟的流派資料。")
     total = _result_total(result)
     dicts = _dictionaries(result)
-    class_names = _dictionary_names(dicts.get("class", ""))
-    gem_names = _dictionary_names(dicts.get("gem", ""))
+    class_names = _dictionary_names(dicts.get("class", ""), game=league.game)
+    gem_names = _dictionary_names(dicts.get("gem", ""), game=league.game)
     class_rows = _rank_rows(
         league,
         "class",
@@ -1012,26 +1277,37 @@ def fetch_ranks(
     )
     combo_rows = _combo_rows(league, class_rows, gem_names, total)
     labels = [label for label in TREND_DAYS if label in (league.time_labels or TREND_DAYS)]
+    # History first (drives class/skill sparklines); keep concurrency low via gate.
     snapshots: list[tuple[str, int, dict[str, float], dict[str, float]]] = []
     with ThreadPoolExecutor(max_workers=COMBO_WORKERS) as pool:
-        stat_futures = [pool.submit(_fill_combo_stats, league, row) for row in combo_rows]
-        stat_futures.extend(pool.submit(_fill_class_stats, league, row) for row in class_rows[:CLASS_STAT_LIMIT])
-        stat_futures.extend(pool.submit(_fill_skill_stats, league, row) for row in skill_rows[:SKILL_STAT_LIMIT])
-        hist_futures = [
-            pool.submit(_history_snapshot, league, label) for label in labels
-        ]
-        for future in as_completed(stat_futures):
-            try:
-                future.result()
-            except Exception:
-                continue
-        for future in hist_futures:
+        hist_futures = [pool.submit(_history_snapshot, league, label) for label in labels]
+        for future in as_completed(hist_futures):
             try:
                 snapshots.append(future.result())
             except Exception:
                 continue
     snapshots.sort(key=lambda item: labels.index(item[0]) if item[0] in labels else 99)
     day_totals = _apply_history(class_rows, skill_rows, snapshots)
+    # Only prefetch a few combo detail payloads; the rest load when the user selects a row.
+    for row in combo_rows[:COMBO_STAT_PREFETCH]:
+        try:
+            _fill_combo_stats(league, row)
+        except Exception:
+            continue
+    if CLASS_STAT_LIMIT:
+        for row in class_rows[:CLASS_STAT_LIMIT]:
+            try:
+                _fill_class_stats(league, row)
+            except Exception:
+                continue
+    if SKILL_STAT_LIMIT:
+        for row in skill_rows[:SKILL_STAT_LIMIT]:
+            try:
+                _fill_skill_stats(league, row)
+            except Exception:
+                continue
+    if COMBO_TREND_PREFETCH:
+        fetch_combo_trends(league, combo_rows, day_totals, limit=COMBO_TREND_PREFETCH)
     packed = (total, class_rows, skill_rows, combo_rows, day_totals)
     with _cache_lock:
         _rank_cache[cache_key] = (time.time(), packed)

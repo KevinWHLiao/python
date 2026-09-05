@@ -36,7 +36,7 @@ MENU_CARDS = [
     ("工藝解鎖區域", "查工藝台配方解鎖區域、消耗與適用部位", "open_craft", True),
     ("價格查詢", "poe.ninja 估價：PoE1 通貨傳奇輿圖寶石、PoE2 通貨徵兆催化劑族裔寶石傳奇裝備等", "open_economy", True),
     ("官方賣場", "pathofexile.com/trade：即時上架、價格與密語", "open_trade", True),
-    ("流派排名", "poe.ninja 熱門流派、DPS、EHP 與逐日占比", "open_builds", True),
+    ("流派排名", "poe.ninja PoE1／PoE2 熱門流派、DPS、EHP、逐日占比與傳奇裝備", "open_builds", True),
     ("每季開荒推薦", "PoE1 開荒 Build 篩選；PoE2 為 Maxroll 開荒 Build tier list（含 Guide／Planner）", "open_starters", True),
     ("中文化 PIN", "poedb.tw 繁中／簡中 PIN 與遊戲版本", "open_chinese", True),
     ("Craft of Exile", "開啟做裝模擬器（Calculator / Simulator）", "open_craftofexile", False),

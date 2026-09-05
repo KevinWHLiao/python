@@ -10,22 +10,26 @@ from tkinter import messagebox, ttk
 import customtkinter as ctk
 
 from .builds import (
-    BUILDS_PAGE,
+    GAME_LABELS,
     LADDER_DELVE,
     LADDER_EXP,
+    TREND_DAY_LABELS,
     BuildLeague,
     RankRow,
+    builds_page,
     clear_cache,
     enrich_row,
-    fetch_combo_trends,
+    enrich_combo_trend,
     fetch_index,
     fetch_ranks,
+    format_daily_trend,
     format_stat,
     is_private_league,
     matches,
     parse_stat,
     sparkline,
 )
+from . import load_settings, save_settings
 from .search_combo import bind_searchable_combo, filter_choices
 from .theme import (
     BG,
@@ -33,7 +37,6 @@ from .theme import (
     FONT_FAMILY,
     FONT_SECTION,
     FONT_SMALL,
-    FONT_UI,
     GOLD,
     GOLD_HI,
     LINE_SOFT,
@@ -41,6 +44,7 @@ from .theme import (
     PREFIX,
     SUFFIX,
     TEXT,
+    GameToggle,
     content_panel,
     filter_panel,
     ghost_button,
@@ -54,7 +58,7 @@ from .theme import (
 VIEW_CLASS = "熱門昇華"
 VIEW_SKILL = "熱門技能"
 VIEW_COMBO = "熱門流派"
-TREND_TITLES = ("6日前", "5日前", "4日前", "3日前", "2日前", "昨日", "今日")
+TREND_TITLES = TREND_DAY_LABELS
 NUMERIC_COLUMNS = {"rank", "count", "percent", "yesterday", "delta", "dps", "ehp", "life", "es"}
 
 
@@ -97,13 +101,15 @@ class BuildsApp(ctk.CTkToplevel):
         self._pending_load = False
         self._row_by_id: dict[str, RankRow] = {}
         self._selected: RankRow | None = None
+        saved_game = str(load_settings().get("builds_game") or "poe1")
+        self.game_id = "poe2" if saved_game == "poe2" else "poe1"
 
         self.league_var = tk.StringVar()
         self.ladder_var = tk.StringVar(value=LADDER_EXP)
         self.view_var = tk.StringVar(value=VIEW_COMBO)
         self.search_var = tk.StringVar()
         self.status_var = tk.StringVar(value="正在連線 poe.ninja…")
-        self.detail_title_var = tk.StringVar(value="選擇一列看 DPS、EHP 與逐日占比")
+        self.detail_title_var = tk.StringVar(value="選擇一列看 DPS、EHP、逐日占比與傳奇")
         self.detail_stats_var = tk.StringVar(value="")
         self.detail_items_var = tk.StringVar(value="")
         self._league_options: list[str] = []
@@ -131,33 +137,46 @@ class BuildsApp(ctk.CTkToplevel):
         _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
         filters = filter_panel(self)
-        ctk.CTkLabel(filters, text="聯盟", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="遊戲", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.game_switch = GameToggle(
+            filters,
+            values=["PoE1", "PoE2"],
+            width=168,
+            height=30,
+            command=self.on_game_changed,
+        )
+        self.game_switch.grid(row=0, column=1, padx=(0, 16))
+        self.game_switch.set(GAME_LABELS[self.game_id])
+
+        ctk.CTkLabel(filters, text="聯盟", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
         self.league_combo = ttk.Combobox(filters, textvariable=self.league_var, state="normal", width=22)
-        self.league_combo.grid(row=0, column=1, padx=(0, 16))
+        self.league_combo.grid(row=0, column=3, padx=(0, 16))
         bind_searchable_combo(self.league_combo, lambda: self._league_options, self.load_ranks)
 
-        ctk.CTkLabel(filters, text="榜單", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="榜單", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.ladder_combo = ttk.Combobox(
             filters, textvariable=self.ladder_var, state="normal", width=10, values=self._ladder_options
         )
-        self.ladder_combo.grid(row=0, column=3, padx=(0, 16))
+        self.ladder_combo.grid(row=0, column=5, padx=(0, 16))
         bind_searchable_combo(self.ladder_combo, lambda: self._ladder_options, self.load_ranks)
 
-        ctk.CTkLabel(filters, text="檢視", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="檢視", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
         self.view_combo = ttk.Combobox(
             filters, textvariable=self.view_var, state="normal", width=12, values=self._view_options
         )
-        self.view_combo.grid(row=0, column=5, padx=(0, 16))
+        self.view_combo.grid(row=0, column=7, padx=(0, 16))
         bind_searchable_combo(self.view_combo, lambda: self._view_options, self.refresh)
 
-        ctk.CTkLabel(filters, text="搜尋", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
-        ttk.Entry(filters, textvariable=self.search_var, width=28).grid(row=0, column=7, sticky="ew")
-        filters.grid_columnconfigure(7, weight=1)
+        ctk.CTkLabel(filters, text="搜尋", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=8, sticky="w", padx=(0, 6))
+        ttk.Entry(filters, textvariable=self.search_var, width=28).grid(row=0, column=9, sticky="ew")
+        filters.grid_columnconfigure(9, weight=1)
 
-        muted_hint(
+        self.hint_label = muted_hint(
             self,
-            "資料來自 poe.ninja。DPS／EHP 是樣本角色的中位數（PoB 模擬值）。占比趨勢來自近 6 日快照。雙擊列開流派頁，雙擊角色開該角色。",
+            "資料來自 poe.ninja Builds（會節流請求，避免被 rate limit）。"
+            "昇華／技能有近 6 日趨勢；流派傳奇與逐日在點選列時再補抓。雙擊列開官網。",
         )
+        self._apply_ladder_options()
 
         body = content_panel(self)
         pane = ttk.Panedwindow(body, orient="vertical")
@@ -263,12 +282,13 @@ class BuildsApp(ctk.CTkToplevel):
         self.detail_sections.pack(fill="both", expand=True)
         self._detail_labels: dict[str, ctk.CTkLabel] = {}
         for key, title in (
+            ("trend", "逐日占比變化"),
             ("dps", "傷害組成（中位占比）"),
             ("skills", "熱門技能"),
-            ("supports", "常見寶石／輔助"),
-            ("keys", "鑰石"),
-            ("items", "熱門傳奇"),
-            ("meta", "血脈／神殿／強盜／武器／塗油"),
+            ("supports", "常見寶石／輔助／精魂"),
+            ("keys", "關鍵被動／鑰石"),
+            ("items", "熱門傳奇（含使用占比）"),
+            ("meta", "武器／塗油／特性／其他"),
         ):
             block = ctk.CTkFrame(
                 self.detail_sections, fg_color="#12161f", corner_radius=10, border_width=1, border_color=LINE_SOFT
@@ -332,6 +352,35 @@ class BuildsApp(ctk.CTkToplevel):
         self.sample_tree.bind("<Double-1>", self.open_sample)
         self._sample_urls: dict[str, str] = {}
 
+    def _apply_ladder_options(self) -> None:
+        if self.game_id == "poe2":
+            self._ladder_options = [LADDER_EXP]
+            self.ladder_var.set(LADDER_EXP)
+            self.ladder_combo.configure(values=self._ladder_options, state="disabled")
+        else:
+            self._ladder_options = [LADDER_EXP, LADDER_DELVE]
+            self.ladder_combo.configure(values=self._ladder_options, state="normal")
+            if self.ladder_var.get() not in self._ladder_options:
+                self.ladder_var.set(LADDER_EXP)
+
+    def on_game_changed(self, value: str | None = None) -> None:
+        label = (value or self.game_switch.get() or "PoE1").strip()
+        game = "poe2" if label == "PoE2" else "poe1"
+        if game == self.game_id and self.leagues and self.leagues[0].game == game:
+            return
+        self.game_id = game
+        save_settings({"builds_game": game})
+        self._apply_ladder_options()
+        self.class_rows = []
+        self.skill_rows = []
+        self.combo_rows = []
+        self.total = 0
+        self.day_totals = {}
+        self._selected = None
+        self.league_var.set("")
+        self.status_var.set(f"正在載入 {GAME_LABELS[game]} 聯盟列表…")
+        self._startup()
+
     def current_league(self) -> BuildLeague | None:
         name = (self.league_var.get() or "").strip()
         ladder = self._resolved_ladder()
@@ -375,7 +424,7 @@ class BuildsApp(ctk.CTkToplevel):
 
     def _index_worker(self) -> None:
         try:
-            index = fetch_index()
+            index = fetch_index(game=self.game_id)
         except RuntimeError as error:
             self.after(0, lambda message=str(error): self._fail(message))
             return
@@ -449,28 +498,9 @@ class BuildsApp(ctk.CTkToplevel):
         league.character_count = total
         self.refresh()
         self._select_first()
-        if combo_rows and day_totals:
-            self.status_var.set(self.status_var.get() + "　正在補齊流派逐日占比…")
-            threading.Thread(target=self._trend_worker, args=(league, combo_rows, day_totals), daemon=True).start()
         if self._pending_load:
             self._pending_load = False
             self.load_ranks()
-
-    def _trend_worker(self, league: BuildLeague, rows: list[RankRow], day_totals: dict[str, int]) -> None:
-        try:
-            fetch_combo_trends(league, rows, day_totals)
-        except Exception:
-            return
-        self.after(0, self._on_combo_trends)
-
-    def _on_combo_trends(self) -> None:
-        selected = self._selected
-        self.refresh()
-        if selected:
-            self._restore_selection(selected)
-        league = self.current_league()
-        if league and self.total:
-            self.status_var.set(f"{league.name} · {league.ladder_label} · {self.total:,} 名角色 · poe.ninja")
 
     def _fail(self, message: str) -> None:
         self._loading = False
@@ -581,22 +611,33 @@ class BuildsApp(ctk.CTkToplevel):
             dps_text = "　".join(f"{name} {value:.0f}%" for name, value in row.dps_share.items())
         else:
             dps_text = "尚無元素占比樣本（可能還在載入，或此列沒有 DPS 細項）。"
+        trend_text = format_daily_trend(row)
+        if trend_text:
+            self._detail_labels["trend"].configure(text=trend_text)
+        else:
+            self._detail_labels["trend"].configure(text="尚無逐日快照（新聯盟可能只有小時標籤，或資料仍在載入）。")
         self._detail_labels["dps"].configure(text=dps_text)
         self._detail_labels["skills"].configure(text="、".join(row.skills) if row.skills else "尚無技能樣本")
-        self._detail_labels["supports"].configure(text="、".join(row.supports) if row.supports else "尚無寶石樣本")
-        self._detail_labels["keys"].configure(text="、".join(row.keystones) if row.keystones else "尚無鑰石樣本")
+        support_bits = list(row.supports)
+        for gem in row.spirit_gems:
+            if gem not in support_bits:
+                support_bits.append(gem)
+        self._detail_labels["supports"].configure(text="、".join(support_bits) if support_bits else "尚無寶石樣本")
+        self._detail_labels["keys"].configure(text="、".join(row.keystones) if row.keystones else "尚無關鍵被動樣本")
         self._detail_labels["items"].configure(text="、".join(row.items) if row.items else "尚無傳奇樣本")
         meta_bits = []
+        if row.weapon_modes:
+            meta_bits.append("武器：" + "、".join(row.weapon_modes))
+        if row.traits:
+            meta_bits.append("特性：" + "、".join(row.traits))
+        if row.anointed:
+            meta_bits.append("塗油／注能：" + "、".join(row.anointed))
         if row.second_ascendancy:
             meta_bits.append("血脈：" + "、".join(row.second_ascendancy))
         if row.pantheon:
             meta_bits.append("神殿：" + "、".join(row.pantheon))
         if row.bandit:
             meta_bits.append("強盜：" + "、".join(row.bandit))
-        if row.weapon_modes:
-            meta_bits.append("武器：" + "、".join(row.weapon_modes))
-        if row.anointed:
-            meta_bits.append("塗油：" + "、".join(row.anointed))
         self._detail_labels["meta"].configure(text="\n".join(meta_bits) if meta_bits else "尚無額外配置樣本")
         self.detail_items_var.set("")
 
@@ -623,6 +664,9 @@ class BuildsApp(ctk.CTkToplevel):
         if not row.samples and not row.items and not row.dps:
             self._detail_labels["items"].configure(text="正在補抓此列細節…")
             threading.Thread(target=self._enrich_worker, args=(row,), daemon=True).start()
+        elif row.kind == "combo" and not row.trend and self.day_totals:
+            self._detail_labels["trend"].configure(text="正在補抓此流派逐日占比…")
+            threading.Thread(target=self._enrich_worker, args=(row,), daemon=True).start()
 
     def _enrich_worker(self, row: RankRow) -> None:
         league = self.current_league()
@@ -630,9 +674,30 @@ class BuildsApp(ctk.CTkToplevel):
             return
         try:
             enrich_row(league, row)
+            if row.kind == "combo" and self.day_totals:
+                enrich_combo_trend(league, row, self.day_totals)
         except Exception:
             return
-        self.after(0, lambda: self._show_detail(row) if self._selected is row else None)
+        self.after(0, lambda: self._after_enrich(row))
+
+    def _after_enrich(self, row: RankRow) -> None:
+        if self._selected is not row:
+            return
+        self._show_detail(row)
+        # Refresh sparkline column for this row without rebuilding the whole table selection.
+        for item_id, mapped in self._row_by_id.items():
+            if mapped is row:
+                values = list(self.tree.item(item_id, "values"))
+                # columns: rank name skill count percent yesterday delta spark ...
+                if len(values) >= 8:
+                    values[5] = format_percent(row.yesterday)
+                    values[6] = format_delta(row.delta)
+                    values[7] = sparkline(row.trend) if row.trend else "…"
+                    values[8] = format_stat(row.dps)
+                    values[9] = format_stat(row.ehp)
+                    values[12] = "、".join(row.items[:3]) or "—"
+                    self.tree.item(item_id, values=values)
+                break
 
     def copy_detail(self) -> None:
         row = self._selected
@@ -642,10 +707,11 @@ class BuildsApp(ctk.CTkToplevel):
         lines = [
             self.detail_title_var.get(),
             self.detail_stats_var.get(),
+            "逐日占比：" + self._detail_labels["trend"].cget("text"),
             "傷害組成：" + self._detail_labels["dps"].cget("text"),
             "熱門技能：" + self._detail_labels["skills"].cget("text"),
             "常見寶石：" + self._detail_labels["supports"].cget("text"),
-            "鑰石：" + self._detail_labels["keys"].cget("text"),
+            "關鍵被動：" + self._detail_labels["keys"].cget("text"),
             "傳奇：" + self._detail_labels["items"].cget("text"),
             self._detail_labels["meta"].cget("text"),
         ]
@@ -727,7 +793,7 @@ class BuildsApp(ctk.CTkToplevel):
 
     def open_league_page(self) -> None:
         league = self.current_league()
-        webbrowser.open(league.page_url if league else BUILDS_PAGE)
+        webbrowser.open(league.page_url if league else builds_page(self.game_id))
 
     def open_selected(self, _event=None) -> None:
         selected = self.tree.selection()

@@ -11,7 +11,7 @@ Path of Exile（PoE1）與 Path of Exile 2 用的 Windows 桌面查詢工具。�
 | **工藝解鎖區域** | 工藝台配方解鎖地圖、消耗、適用部位 |
 | **價格查詢** | 可切換 PoE1／PoE2 的 poe.ninja 估價。PoE1：通貨、傳奇、寶石、輿圖等；PoE2：通貨、碎片、精華、符文、魂核、神像、未切割寶石、探險文物、深淵之骨、族裔寶石、徵兆、催化劑、液態情緒、維里西姆、傳奇武器／護甲／飾品／藥劑／護符／珠寶／聖物／石板、先驅石板 |
 | **官方賣場** | pathofexile.com/trade：關鍵字提示、賣家狀態、分類／物等／價格／詞綴過濾、上架預覽 |
-| **流派排名** | poe.ninja 熱門流派、DPS／EHP、逐日占比 |
+| **流派排名** | poe.ninja PoE1／PoE2 熱門流派、DPS／EHP、逐日占比與傳奇裝備（節流請求） |
 | **每季開荒推薦** | 可切換 PoE1／PoE2。PoE1：依類型／手感／預算篩選開荒 Build（本地目錄）；PoE2：Maxroll 開荒 Build tier list（含 Guide 優缺點、Planner，可線上更新） |
 | **中文化 PIN** | poedb.tw 繁中／簡中 PIN 與遊戲版本 |
 | **外部連結** | Craft of Exile、軍團珠寶（Timeless Jewel）查詢 |

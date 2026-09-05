@@ -89,3 +89,18 @@ def resolve_named_data(filename: str) -> Path | None:
         if candidate.exists():
             return candidate
     return None
+
+
+def resolve_app_icon() -> Path | None:
+    """Return the bundled PoE-themed .ico for window / taskbar icons."""
+    candidates = [
+        ROOT / "assets" / "poe_lookup.ico",
+        Path(__file__).resolve().parent.parent / "assets" / "poe_lookup.ico",
+    ]
+    bundled = _bundle_dir()
+    if bundled:
+        candidates.insert(0, bundled / "assets" / "poe_lookup.ico")
+    for path in candidates:
+        if path.exists():
+            return path
+    return None

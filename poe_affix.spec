@@ -17,6 +17,8 @@ a = Analysis(
         ("poe_affix_data/names_zh_poe2.json", "poe_affix_data"),
         ("poe_affix_data/league_starters.json", "poe_affix_data"),
         ("poe_affix_data/league_starters_poe2.json", "poe_affix_data"),
+        ("assets/poe_lookup.ico", "assets"),
+        ("assets/poe_lookup_icon.png", "assets"),
         *ctk_datas,
     ],
     hiddenimports=collect_submodules("poe_affix") + ctk_hiddenimports,
@@ -47,4 +49,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon="assets/poe_lookup.ico",
 )

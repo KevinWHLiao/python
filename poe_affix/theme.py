@@ -187,6 +187,25 @@ def setup_window(win: tk.Misc) -> None:
         except tk.TclError:
             pass
     apply_ttk_theme(win)
+    _apply_app_icon(win)
+
+
+def _apply_app_icon(win: tk.Misc) -> None:
+    try:
+        from . import resolve_app_icon
+    except Exception:
+        return
+    icon = resolve_app_icon()
+    if not icon:
+        return
+    path = str(icon)
+    try:
+        win.iconbitmap(path)
+    except Exception:
+        try:
+            win.iconbitmap(default=path)
+        except Exception:
+            pass
 
 
 def apply_theme(widget: tk.Misc) -> None:
