@@ -155,7 +155,7 @@ GAMES: dict[str, dict] = {
         "page": ECONOMY_PAGE,
         # poe.ninja serves per-item PoE1 pages; the PoE2 economy is one SPA route.
         "deep_links": True,
-        # poe.ninja quotes PoE1 in chaos and PoE2 in divine.
+        # Column currencies (what the UI shows).
         "primary": "chaos",
         "secondary": "divine",
     },
@@ -167,8 +167,9 @@ GAMES: dict[str, dict] = {
         "item": ITEM_TYPES_POE2,
         "page": ECONOMY_PAGE_POE2,
         "deep_links": False,
-        "primary": "divine",
-        "secondary": "chaos",
+        # API quotes in divine; most listings are thought of in exalted.
+        "primary": "exalted",
+        "secondary": "divine",
     },
 }
 
@@ -354,13 +355,33 @@ def _to_float(value, default: float = 0.0) -> float:
         return default
 
 
+def _display_prices(game: str, core: dict, primary_value: float) -> tuple[float, float]:
+    """Convert API primaryValue into the two currencies shown in the UI.
+
+    poe.ninja PoE2 overviews quote ``primaryValue`` in ``core.primary`` (usually
+    divine) and expose cross-rates under ``core.rates`` (e.g. exalted / chaos).
+    """
+    spec = game_spec(game)
+    want_primary = str(spec["primary"])
+    want_secondary = str(spec["secondary"])
+    api_primary = str(core.get("primary") or want_primary)
+    rates = core.get("rates") if isinstance(core.get("rates"), dict) else {}
+
+    def amount(currency_id: str) -> float:
+        if currency_id == api_primary:
+            return primary_value
+        rate = _to_float(rates.get(currency_id))
+        if rate:
+            return primary_value * rate
+        return 0.0
+
+    return amount(want_primary), amount(want_secondary)
+
+
 def _parse_exchange(game: str, league: League, api_type: str, payload: dict) -> list[PriceRow]:
     label, slug = _lookups(game)["exchange_by_key"][api_type]
     items = {item.get("id"): item for item in payload.get("items") or [] if isinstance(item, dict)}
     core = payload.get("core") or {}
-    rates = core.get("rates") or {}
-    secondary_id = str(core.get("secondary") or game_spec(game)["secondary"])
-    secondary_per_primary = _to_float(rates.get(secondary_id), 0.0)
     rows: list[PriceRow] = []
     for line in payload.get("lines") or []:
         if not isinstance(line, dict):
@@ -370,8 +391,7 @@ def _parse_exchange(game: str, league: League, api_type: str, payload: dict) -> 
         name = str(meta.get("name") or item_id or "")
         if not name:
             continue
-        primary = _to_float(line.get("primaryValue"))
-        secondary = primary * secondary_per_primary if secondary_per_primary else 0.0
+        primary, secondary = _display_prices(game, core, _to_float(line.get("primaryValue")))
         details_id = str(meta.get("detailsId") or item_id or "")
         name_zh = translate_name(name, game)
         aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
@@ -426,12 +446,9 @@ def _parse_items(game: str, league: League, api_type: str, payload: dict) -> lis
     aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
 
     # PoE1 stash items carry chaosValue / divineValue directly on each line.
-    # PoE2 stash items use primaryValue (divine) + core.rates for the secondary.
+    # PoE2 stash items use primaryValue (usually divine) + core.rates for exalted.
     core = payload.get("core") or {}
-    rates = core.get("rates") or {}
     use_primary = game != "poe1"  # PoE2 stash API
-    secondary_id = str(core.get("secondary") or game_spec(game)["secondary"])
-    secondary_per_primary = _to_float(rates.get(secondary_id), 0.0) if use_primary else 0.0
 
     rows: list[PriceRow] = []
     for line in payload.get("lines") or []:
@@ -449,8 +466,7 @@ def _parse_items(game: str, league: League, api_type: str, payload: dict) -> lis
             name_zh = translate_name(name, game)
         base_zh = translate_name(str(line.get("baseType") or ""), game)
         if use_primary:
-            primary = _to_float(line.get("primaryValue"))
-            secondary = primary * secondary_per_primary if secondary_per_primary else 0.0
+            primary, secondary = _display_prices(game, core, _to_float(line.get("primaryValue")))
         else:
             primary = _to_float(line.get("chaosValue"))
             secondary = _to_float(line.get("divineValue"))

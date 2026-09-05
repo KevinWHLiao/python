@@ -84,7 +84,7 @@ GUI 內也可分別更新：
 | 商店／工藝 | poedb.tw 表格頁 | 解析 HTML `<table>`，寫入 `vendor.json` / `crafting.json` |
 | 中文化 PIN | poedb.tw/tw/chinese | 下載頁面後以正則解析 |
 | 價格（PoE1） | poe.ninja `/poe1/api/economy` | HTTP JSON（exchange + stash item overview），以混沌石計價 |
-| 價格（PoE2） | poe.ninja `/poe2/api/economy` | HTTP JSON（exchange + stash item overview），以神聖石計價 |
+| 價格（PoE2） | poe.ninja `/poe2/api/economy` | HTTP JSON（exchange + stash item overview），顯示崇高石／神聖石 |
 | 官方賣場 | pathofexile.com/api/trade | HTTP JSON（search + fetch） |
 | 流派 | poe.ninja builds | HTTP（含 protobuf 解析） |
 | 中文物品名（PoE1） | `names_zh.json` + `i18n.py` | 本地對照表（顯示用） |

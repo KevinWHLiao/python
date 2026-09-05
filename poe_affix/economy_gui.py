@@ -155,7 +155,7 @@ class EconomyApp(ctk.CTkToplevel):
         muted_hint(
             self,
             (
-                "估價來自 poe.ninja（PoE1 以混沌石計價，PoE2 以神聖石計價）。名稱顯示中文與英文，兩邊都能搜。"
+                "估價來自 poe.ninja（PoE1：混沌石／神聖石；PoE2：崇高石／神聖石）。名稱顯示中文與英文，兩邊都能搜。"
                 "聯盟／分類可輸入關鍵字後從清單點選。"
                 f"分類選「全部」時可按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」，只列出全部分類裡漲超過 {MIN_GAIN_PERCENT:.0f}% 的物品。雙擊列可開官網。"
             ),
