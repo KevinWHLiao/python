@@ -15,8 +15,11 @@ from .i18n import search_terms, translate_name
 
 NINJA_BASE = "https://poe.ninja"
 ECONOMY_PAGE = f"{NINJA_BASE}/poe1/economy/"
+ECONOMY_PAGE_POE2 = f"{NINJA_BASE}/poe2/economy/"
 CACHE_TTL = 15 * 60
 MAX_WORKERS = 3
+GAINER_WORKERS = 6
+MIN_GAIN_PERCENT = 30
 USER_AGENT = "PoELookupTool/1.0 (Windows desktop; personal local app)"
 
 ALL = "全部"
@@ -35,11 +38,11 @@ EXCHANGE_TYPES: list[tuple[str, str, str]] = [
     ("Omen", "預兆", "omens"),
     ("Tattoo", "紋身", "tattoos"),
     ("Artifact", "探險文物", "artifacts"),
-    ("Runegraft", "符文嫁接", "runegrafts"),
-    ("AllflameEmber", "萬火餘燼", "allflame-embers"),
+    ("Runegraft", "符文之結", "runegrafts"),
+    ("AllflameEmber", "不滅之火餘燼", "allflame-embers"),
     ("DjinnCoin", "巨靈幣", "djinn-coins"),
-    ("Ducat", "杜卡特", "ducats"),
-    ("EnshroudingCrystal", "籠罩結晶", "enshrouding-crystals"),
+    ("Ducat", "達克特", "ducats"),
+    ("EnshroudingCrystal", "壟罩晶石", "enshrouding-crystals"),
     ("Astrolabe", "星盤", "astrolabes"),
 ]
 
@@ -70,16 +73,157 @@ ITEM_TYPES: list[tuple[str, str, str]] = [
     ("Incubator", "培育器", "incubators"),
     ("Vial", "瓶子", "vials"),
     ("Corpse", "屍體", "corpses"),
-    ("Wombgift", "子宮贈禮", "wombgifts"),
-    ("IncursionTemple", "神殿", "incursion-temples"),
-    ("ScryingOrb", "占卜球", "scrying-orbs"),
+    ("Wombgift", "胎贈", "wombgifts"),
+    ("IncursionTemple", "阿茲瓦特神殿", "incursion-temples"),
+    ("ScryingOrb", "占卜寶珠", "scrying-orbs"),
+]
+
+# PoE2 exchange overview categories.
+EXCHANGE_TYPES_POE2: list[tuple[str, str, str]] = [
+    ("Currency", "通貨", "currency"),
+    ("Fragments", "碎片", "fragments"),
+    ("Essences", "精華", "essences"),
+    ("Runes", "符文", "runes"),
+    ("SoulCores", "魂核", "soul-cores"),
+    ("Idols", "神像", "idols"),
+    ("UncutGems", "未切割寶石", "uncut-gems"),
+    ("Expedition", "探險文物", "expedition"),
+    ("Abyss", "深淵之骨", "abyss"),
+    ("LineageSupportGems", "族裔寶石", "lineage-support-gems"),
+    ("Ritual", "徵兆", "omens"),
+    ("Breach", "催化劑", "catalysts"),
+    ("Delirium", "液態情緒", "liquid-emotions"),
+    ("Verisium", "維里西姆", "verisium"),
+]
+
+# PoE2 stash item overview categories (public stash tab prices).
+ITEM_TYPES_POE2: list[tuple[str, str, str]] = [
+    ("UniqueWeapons", "傳奇武器", "unique-weapons"),
+    ("UniqueArmours", "傳奇護甲", "unique-armours"),
+    ("UniqueAccessories", "傳奇飾品", "unique-accessories"),
+    ("UniqueFlasks", "傳奇藥劑", "unique-flasks"),
+    ("UniqueCharms", "傳奇護符", "unique-charms"),
+    ("UniqueJewels", "傳奇珠寶", "unique-jewels"),
+    ("UniqueSanctumRelics", "傳奇聖物", "unique-relics"),
+    ("UniqueTablets", "傳奇石板", "unique-tablets"),
+    ("PrecursorTablets", "先驅石板", "precursor-tablets"),
 ]
 
 CATEGORIES = EXCHANGE_TYPES + ITEM_TYPES
 CATEGORY_LABELS = [label for _key, label, _slug in CATEGORIES]
-_EXCHANGE_BY_KEY = {key: (label, slug) for key, label, slug in EXCHANGE_TYPES}
-_ITEM_BY_KEY = {key: (label, slug) for key, label, slug in ITEM_TYPES}
-_LABEL_TO_SPEC = {label: (key, kind, slug) for kind, group in (("exchange", EXCHANGE_TYPES), ("item", ITEM_TYPES)) for key, label, slug in group}
+CATEGORIES_POE2 = EXCHANGE_TYPES_POE2 + ITEM_TYPES_POE2
+CATEGORY_LABELS_POE2 = [label for _key, label, _slug in CATEGORIES_POE2]
+# Extra search tokens so informal / older spellings still match price rows.
+CATEGORY_SEARCH_ALIASES: dict[str, tuple[str, ...]] = {
+    "Ducat": ("達克特", "杜卡特"),
+    "EnshroudingCrystal": ("壟罩晶石", "壟罩結晶", "籠罩晶石", "籠罩結晶"),
+    "Astrolabe": ("星盤",),
+    "IncursionTemple": ("阿茲瓦特神殿", "阿茲瓦神殿", "神殿"),
+    "ScryingOrb": ("占卜寶珠", "占卜球"),
+    "Fragments": ("碎片",),
+    "Essences": ("精華", "精髓"),
+    "Runes": ("符文",),
+    "SoulCores": ("魂核", "魂魄核心", "核心"),
+    "Idols": ("神像", "偶像"),
+    "UncutGems": ("未切割寶石", "未切割", "寶石"),
+    "Expedition": ("探險文物", "探險"),
+    "Abyss": ("深淵之骨", "深淵骨"),
+    "LineageSupportGems": ("族裔寶石", "族裔"),
+    "Ritual": ("徵兆", "預兆"),
+    "Breach": ("催化劑", "裂痕催化劑"),
+    "Delirium": ("液態情緒", "情緒"),
+    "Verisium": ("維里西姆",),
+    "UniqueWeapons": ("傳奇武器", "武器"),
+    "UniqueArmours": ("傳奇護甲", "護甲"),
+    "UniqueAccessories": ("傳奇飾品", "飾品"),
+    "UniqueFlasks": ("傳奇藥劑",),
+    "UniqueCharms": ("傳奇護符", "護符"),
+    "UniqueJewels": ("傳奇珠寶", "珠寶"),
+    "UniqueSanctumRelics": ("傳奇聖物", "聖物"),
+    "UniqueTablets": ("傳奇石板", "石板"),
+    "PrecursorTablets": ("先驅石板", "先驅"),
+}
+GAME_LABELS = {"poe1": "PoE1", "poe2": "PoE2"}
+CURRENCY_NAMES_ZH = {"chaos": "混沌石", "divine": "神聖石", "exalted": "崇高石"}
+GAMES: dict[str, dict] = {
+    "poe1": {
+        "id": "poe1",
+        "realm": "poe1",
+        "label": "PoE1",
+        "exchange": EXCHANGE_TYPES,
+        "item": ITEM_TYPES,
+        "page": ECONOMY_PAGE,
+        # poe.ninja serves per-item PoE1 pages; the PoE2 economy is one SPA route.
+        "deep_links": True,
+        # Column currencies (what the UI shows).
+        "primary": "chaos",
+        "secondary": "divine",
+    },
+    "poe2": {
+        "id": "poe2",
+        "realm": "poe2",
+        "label": "PoE2",
+        "exchange": EXCHANGE_TYPES_POE2,
+        "item": ITEM_TYPES_POE2,
+        "page": ECONOMY_PAGE_POE2,
+        "deep_links": False,
+        # API quotes in divine; most listings are thought of in exalted.
+        "primary": "exalted",
+        "secondary": "divine",
+    },
+}
+
+
+def game_spec(game: str) -> dict:
+    return GAMES.get(game) or GAMES["poe1"]
+
+
+def currency_labels(game: str) -> tuple[str, str]:
+    """Chinese names for the (primary, secondary) price currencies of a game."""
+    spec = game_spec(game)
+    primary = spec["primary"]
+    secondary = spec["secondary"]
+    return CURRENCY_NAMES_ZH.get(primary, primary), CURRENCY_NAMES_ZH.get(secondary, secondary)
+
+
+def _lookups(game: str) -> dict:
+    spec = game_spec(game)
+    cached = spec.get("_lookups")
+    if cached:
+        return cached
+    exchange = spec["exchange"]
+    items = spec["item"]
+    label_to_spec = {
+        label: (key, kind, slug)
+        for kind, group in (("exchange", exchange), ("item", items))
+        for key, label, slug in group
+    }
+    # Allow selecting / filtering by informal category spellings.
+    for api_key, aliases in CATEGORY_SEARCH_ALIASES.items():
+        found = next(((key, "exchange", slug) for key, _label, slug in exchange if key == api_key), None)
+        if found is None:
+            found = next(((key, "item", slug) for key, _label, slug in items if key == api_key), None)
+        if not found:
+            continue
+        for alias in aliases:
+            label_to_spec.setdefault(alias, found)
+    cached = {
+        "exchange_by_key": {key: (label, slug) for key, label, slug in exchange},
+        "item_by_key": {key: (label, slug) for key, label, slug in items},
+        "label_to_spec": label_to_spec,
+    }
+    spec["_lookups"] = cached
+    return cached
+
+
+def category_labels(game: str) -> list[str]:
+    spec = game_spec(game)
+    return [label for _key, label, _slug in list(spec["exchange"]) + list(spec["item"])]
+
+
+def economy_page(game: str) -> str:
+    return game_spec(game)["page"]
+
 
 @dataclass
 class League:
@@ -96,23 +240,35 @@ class PriceRow:
     name: str
     name_zh: str
     category: str
-    chaos: float
-    divine: float
+    primary: float
+    secondary: float
     change: float | None
     extra: str
     listings: int | None
     details_id: str
     ninja_url: str
     search_blob: str = field(repr=False, default="")
+    icon_url: str = ""
 
     @property
     def display_zh(self) -> str:
         return self.name_zh or "—"
 
 
+def _resolve_icon_url(raw: object) -> str:
+    text = str(raw or "").strip()
+    if not text:
+        return ""
+    if text.startswith("http://") or text.startswith("https://"):
+        return text
+    if text.startswith("/"):
+        return f"https://web.poecdn.com{text}"
+    return f"https://web.poecdn.com/{text}"
+
+
 _cache_lock = threading.Lock()
-_league_cache: tuple[float, list[League]] | None = None
-_overview_cache: dict[tuple[str, str, str], tuple[float, list[PriceRow]]] = {}
+_league_cache: dict[str, tuple[float, list[League]]] = {}
+_overview_cache: dict[tuple[str, str, str, str], tuple[float, list[PriceRow]]] = {}
 
 
 def _request(url: str, timeout: int = 30) -> dict | list:
@@ -144,36 +300,47 @@ def _fresh(stamp: float) -> bool:
     return (time.time() - stamp) < CACHE_TTL
 
 
-def fetch_leagues(force: bool = False) -> list[League]:
-    global _league_cache
+def fetch_leagues(force: bool = False, game: str = "poe1") -> list[League]:
+    realm = game_spec(game)["realm"]
     with _cache_lock:
-        if not force and _league_cache and _fresh(_league_cache[0]):
-            return list(_league_cache[1])
-    data = _request(f"{NINJA_BASE}/poe1/api/economy/leagues")
+        hit = _league_cache.get(realm)
+        if not force and hit and _fresh(hit[0]):
+            return list(hit[1])
+    data = _request(f"{NINJA_BASE}/{realm}/api/economy/leagues")
     if not isinstance(data, list) or not data:
         raise RuntimeError("poe.ninja 沒有回傳聯盟列表。")
     leagues = [League(id=str(item.get("id") or ""), name=str(item.get("name") or item.get("id") or "")) for item in data]
     leagues = [league for league in leagues if league.id]
     with _cache_lock:
-        _league_cache = (time.time(), leagues)
+        _league_cache[realm] = (time.time(), leagues)
     return list(leagues)
 
 
-def clear_cache(league_id: str | None = None) -> None:
-    global _league_cache
+def clear_cache(league_id: str | None = None, game: str | None = None) -> None:
     with _cache_lock:
-        if league_id is None:
-            _league_cache = None
+        if league_id is None and game is None:
+            _league_cache.clear()
             _overview_cache.clear()
             return
-        for key in [cached for cached in _overview_cache if cached[0] == league_id]:
+        realm = game_spec(game)["realm"] if game else None
+        if realm and league_id is None:
+            _league_cache.pop(realm, None)
+        for key in [
+            cached
+            for cached in _overview_cache
+            if (league_id is None or cached[1] == league_id) and (realm is None or cached[0] == realm)
+        ]:
             _overview_cache.pop(key, None)
 
 
-def _item_url(league: League, slug: str, details_id: str) -> str:
+def _item_url(game: str, league: League, slug: str, details_id: str) -> str:
+    spec = game_spec(game)
+    if not spec["deep_links"]:
+        return spec["page"]
+    realm = spec["realm"]
     if details_id:
-        return f"{NINJA_BASE}/poe1/economy/{league.slug}/{slug}/{details_id}"
-    return f"{NINJA_BASE}/poe1/economy/{league.slug}/{slug}"
+        return f"{NINJA_BASE}/{realm}/economy/{league.slug}/{slug}/{details_id}"
+    return f"{NINJA_BASE}/{realm}/economy/{league.slug}/{slug}"
 
 
 def _search_blob(*parts: object) -> str:
@@ -200,12 +367,33 @@ def _to_float(value, default: float = 0.0) -> float:
         return default
 
 
-def _parse_exchange(league: League, api_type: str, payload: dict) -> list[PriceRow]:
-    label, slug = _EXCHANGE_BY_KEY[api_type]
+def _display_prices(game: str, core: dict, primary_value: float) -> tuple[float, float]:
+    """Convert API primaryValue into the two currencies shown in the UI.
+
+    poe.ninja PoE2 overviews quote ``primaryValue`` in ``core.primary`` (usually
+    divine) and expose cross-rates under ``core.rates`` (e.g. exalted / chaos).
+    """
+    spec = game_spec(game)
+    want_primary = str(spec["primary"])
+    want_secondary = str(spec["secondary"])
+    api_primary = str(core.get("primary") or want_primary)
+    rates = core.get("rates") if isinstance(core.get("rates"), dict) else {}
+
+    def amount(currency_id: str) -> float:
+        if currency_id == api_primary:
+            return primary_value
+        rate = _to_float(rates.get(currency_id))
+        if rate:
+            return primary_value * rate
+        return 0.0
+
+    return amount(want_primary), amount(want_secondary)
+
+
+def _parse_exchange(game: str, league: League, api_type: str, payload: dict) -> list[PriceRow]:
+    label, slug = _lookups(game)["exchange_by_key"][api_type]
     items = {item.get("id"): item for item in payload.get("items") or [] if isinstance(item, dict)}
     core = payload.get("core") or {}
-    rates = core.get("rates") or {}
-    divine_per_chaos = _to_float(rates.get("divine"), 0.0)
     rows: list[PriceRow] = []
     for line in payload.get("lines") or []:
         if not isinstance(line, dict):
@@ -215,23 +403,29 @@ def _parse_exchange(league: League, api_type: str, payload: dict) -> list[PriceR
         name = str(meta.get("name") or item_id or "")
         if not name:
             continue
-        chaos = _to_float(line.get("primaryValue"))
-        divine = chaos * divine_per_chaos if divine_per_chaos else 0.0
+        primary, secondary = _display_prices(game, core, _to_float(line.get("primaryValue")))
         details_id = str(meta.get("detailsId") or item_id or "")
-        name_zh = translate_name(name)
+        name_zh = translate_name(name, game)
+        aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
         rows.append(
             PriceRow(
                 name=name,
                 name_zh=name_zh,
                 category=label,
-                chaos=chaos,
-                divine=divine,
+                primary=primary,
+                secondary=secondary,
                 change=_spark_change(line.get("sparkline")),
                 extra="",
                 listings=None,
                 details_id=details_id,
-                ninja_url=_item_url(league, slug, details_id),
-                search_blob=_search_blob(details_id.replace("-", " "), *search_terms(name, name_zh)),
+                ninja_url=_item_url(game, league, slug, details_id),
+                icon_url=_resolve_icon_url(meta.get("image") or meta.get("icon")),
+                search_blob=_search_blob(
+                    details_id.replace("-", " "),
+                    label,
+                    *aliases,
+                    *search_terms(name, name_zh),
+                ),
             )
         )
     return rows
@@ -260,8 +454,15 @@ def _item_extra(line: dict) -> str:
     return " · ".join(bits)
 
 
-def _parse_items(league: League, api_type: str, payload: dict) -> list[PriceRow]:
-    label, slug = _ITEM_BY_KEY[api_type]
+def _parse_items(game: str, league: League, api_type: str, payload: dict) -> list[PriceRow]:
+    label, slug = _lookups(game)["item_by_key"][api_type]
+    aliases = CATEGORY_SEARCH_ALIASES.get(api_type, ())
+
+    # PoE1 stash items carry chaosValue / divineValue directly on each line.
+    # PoE2 stash items use primaryValue (usually divine) + core.rates for exalted.
+    core = payload.get("core") or {}
+    use_primary = game != "poe1"  # PoE2 stash API
+
     rows: list[PriceRow] = []
     for line in payload.get("lines") or []:
         if not isinstance(line, dict):
@@ -271,25 +472,37 @@ def _parse_items(league: League, api_type: str, payload: dict) -> list[PriceRow]
             continue
         details_id = str(line.get("detailsId") or "")
         extra = _item_extra(line)
-        name_zh = translate_name(name)
-        base_zh = translate_name(str(line.get("baseType") or ""))
+        # Scrying orbs are keyed by bare map names on poe.ninja (e.g. "Beach").
+        if api_type == "ScryingOrb":
+            name_zh = translate_name(f"{name} Map", game) or translate_name(name, game)
+        else:
+            name_zh = translate_name(name, game)
+        base_zh = translate_name(str(line.get("baseType") or ""), game)
+        if use_primary:
+            primary, secondary = _display_prices(game, core, _to_float(line.get("primaryValue")))
+        else:
+            primary = _to_float(line.get("chaosValue"))
+            secondary = _to_float(line.get("divineValue"))
         rows.append(
             PriceRow(
                 name=name,
                 name_zh=name_zh,
                 category=label,
-                chaos=_to_float(line.get("chaosValue")),
-                divine=_to_float(line.get("divineValue")),
+                primary=primary,
+                secondary=secondary,
                 change=_spark_change(line.get("sparkLine")),
                 extra=extra,
                 listings=int(line["listingCount"]) if line.get("listingCount") not in (None, "") else None,
                 details_id=details_id,
-                ninja_url=_item_url(league, slug, details_id),
+                ninja_url=_item_url(game, league, slug, details_id),
+                icon_url=_resolve_icon_url(line.get("icon") or line.get("image")),
                 search_blob=_search_blob(
                     line.get("baseType"),
                     base_zh,
                     extra,
                     details_id.replace("-", " "),
+                    label,
+                    *aliases,
                     *search_terms(name, name_zh),
                 ),
             )
@@ -297,43 +510,51 @@ def _parse_items(league: League, api_type: str, payload: dict) -> list[PriceRow]
     return rows
 
 
-def _cached_rows(league_id: str, kind: str, api_type: str) -> list[PriceRow] | None:
+def _cached_rows(realm: str, league_id: str, kind: str, api_type: str) -> list[PriceRow] | None:
     with _cache_lock:
-        hit = _overview_cache.get((league_id, kind, api_type))
+        hit = _overview_cache.get((realm, league_id, kind, api_type))
         if hit and _fresh(hit[0]):
             return list(hit[1])
     return None
 
 
-def _store_rows(league_id: str, kind: str, api_type: str, rows: list[PriceRow]) -> None:
+def _store_rows(realm: str, league_id: str, kind: str, api_type: str, rows: list[PriceRow]) -> None:
     with _cache_lock:
-        _overview_cache[(league_id, kind, api_type)] = (time.time(), rows)
+        _overview_cache[(realm, league_id, kind, api_type)] = (time.time(), rows)
 
 
-def fetch_overview(league: League, kind: str, api_type: str, force: bool = False) -> list[PriceRow]:
+def fetch_overview(
+    league: League,
+    kind: str,
+    api_type: str,
+    force: bool = False,
+    game: str = "poe1",
+) -> list[PriceRow]:
+    realm = game_spec(game)["realm"]
     if not force:
-        cached = _cached_rows(league.id, kind, api_type)
+        cached = _cached_rows(realm, league.id, kind, api_type)
         if cached is not None:
             return cached
     encoded = urllib.parse.urlencode({"league": league.id, "type": api_type})
     if kind == "exchange":
-        url = f"{NINJA_BASE}/poe1/api/economy/exchange/current/overview?{encoded}"
+        url = f"{NINJA_BASE}/{realm}/api/economy/exchange/current/overview?{encoded}"
         payload = _request(url)
-        rows = _parse_exchange(league, api_type, payload if isinstance(payload, dict) else {})
+        rows = _parse_exchange(game, league, api_type, payload if isinstance(payload, dict) else {})
     else:
-        url = f"{NINJA_BASE}/poe1/api/economy/stash/current/item/overview?{encoded}"
+        url = f"{NINJA_BASE}/{realm}/api/economy/stash/current/item/overview?{encoded}"
         payload = _request(url)
-        rows = _parse_items(league, api_type, payload if isinstance(payload, dict) else {})
-    _store_rows(league.id, kind, api_type, rows)
+        rows = _parse_items(game, league, api_type, payload if isinstance(payload, dict) else {})
+    _store_rows(realm, league.id, kind, api_type, rows)
     return list(rows)
 
 
-def _specs_for_label(label: str) -> list[tuple[str, str, str]]:
+def _specs_for_label(game: str, label: str) -> list[tuple[str, str, str]]:
+    spec_game = game_spec(game)
     if label == ALL:
-        return [(key, "exchange", slug) for key, _name, slug in EXCHANGE_TYPES] + [
-            (key, "item", slug) for key, _name, slug in ITEM_TYPES
+        return [(key, "exchange", slug) for key, _name, slug in spec_game["exchange"]] + [
+            (key, "item", slug) for key, _name, slug in spec_game["item"]
         ]
-    spec = _LABEL_TO_SPEC.get(label)
+    spec = _lookups(game)["label_to_spec"].get(label)
     if not spec:
         return []
     key, kind, slug = spec
@@ -345,8 +566,11 @@ def fetch_prices(
     category_label: str,
     force: bool = False,
     progress=None,
+    max_workers: int | None = None,
+    game: str = "poe1",
 ) -> list[PriceRow]:
-    specs = _specs_for_label(category_label)
+    realm = game_spec(game)["realm"]
+    specs = _specs_for_label(game, category_label)
     if not specs:
         return []
     missing: list[tuple[str, str, str]] = []
@@ -355,7 +579,7 @@ def fetch_prices(
         if force:
             missing.append((api_type, kind, _slug))
             continue
-        cached = _cached_rows(league.id, kind, api_type)
+        cached = _cached_rows(realm, league.id, kind, api_type)
         if cached is None:
             missing.append((api_type, kind, _slug))
         else:
@@ -367,9 +591,9 @@ def fetch_prices(
 
     if missing:
         done = 0
-        with ThreadPoolExecutor(max_workers=MAX_WORKERS) as pool:
+        with ThreadPoolExecutor(max_workers=max_workers or MAX_WORKERS) as pool:
             futures = {
-                pool.submit(fetch_overview, league, kind, api_type, force): (api_type, kind)
+                pool.submit(fetch_overview, league, kind, api_type, force, game): (api_type, kind)
                 for api_type, kind, _slug in missing
             }
             for future in as_completed(futures):

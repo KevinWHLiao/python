@@ -7,22 +7,32 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
+import customtkinter as ctk
+
 from .craft import CRAFT_URL, load_crafting, sync_crafting
-from .theme import BG, BG_HEAD, FONT_SMALL, FONT_UI, GOLD, MUTED, apply_theme
+from .theme import (
+    FONT_SMALL,
+    MUTED,
+    content_panel,
+    filter_panel,
+    make_header,
+    make_status_bar,
+    muted_hint,
+    set_progress,
+    setup_window,
+)
 
 ALL = "全部"
 
 
-class CraftApp(tk.Toplevel):
+class CraftApp(ctk.CTkToplevel):
     def __init__(self, master: tk.Misc, on_back) -> None:
         super().__init__(master)
         self._on_back = on_back
         self.title("流亡黯道 · 工藝解鎖區域")
         self.geometry("1280x780")
         self.minsize(980, 600)
-        self.configure(bg=BG)
-        self.option_add("*Font", FONT_UI)
-        apply_theme(self)
+        setup_window(self)
         self.protocol("WM_DELETE_WINDOW", self.go_back)
 
         self.catalog: dict | None = None
@@ -45,57 +55,54 @@ class CraftApp(tk.Toplevel):
         self._on_back()
 
     def _build(self) -> None:
-        header = tk.Frame(self, bg=BG_HEAD)
-        header.pack(fill="x")
-        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
-        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=16, pady=12)
-        ttk.Label(header, text="工藝解鎖區域", style="Gold.TLabel", background=BG_HEAD).pack(side="left", pady=12)
-        ttk.Button(header, text="從 PoEDB 更新工藝資料", command=self.start_sync).pack(side="right", padx=16, pady=12)
-        ttk.Button(header, text="開啟工藝台頁", command=lambda: webbrowser.open(CRAFT_URL)).pack(
-            side="right", padx=(0, 8), pady=12
+        make_header(
+            self,
+            "工藝解鎖區域",
+            on_back=self.go_back,
+            right_actions=[
+                ("從 PoEDB 更新工藝資料", self.start_sync),
+                ("開啟工藝台頁", lambda: webbrowser.open(CRAFT_URL)),
+            ],
         )
+        _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
-        filters = ttk.Frame(self, padding=(16, 12, 16, 8))
-        filters.pack(fill="x")
-        ttk.Label(filters, text="解鎖區域", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
+        filters = filter_panel(self)
+        ctk.CTkLabel(filters, text="解鎖區域", font=FONT_SMALL, text_color=MUTED).grid(
+            row=0, column=0, sticky="w", padx=(0, 8)
+        )
         self.area_combo = ttk.Combobox(filters, textvariable=self.area_var, state="readonly", width=28)
         self.area_combo.grid(row=0, column=1, padx=(0, 16))
         self.area_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh())
 
-        ttk.Label(filters, text="適用部位", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="適用部位", font=FONT_SMALL, text_color=MUTED).grid(
+            row=0, column=2, sticky="w", padx=(0, 8)
+        )
         self.class_combo = ttk.Combobox(filters, textvariable=self.class_var, state="readonly", width=22)
         self.class_combo.grid(row=0, column=3, padx=(0, 16))
         self.class_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh())
 
-        ttk.Label(filters, text="搜尋配方", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
-        ttk.Entry(filters, textvariable=self.search_var, width=32).grid(row=0, column=5, sticky="ew")
-        filters.columnconfigure(5, weight=1)
-
-        ttk.Label(self, text="點欄位標題可排序。選解鎖區域可查出該處能解鎖的工藝。", style="Muted.TLabel").pack(
-            anchor="w", padx=16
+        ctk.CTkLabel(filters, text="搜尋配方", font=FONT_SMALL, text_color=MUTED).grid(
+            row=0, column=4, sticky="w", padx=(0, 8)
         )
+        ttk.Entry(filters, textvariable=self.search_var, width=32).grid(row=0, column=5, sticky="ew")
+        filters.grid_columnconfigure(5, weight=1)
 
-        wrap = ttk.Frame(self, padding=(16, 8, 16, 8))
-        wrap.pack(fill="both", expand=True)
+        muted_hint(self, "點欄位標題可排序。選解鎖區域可查出該處能解鎖的工藝。")
+
+        wrap = content_panel(self)
+        inner = ctk.CTkFrame(wrap, fg_color="transparent")
+        inner.pack(fill="both", expand=True, padx=10, pady=10)
         columns = ("affix", "cost", "item_classes", "unlock")
-        self.tree = ttk.Treeview(wrap, columns=columns, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(inner, columns=columns, show="headings", selectmode="browse")
         self.headings = {"affix": "工藝詞綴", "cost": "消耗", "item_classes": "適用部位", "unlock": "解鎖區域"}
         widths = {"affix": 280, "cost": 160, "item_classes": 360, "unlock": 220}
         for key, title in self.headings.items():
             self.tree.heading(key, text=title, command=lambda column=key: self.sort_by(column))
             self.tree.column(key, width=widths[key], stretch=key in {"affix", "item_classes"}, anchor="w")
-        yscroll = ttk.Scrollbar(wrap, orient="vertical", command=self.tree.yview)
+        yscroll = ttk.Scrollbar(inner, orient="vertical", command=self.tree.yview)
         self.tree.configure(yscrollcommand=yscroll.set)
         self.tree.pack(side="left", fill="both", expand=True)
         yscroll.pack(side="right", fill="y")
-
-        status = tk.Frame(self, bg=BG_HEAD)
-        status.pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
-            side="left", padx=16, pady=6
-        )
-        self.progress = ttk.Progressbar(status, mode="determinate", length=220)
-        self.progress.pack(side="right", padx=16, pady=8)
 
     def _startup(self) -> None:
         catalog = load_crafting()
@@ -197,7 +204,7 @@ class CraftApp(tk.Toplevel):
 
     def _on_progress(self, message: str, current: int, total: int) -> None:
         self.status_var.set(message)
-        self.progress.configure(maximum=max(total, 1), value=current)
+        set_progress(self.progress, current, total)
 
     def _on_sync_done(self, catalog: dict | None, error: Exception | None) -> None:
         self._syncing = False
@@ -207,4 +214,5 @@ class CraftApp(tk.Toplevel):
             return
         assert catalog is not None
         self.set_catalog(catalog)
+        set_progress(self.progress, 1, 1)
         messagebox.showinfo("更新完成", f"已下載 {catalog.get('recipe_count', 0)} 筆工藝配方。")

@@ -1,0 +1,2810 @@
+{
+  "league": "3.29 Curse of the Allflame",
+  "league_zh": "3.29 萬焰詛咒",
+  "updated": "2026-08-25",
+  "notes": "每季開荒建議目錄（含 3.29 輝耀使徒傭兵等）。標籤可篩選；非唯一正解。後期熱度仍以「流派排名」為準。",
+  "budgets": [
+    {
+      "id": "league_start",
+      "label": "開荒零成本",
+      "rank": 0
+    },
+    {
+      "id": "low",
+      "label": "低預算（約 <10d）",
+      "rank": 1
+    },
+    {
+      "id": "mid",
+      "label": "中預算（約 10–50d）",
+      "rank": 2
+    },
+    {
+      "id": "high",
+      "label": "高投資後期",
+      "rank": 3
+    }
+  ],
+  "styles": [
+    "近戰",
+    "遠程",
+    "法術",
+    "召喚",
+    "圖騰",
+    "地雷／陷阱",
+    "DoT",
+    "自動炸彈",
+    "傭兵",
+    "Wander"
+  ],
+  "damage_types": [
+    "物理",
+    "火焰",
+    "冰冷",
+    "閃電",
+    "混沌"
+  ],
+  "playstyles": [
+    "一鍵",
+    "多按鍵",
+    "高機動",
+    "坦克",
+    "爆發Boss",
+    "快速清圖",
+    "SSF友善",
+    "新手友善",
+    "新機制",
+    "有趣實驗"
+  ],
+  "goals": [
+    "開荒推圖",
+    "刷圖賺貨幣",
+    "打Boss",
+    "全能"
+  ],
+  "difficulties": [
+    {
+      "id": "easy",
+      "label": "簡單"
+    },
+    {
+      "id": "medium",
+      "label": "中等"
+    },
+    {
+      "id": "hard",
+      "label": "進階"
+    }
+  ],
+  "builds": [
+    {
+      "id": "earthshatter-berserker",
+      "name": "Earthshatter Berserker",
+      "name_zh": "裂地之擊 · 狂戰士",
+      "ascendancy": "Berserker",
+      "ascendancy_zh": "狂戰士",
+      "skill": "Earthshatter",
+      "skill_zh": "裂地之擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "快速清圖"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 8,
+      "pros": [
+        "開荒傷害高",
+        "裝備需求單純（雙持物傷）",
+        "Boss 爆發強"
+      ],
+      "cons": [
+        "比勇士脆",
+        "戰吼節奏要熟",
+        "近戰貼身風險"
+      ],
+      "summary": "想要「猛」的近戰開荒首選：砸地插刺、戰吼引爆，推圖與 Boss 都兇。",
+      "leveling": "Ground Slam → Lv12 Sunder → 進圖換 Earthshatter；Resolute Technique；Autoexertion 自動戰吼。",
+      "guide_url": "https://mobalytics.gg/poe/builds/imexile-earthshatter-berserker-slams",
+      "pob_url": "https://pobb.in/YXwztGJp-wzG",
+      "tags": [
+        "slam",
+        "warcry",
+        "2h"
+      ]
+    },
+    {
+      "id": "earthshatter-juggernaut",
+      "name": "Earthshatter Juggernaut",
+      "name_zh": "裂地之擊 · 勇士",
+      "ascendancy": "Juggernaut",
+      "ascendancy_zh": "勇士",
+      "skill": "Earthshatter",
+      "skill_zh": "裂地之擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "坦克",
+        "多按鍵",
+        "SSF友善",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 7,
+      "pros": [
+        "超穩、抗暈緩",
+        "無強制傳奇",
+        "SSF 友善"
+      ],
+      "cons": [
+        "輸出低於狂戰士",
+        "清圖節奏較慢"
+      ],
+      "summary": "同一套裂地玩法，換成勇士換坦度；第一次玩近戰或想少死就選這。",
+      "leveling": "同裂地路線；優先 Armour／耐力球／Fortify。",
+      "guide_url": "https://mobalytics.gg/poe/builds/woolie-earthshatter-juggernaut",
+      "pob_url": "",
+      "tags": [
+        "slam",
+        "tank",
+        "beginner"
+      ]
+    },
+    {
+      "id": "boneshatter-juggernaut",
+      "name": "Boneshatter Juggernaut",
+      "name_zh": "碎骨 · 勇士",
+      "ascendancy": "Juggernaut",
+      "ascendancy_zh": "勇士",
+      "skill": "Boneshatter",
+      "skill_zh": "碎骨",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "坦克",
+        "一鍵",
+        "爆發Boss"
+      ],
+      "budget": "low",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "極硬",
+        "單體很強",
+        "後期可轉 Complex Trauma"
+      ],
+      "cons": [
+        "自傷要會處理",
+        "太早換技能會痛死",
+        "門檻較高"
+      ],
+      "summary": "近身互毆、堆甲堆減傷的硬派近戰；猛又坦，但要懂自傷門檻。",
+      "leveling": "前期用其他打擊；有足夠護甲／物減再換碎骨。",
+      "guide_url": "https://mobalytics.gg/poe/builds/woolie-spineshatter-champion-leaguestart",
+      "pob_url": "",
+      "tags": [
+        "strike",
+        "trauma",
+        "tank"
+      ]
+    },
+    {
+      "id": "cyclone-shockwave-slayer",
+      "name": "Shockwave Cyclone Slayer",
+      "name_zh": "旋風震波 · 處刑者",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "Cyclone",
+      "skill_zh": "旋風斬",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "一鍵",
+        "高機動",
+        "快速清圖",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "幾乎一鍵",
+        "吸血強",
+        "清圖舒服"
+      ],
+      "cons": [
+        "Uber Boss 上限較低",
+        "視覺容易暈"
+      ],
+      "summary": "最懶人的近戰：轉圈震波清圖，適合想少按鍵的人。",
+      "leveling": "早期 Ground Slam／Sunder，之後轉 Cyclone + Shockwave。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "cyclone",
+        "one-button"
+      ]
+    },
+    {
+      "id": "slam-to-rf-chieftain",
+      "name": "Slam → Righteous Fire Chieftain",
+      "name_zh": "Slam 轉正義之火 · 酋長",
+      "ascendancy": "Chieftain",
+      "ascendancy_zh": "酋長",
+      "skill": "Righteous Fire",
+      "skill_zh": "正義之火",
+      "styles": [
+        "近戰",
+        "DoT"
+      ],
+      "damage": [
+        "火焰"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "快速清圖",
+        "新手友善",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 8,
+      "pros": [
+        "前期 Slam 好推",
+        "後期 RF 躺刷",
+        "超低操作"
+      ],
+      "cons": [
+        "Boss 較慢",
+        "要學轉職時機"
+      ],
+      "summary": "開荒用 Slam 賺錢，四石後轉 RF 刷圖；新手與 SSF 都很強。",
+      "leveling": "戰役用 Slam／Sunder；紅圖前轉 Righteous Fire。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "rf",
+        "transition",
+        "mapper"
+      ]
+    },
+    {
+      "id": "winter-orb-elementalist",
+      "name": "Winter Orb Elementalist",
+      "name_zh": "冬之寶珠 · 元素使",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Winter Orb",
+      "skill_zh": "冬之寶珠",
+      "styles": [
+        "法術"
+      ],
+      "damage": [
+        "冰冷"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "高機動"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 9,
+      "pros": [
+        "自動追擊",
+        "清圖極爽",
+        "3.29 熱門法師"
+      ],
+      "cons": [
+        "單體要升級路線",
+        "防禦需刻意堆"
+      ],
+      "summary": "這季最有感的法師開荒之一：寶珠自動打、冰凍滿螢幕。",
+      "leveling": "早期 Rolling Magma／冰系技能，再轉 Winter Orb。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "selfcast",
+        "cold",
+        "mapper"
+      ]
+    },
+    {
+      "id": "archmage-hierophant",
+      "name": "Archmage Mana Stacker Hierophant",
+      "name_zh": "魔導／堆魔 · 聖宗",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Archmage",
+      "skill_zh": "魔導",
+      "styles": [
+        "法術"
+      ],
+      "damage": [
+        "閃電",
+        "冰冷"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "坦克"
+      ],
+      "budget": "mid",
+      "difficulty": "hard",
+      "goals": [
+        "打Boss",
+        "全能",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "S",
+      "score_bias": 7,
+      "pros": [
+        "魔力同時轉傷害與防禦",
+        "後期天花板極高",
+        "打感滿足"
+      ],
+      "cons": [
+        "中後期才真正起飛",
+        "裝備與天賦較複雜"
+      ],
+      "summary": "想堆數字、後期變魔王的自施法；開荒可先圖騰再轉。",
+      "leveling": "前期 Storm Burst／冰矛圖騰過渡，再轉堆魔自施。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "mana",
+        "archmage",
+        "endgame"
+      ]
+    },
+    {
+      "id": "kinetic-fusillade-totems",
+      "name": "Kinetic Fusillade Totems",
+      "name_zh": "動能連射圖騰",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Kinetic Fusillade",
+      "skill_zh": "動能連射",
+      "styles": [
+        "圖騰",
+        "法術"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "爆發Boss",
+        "新手友善",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "打Boss",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 9,
+      "pros": [
+        "放圖騰很安全",
+        "開荒到四石都強",
+        "Boss 穩定"
+      ],
+      "cons": [
+        "手感較被動",
+        "有小幅傷害削弱"
+      ],
+      "summary": "安全開荒神器：放圖騰、自己躲；新手與想穩推都很適合。",
+      "leveling": "戰役即可圖騰化，進圖繼續強化連結與防禦。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "totem",
+        "safe",
+        "league-start"
+      ]
+    },
+    {
+      "id": "storm-burst-totems",
+      "name": "Storm Burst Totem Hierophant",
+      "name_zh": "風暴爆發圖騰 · 聖宗",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Storm Burst",
+      "skill_zh": "風暴爆發",
+      "styles": [
+        "圖騰",
+        "法術"
+      ],
+      "damage": [
+        "閃電"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "新手友善",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "低預算 Boss 強",
+        "操作簡單",
+        "好轉後期"
+      ],
+      "cons": [
+        "清圖不如弓／寶珠炫",
+        "圖騰站位要習慣"
+      ],
+      "summary": "經典閃電圖騰開荒，穩、便宜、好打 Boss。",
+      "leveling": "全程圖騰；注意魔力與圖騰生命。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "totem",
+        "lightning"
+      ]
+    },
+    {
+      "id": "poison-srs-necromancer",
+      "name": "Poison SRS Necromancer",
+      "name_zh": "毒怒靈 · 死靈師",
+      "ascendancy": "Necromancer",
+      "ascendancy_zh": "死靈師",
+      "skill": "Summon Raging Spirit",
+      "skill_zh": "召喚憤怒狂靈",
+      "styles": [
+        "召喚"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "爆發Boss",
+        "新手友善",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "打Boss",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 9,
+      "pros": [
+        "整體最穩開荒之一",
+        "Boss／Atlas 都好",
+        "低操作"
+      ],
+      "cons": [
+        "轉毒要機率與裝備",
+        "召喚物有時卡視野"
+      ],
+      "summary": "想少死、穩推、召喚好玩：毒 SRS 幾乎全能。",
+      "leveling": "先普通 SRS，有毒相關再轉 Poison。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "minion",
+        "poison",
+        "srs"
+      ]
+    },
+    {
+      "id": "absolution-guardian",
+      "name": "Absolution / Holy Relic Guardian",
+      "name_zh": "赦罪／聖物 · 守護者",
+      "ascendancy": "Guardian",
+      "ascendancy_zh": "守護者",
+      "skill": "Absolution",
+      "skill_zh": "赦免",
+      "styles": [
+        "召喚",
+        "法術"
+      ],
+      "damage": [
+        "物理",
+        "火焰"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "超高回復與減傷",
+        "幾乎躺玩",
+        "戰役很舒服"
+      ],
+      "cons": [
+        "後期傷害上限一般",
+        "玩法偏被動"
+      ],
+      "summary": "最安全的法師／召喚混合開荒，適合怕死的人。",
+      "leveling": "Absolution + Holy Relic；堆生命與守護者光環。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "minion",
+        "safe",
+        "guardian"
+      ]
+    },
+    {
+      "id": "lightning-arrow-deadeye",
+      "name": "Lightning Arrow / Ele Hit Deadeye",
+      "name_zh": "閃電箭／元素打擊 · 銳眼",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Lightning Arrow",
+      "skill_zh": "閃電箭矢",
+      "styles": [
+        "遠程"
+      ],
+      "damage": [
+        "閃電",
+        "火焰",
+        "冰冷"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "一鍵"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "刷圖賺貨幣",
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "清圖極快",
+        "刷圖賺錢效率高",
+        "手感爽"
+      ],
+      "cons": [
+        "弓裝有門檻",
+        "防禦要自己補"
+      ],
+      "summary": "想飛、想刷圖賺錢的弓箭手；清圖節奏一流。",
+      "leveling": "早期 Rain of Arrows／LA，再視情況轉 Ele Hit。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "bow",
+        "mapper",
+        "speed"
+      ]
+    },
+    {
+      "id": "pconc-pathfinder",
+      "name": "Poisonous Concoction Pathfinder",
+      "name_zh": "彈跳毒釀 · 追獵者",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "Poisonous Concoction",
+      "skill_zh": "劇毒釀造",
+      "styles": [
+        "遠程",
+        "DoT"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 8,
+      "pros": [
+        "不用武器傷害",
+        "清圖花俏又快",
+        "聯盟機制好刷"
+      ],
+      "cons": [
+        "藥瓶管理",
+        "Boss 要熟悉循環"
+      ],
+      "summary": "不靠武器的遠程毒流；彈跳清圖很有趣。",
+      "leveling": "盡早拿到 PConc；堆藥瓶與毒傷。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "poison",
+        "flask",
+        "mapper"
+      ]
+    },
+    {
+      "id": "ed-contagion-occultist",
+      "name": "ED / Contagion Occultist",
+      "name_zh": "本質凋零／瘟疫 · 秘術家",
+      "ascendancy": "Occultist",
+      "ascendancy_zh": "秘術家",
+      "skill": "Essence Drain",
+      "skill_zh": "本質汲取",
+      "styles": [
+        "法術",
+        "DoT"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "SSF友善",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "戰役超舒服",
+        "傳染清圖",
+        "裝備便宜"
+      ],
+      "cons": [
+        "單體偏慢",
+        "後期常要轉職"
+      ],
+      "summary": "經典混沌 DoT 開荒：點一下看傳染，適合懶人刷圖。",
+      "leveling": "ED + Contagion 全戰役；紅圖可考慮轉其他。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "dot",
+        "chaos",
+        "mapper"
+      ]
+    },
+    {
+      "id": "gc-miner-elementalist",
+      "name": "Glacial Cascade Miner Elementalist",
+      "name_zh": "冰川之刺礦工 · 元素使",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Glacial Cascade",
+      "skill_zh": "冰川之刺",
+      "styles": [
+        "地雷／陷阱",
+        "法術"
+      ],
+      "damage": [
+        "冰冷"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "打Boss",
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "低預算 Boss 兇",
+        "開荒推圖快",
+        "投資效益高"
+      ],
+      "cons": [
+        "地雷手感要適應",
+        "清圖不如弓爽"
+      ],
+      "summary": "想猛打 Boss、又要開荒效率：礦工是老牌答案。",
+      "leveling": "早期地雷過渡，再轉 GC of the Fissure。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "mine",
+        "boss",
+        "cold"
+      ]
+    },
+    {
+      "id": "hexblast-mines",
+      "name": "Hexblast Mines",
+      "name_zh": "咒術枯竭地雷",
+      "ascendancy": "Saboteur",
+      "ascendancy_zh": "破壞者",
+      "skill": "Hexblast",
+      "skill_zh": "咒術枯竭",
+      "styles": [
+        "地雷／陷阱",
+        "法術"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "高機動"
+      ],
+      "budget": "low",
+      "difficulty": "hard",
+      "goals": [
+        "打Boss",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "單體爆炸",
+        "彈性高",
+        "進階玩家上限高"
+      ],
+      "cons": [
+        "操作與詛咒管理",
+        "新手不友善"
+      ],
+      "summary": "給熟悉地雷的人：傷害爆炸、玩法有深度。",
+      "leveling": "可用其他地雷開荒再轉 Hexblast。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "mine",
+        "chaos",
+        "advanced"
+      ]
+    },
+    {
+      "id": "penance-brand-ignite",
+      "name": "Penance Brand Ignite Elementalist",
+      "name_zh": "補贖烙印點燃 · 元素使",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Penance Brand",
+      "skill_zh": "補贖之印",
+      "styles": [
+        "法術",
+        "DoT"
+      ],
+      "damage": [
+        "火焰"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "快速清圖"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "烙印清圖漂亮",
+        "點燃爆發",
+        "開荒可用"
+      ],
+      "cons": [
+        "烙印玩法要習慣",
+        "防禦中等"
+      ],
+      "summary": "貼烙印看爆炸的火焰流，開荒到中期都不錯。",
+      "leveling": "早期火焰法術 → Penance Brand Ignite。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "brand",
+        "ignite",
+        "fire"
+      ]
+    },
+    {
+      "id": "herald-autobomber",
+      "name": "Herald Stacker Autobomber Elementalist",
+      "name_zh": "宣告自動炸彈 · 元素使",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Herald of Ice",
+      "skill_zh": "冰霜宣告",
+      "styles": [
+        "自動炸彈",
+        "法術"
+      ],
+      "damage": [
+        "冰冷",
+        "火焰",
+        "閃電"
+      ],
+      "playstyles": [
+        "一鍵",
+        "高機動",
+        "快速清圖"
+      ],
+      "budget": "high",
+      "difficulty": "hard",
+      "goals": [
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "S",
+      "score_bias": 5,
+      "pros": [
+        "幾乎全自動清圖",
+        "刷圖節奏頂級",
+        "後期很爽"
+      ],
+      "cons": [
+        "高投資",
+        "不適合第一天開荒",
+        "組裝複雜"
+      ],
+      "summary": "有錢之後的快樂刷圖機；不建議當第一隻角色。",
+      "leveling": "請先用其他開荒角色賺錢再轉。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "autobomber",
+        "mapper",
+        "expensive"
+      ]
+    },
+    {
+      "id": "ek-elementalist",
+      "name": "Ethereal Knives Elementalist",
+      "name_zh": "虛空匕首 · 元素使",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Ethereal Knives",
+      "skill_zh": "虛空匕首",
+      "styles": [
+        "法術"
+      ],
+      "damage": [
+        "物理",
+        "冰冷"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "爆發Boss"
+      ],
+      "budget": "high",
+      "difficulty": "hard",
+      "goals": [
+        "刷圖賺貨幣",
+        "打Boss"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "S",
+      "score_bias": 4,
+      "pros": [
+        "極速清圖",
+        "後期 meta 強",
+        "視覺與手感炸裂"
+      ],
+      "cons": [
+        "非常貴",
+        "組裝門檻高",
+        "不是開荒向"
+      ],
+      "summary": "後期高投資刀子雨；適合第二隻角色或有預算時。",
+      "leveling": "不建議直接開荒；用其他 build 累積貨幣。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "ek",
+        "endgame",
+        "expensive"
+      ]
+    },
+    {
+      "id": "str-stack-jugg",
+      "name": "Strength Stacking Juggernaut",
+      "name_zh": "堆力量 · 勇士",
+      "ascendancy": "Juggernaut",
+      "ascendancy_zh": "勇士",
+      "skill": "Various",
+      "skill_zh": "依版本（常見打擊／Slam）",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "坦克",
+        "爆發Boss"
+      ],
+      "budget": "high",
+      "difficulty": "hard",
+      "goals": [
+        "打Boss"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 4,
+      "pros": [
+        "Boss／高難地圖很強",
+        "坦",
+        "堆屬性成就感"
+      ],
+      "cons": [
+        "貴",
+        "開荒不適合",
+        "依賴特定裝備"
+      ],
+      "summary": "後期肌肉山 Boss 機；當開荒第二階段目標很適合。",
+      "leveling": "先用裂地／碎骨開荒，再轉堆力。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "stacking",
+        "boss",
+        "expensive"
+      ]
+    },
+    {
+      "id": "spectre-necromancer",
+      "name": "Spectre / Doryani Necromancer",
+      "name_zh": "幽魂／Doryani · 死靈師",
+      "ascendancy": "Necromancer",
+      "ascendancy_zh": "死靈師",
+      "skill": "Raise Spectre",
+      "skill_zh": "召喚幽魂",
+      "styles": [
+        "召喚"
+      ],
+      "damage": [
+        "閃電",
+        "火焰",
+        "冰冷"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克"
+      ],
+      "budget": "mid",
+      "difficulty": "medium",
+      "goals": [
+        "刷圖賺貨幣",
+        "打Boss",
+        "全能"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 5,
+      "pros": [
+        "低操作",
+        "後期可很強",
+        "召喚愛好者首選"
+      ],
+      "cons": [
+        "特定幽魂與裝備",
+        "中預算起飛"
+      ],
+      "summary": "喜歡召喚、想後期躺玩；可從 SRS 過渡過來。",
+      "leveling": "建議 SRS 開荒，有預算再換強勢幽魂。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "spectre",
+        "minion",
+        "endgame"
+      ]
+    },
+    {
+      "id": "static-strike-slayer",
+      "name": "Static Strike / Ele Hit Slayer",
+      "name_zh": "靜電打擊／元素打擊 · 處刑者",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "Static Strike",
+      "skill_zh": "靜電打擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "閃電",
+        "火焰",
+        "冰冷"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "爆發Boss"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "打擊清圖有爆發感",
+        "吸血與 cull",
+        "比純物理花俏"
+      ],
+      "cons": [
+        "武器依賴",
+        "要補命中或改 RT"
+      ],
+      "summary": "元素近戰打手：清圖有爆炸感，喜歡打擊手感可選。",
+      "leveling": "戰役用打擊技能，再轉 Static／Ele Hit。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "strike",
+        "elemental",
+        "melee"
+      ]
+    },
+    {
+      "id": "luminary-merc-bot",
+      "name": "Luminary Merc Bot",
+      "name_zh": "輝耀使徒 · 傭兵 Bot",
+      "ascendancy": "Luminary",
+      "ascendancy_zh": "輝耀使徒",
+      "skill": "Flame Link",
+      "skill_zh": "火焰連結／傭兵",
+      "styles": [
+        "傭兵",
+        "召喚"
+      ],
+      "damage": [
+        "火焰",
+        "物理",
+        "閃電"
+      ],
+      "playstyles": [
+        "一鍵",
+        "新機制",
+        "有趣實驗",
+        "坦克"
+      ],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣",
+        "全能"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 8,
+      "pros": [
+        "3.29 新核心玩法",
+        "Flame Link 堆生命後傷害誇張",
+        "後期可完全交給傭兵輸出"
+      ],
+      "cons": [
+        "依賴找到／買到好傭兵",
+        "AI 與單體不穩",
+        "不建議完全沒準備就當第一隻"
+      ],
+      "summary": "這季最夯的貴族新昇華：永久僱傭傭兵，自己當光環／連結輔助，傭兵負責輸出。",
+      "leveling": "Spectral Throw → RF 過渡；Act3 神權之杖拿永久傭兵；Act4 起 Flame Link，逐步轉全 Merc Bot。亦可 Zoomancer 再開轉職。",
+      "guide_url": "https://mobalytics.gg/poe/builds/captainlance9-luminary-merc-bot",
+      "pob_url": "",
+      "tags": [
+        "luminary",
+        "mercenary",
+        "scion",
+        "new"
+      ]
+    },
+    {
+      "id": "zoomancer-to-luminary",
+      "name": "Zoomancer → Luminary",
+      "name_zh": "Zoomancer 再開轉輝耀",
+      "ascendancy": "Ascendant",
+      "ascendancy_zh": "昇華使徒→輝耀使徒",
+      "skill": "Absolution",
+      "skill_zh": "赦免／召喚過渡",
+      "styles": [
+        "召喚",
+        "傭兵"
+      ],
+      "damage": [
+        "物理",
+        "火焰"
+      ],
+      "playstyles": [
+        "新手友善",
+        "SSF友善",
+        "新機制",
+        "坦克"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "先用召喚穩開荒",
+        "有傭兵／令狀再轉輝耀",
+        "降低新機制風險"
+      ],
+      "cons": [
+        "需要一次轉職成本",
+        "兩套思路要銜接"
+      ],
+      "summary": "想玩傭兵但不想開荒卡關：先當召喚貴族推圖，找到強傭兵再轉輝耀使徒。",
+      "leveling": "Ascendant 召喚（Absolution／SRS）推到有穩定傭兵或買到 Warrant，再轉 Luminary。",
+      "guide_url": "https://timesaver.gg/blog/poe-3-29-luminary-ascendancy-guide",
+      "pob_url": "",
+      "tags": [
+        "luminary",
+        "transition",
+        "minion"
+      ]
+    },
+    {
+      "id": "toxic-rain-pathfinder",
+      "name": "Toxic Rain Pathfinder",
+      "name_zh": "毒雨 · 追獵者",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "Toxic Rain",
+      "skill_zh": "毒雨",
+      "styles": [
+        "遠程",
+        "DoT"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "一鍵",
+        "高機動",
+        "快速清圖",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 8,
+      "pros": [
+        "Act1 就成型",
+        "速度快、回血強",
+        "經典穩定開荒"
+      ],
+      "cons": [
+        "Ballista 輔助單體被削",
+        "後期常想轉職"
+      ],
+      "summary": "經典弓箭 DoT 開荒：快、穩、好刷圖；這季仍可用，但不再是唯一神。",
+      "leveling": "Caustic Arrow → Toxic Rain；堆 AoE 讓毒莢重疊。",
+      "guide_url": "https://mobalytics.gg/poe/builds/toxic-rain-pathfinder",
+      "pob_url": "",
+      "tags": [
+        "bow",
+        "dot",
+        "pathfinder"
+      ]
+    },
+    {
+      "id": "ea-ballista-hierophant",
+      "name": "Explosive Arrow Ballista Hierophant",
+      "name_zh": "爆破箭矢圖騰 · 聖宗",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Explosive Arrow",
+      "skill_zh": "爆破箭矢",
+      "styles": [
+        "圖騰",
+        "遠程"
+      ],
+      "damage": [
+        "火焰"
+      ],
+      "playstyles": [
+        "一鍵",
+        "爆發Boss",
+        "坦克",
+        "新手友善",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "打Boss",
+        "全能"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "S",
+      "score_bias": 8,
+      "pros": [
+        "低預算到紅圖",
+        "Boss 穩定",
+        "圖騰安全"
+      ],
+      "cons": [
+        "清圖不如弓／寶珠炫",
+        "要等箭矢堆疊"
+      ],
+      "summary": "安全又猛的圖騰開荒：放弩、等爆炸，推圖打 Boss 都穩。",
+      "leveling": "早期弓箭過渡，進圖轉 EA Ballista。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "ballista",
+        "fire",
+        "totem"
+      ]
+    },
+    {
+      "id": "poison-animate-weapon",
+      "name": "Poison Ranged Animate Weapon",
+      "name_zh": "毒活化武器 · 死靈師",
+      "ascendancy": "Necromancer",
+      "ascendancy_zh": "死靈師",
+      "skill": "Animate Weapon",
+      "skill_zh": "活化武器",
+      "styles": [
+        "召喚"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "爆發Boss"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "召喚清圖很炫",
+        "毒傷縮放好",
+        "可從 SRS 過渡"
+      ],
+      "cons": [
+        "要管理武器／屍體",
+        "裝備有一點門檻"
+      ],
+      "summary": "這季常被點名的召喚變體：活化武器撒毒，清圖與推進都不錯。",
+      "leveling": "SRS／召喚開荒，有條件再轉 Poison AW。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "minion",
+        "poison",
+        "aw"
+      ]
+    },
+    {
+      "id": "flicker-slayer",
+      "name": "Flicker Strike Slayer",
+      "name_zh": "閃現打擊 · 處刑者",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "Flicker Strike",
+      "skill_zh": "閃現打擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "有趣實驗",
+        "爆發Boss"
+      ],
+      "budget": "low",
+      "difficulty": "hard",
+      "goals": [
+        "刷圖賺貨幣",
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "手感最瘋",
+        "清圖速度極快",
+        "處刑吸血強"
+      ],
+      "cons": [
+        "控場／鏡頭暈",
+        "開荒較不穩",
+        "地圖詞綴敏感"
+      ],
+      "summary": "愛閃現、愛速度就選它；好玩優先，穩開荒次之。",
+      "leveling": "建議其他近戰推到有狂怒球與裝備再轉 Flicker。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "flicker",
+        "melee",
+        "speed"
+      ]
+    },
+    {
+      "id": "dual-strike-slayer",
+      "name": "Dual Strike of Ambidexterity Slayer",
+      "name_zh": "雙持打擊 · 處刑者",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "Dual Strike",
+      "skill_zh": "雙持打擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "爆發Boss",
+        "多按鍵",
+        "高機動"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "單手武器便宜好換",
+        "單體強",
+        "處刑品質好"
+      ],
+      "cons": [
+        "清圖要輔助爆炸／先祖",
+        "比 Slam 碎一點"
+      ],
+      "summary": "雙持打手風：武器好取得，Boss 傷害漂亮。",
+      "leveling": "雙持物理開荒，之後 Dual Strike of Ambidexterity。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "dual wield",
+        "strike"
+      ]
+    },
+    {
+      "id": "shield-crush-slayer",
+      "name": "Shield Crush Slayer",
+      "name_zh": "盾牌粉碎 · 處刑者",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "Shield Crush",
+      "skill_zh": "盾牌粉碎",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "坦克",
+        "SSF友善",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "盾牌便宜",
+        "防禦自然高",
+        "SSF 好推"
+      ],
+      "cons": [
+        "傷害天花板一般",
+        "手感偏重"
+      ],
+      "summary": "低成本硬開荒近戰：盾砸一切，適合不想追神裝的人。",
+      "leveling": "盡早換高護甲盾，Shield Charge 移動。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "shield",
+        "budget"
+      ]
+    },
+    {
+      "id": "bleed-glad",
+      "name": "Bleed Boneshatter / Lacerate Gladiator",
+      "name_zh": "流血碎骨／割裂 · 衛士",
+      "ascendancy": "Gladiator",
+      "ascendancy_zh": "衛士",
+      "skill": "Boneshatter",
+      "skill_zh": "碎骨／割裂",
+      "styles": [
+        "近戰",
+        "DoT"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "坦克",
+        "快速清圖",
+        "爆發Boss"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "流血爆炸清圖",
+        "衛士格擋坦",
+        "開荒友好"
+      ],
+      "cons": [
+        "流血免疫地圖要注意",
+        "自傷版本要小心"
+      ],
+      "summary": "流血衛士：格擋＋爆炸清圖，近戰另一條穩路線。",
+      "leveling": "Lacerate／穿孔過渡，再轉碎骨或維持割裂流血。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "bleed",
+        "gladiator"
+      ]
+    },
+    {
+      "id": "volcanic-fissure-berserker",
+      "name": "Volcanic Fissure Berserker",
+      "name_zh": "火山裂隙 · 狂戰士",
+      "ascendancy": "Berserker",
+      "ascendancy_zh": "狂戰士",
+      "skill": "Volcanic Fissure",
+      "skill_zh": "火山裂隙",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "火焰",
+        "物理"
+      ],
+      "playstyles": [
+        "快速清圖",
+        "多按鍵",
+        "爆發Boss"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "裂隙清圖範圍大",
+        "狂戰士攻速猛",
+        "開荒可用"
+      ],
+      "cons": [
+        "近戰風險",
+        "要管理裂隙位置"
+      ],
+      "summary": "Slam 家另一選擇：地面裂開噴火，清圖很有爽感。",
+      "leveling": "Sunder／Ground Slam → Volcanic Fissure of Snaking。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "slam",
+        "fire",
+        "fissure"
+      ]
+    },
+    {
+      "id": "molten-strike-chieftain",
+      "name": "Molten Strike Chieftain",
+      "name_zh": "熔岩之擊 · 酋長",
+      "ascendancy": "Chieftain",
+      "ascendancy_zh": "酋長",
+      "skill": "Molten Strike",
+      "skill_zh": "熔岩之擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "火焰"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "爆發Boss"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "球體投射物清圖",
+        "酋長火焰親和",
+        "可轉 Zenith 後期"
+      ],
+      "cons": [
+        "球體 RNG",
+        "命中／攻速要堆"
+      ],
+      "summary": "火焰打擊經典：砸一下噴小球，喜歡近戰火焰可玩。",
+      "leveling": "打擊技能開荒，再轉 Molten Strike／of the Zenith。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "strike",
+        "fire",
+        "projectiles"
+      ]
+    },
+    {
+      "id": "reap-exsanguinate-miner",
+      "name": "Reap / Exsanguinate Miner",
+      "name_zh": "收割／抽血礦工",
+      "ascendancy": "Saboteur",
+      "ascendancy_zh": "破壞者",
+      "skill": "Exsanguinate",
+      "skill_zh": "抽血／收割",
+      "styles": [
+        "地雷／陷阱",
+        "DoT"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "高機動"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "打Boss",
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "物理 DoT 礦工猛",
+        "開荒推圖快",
+        "投資效益高"
+      ],
+      "cons": [
+        "自傷／血量管理",
+        "操作比一鍵多"
+      ],
+      "summary": "物理血系礦工：想猛打 Boss 又要開荒效率的好選擇。",
+      "leveling": "早期地雷過渡，轉 Exsanguinate／Reap mines。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "mine",
+        "physical",
+        "dot"
+      ]
+    },
+    {
+      "id": "explosive-trap-saboteur",
+      "name": "Explosive Trap Saboteur",
+      "name_zh": "爆破陷阱 · 破壞者",
+      "ascendancy": "Saboteur",
+      "ascendancy_zh": "破壞者",
+      "skill": "Explosive Trap",
+      "skill_zh": "爆破陷阱",
+      "styles": [
+        "地雷／陷阱"
+      ],
+      "damage": [
+        "火焰",
+        "冰冷",
+        "閃電"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "陷阱開荒經典",
+        "單體不錯",
+        "裝備需求低"
+      ],
+      "cons": [
+        "要丟陷阱節奏",
+        "清圖手感看人"
+      ],
+      "summary": "陷阱老牌開荒：丟、引爆、收穫；穩健好用。",
+      "leveling": "全程陷阱，注意陷阱投擲速度與範圍。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "trap",
+        "elemental"
+      ]
+    },
+    {
+      "id": "seismic-trap",
+      "name": "Seismic Trap Saboteur",
+      "name_zh": "地震陷阱 · 破壞者",
+      "ascendancy": "Saboteur",
+      "ascendancy_zh": "破壞者",
+      "skill": "Seismic Trap",
+      "skill_zh": "地震陷阱",
+      "styles": [
+        "地雷／陷阱"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "爆發Boss",
+        "多按鍵"
+      ],
+      "budget": "low",
+      "difficulty": "hard",
+      "goals": [
+        "打Boss"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "Boss 傷害歷史悠久",
+        "可走殘暴物理"
+      ],
+      "cons": [
+        "清圖偏弱",
+        "玩法較專精"
+      ],
+      "summary": "專精打 Boss 的陷阱；想刪王可考慮。",
+      "leveling": "可用爆破陷阱開荒再轉地震。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "trap",
+        "boss"
+      ]
+    },
+    {
+      "id": "ice-nova-frostbolts",
+      "name": "Ice Nova of Frostbolts Hierophant",
+      "name_zh": "冰霜新星（冰彈）· 聖宗",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Ice Nova",
+      "skill_zh": "冰霜新星",
+      "styles": [
+        "法術",
+        "圖騰"
+      ],
+      "damage": [
+        "冰冷"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "坦克"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "冰凍控場強",
+        "可自施或圖騰",
+        "開荒舒服"
+      ],
+      "cons": [
+        "後期常轉其他冰法",
+        "傷害中等"
+      ],
+      "summary": "冰系法師穩開荒：冰彈＋新星，清圖控場都好。",
+      "leveling": "Freezing Pulse／Frostbolt → Ice Nova of Frostbolts。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "cold",
+        "selfcast",
+        "totem"
+      ]
+    },
+    {
+      "id": "spark-hierophant",
+      "name": "Spark / Arc Totem Hierophant",
+      "name_zh": "電弧／電球圖騰 · 聖宗",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Spark",
+      "skill_zh": "電球",
+      "styles": [
+        "圖騰",
+        "法術"
+      ],
+      "damage": [
+        "閃電"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "彈幕清圖有畫面",
+        "圖騰安全",
+        "好入門"
+      ],
+      "cons": [
+        "單體內凹",
+        "後期常換技能"
+      ],
+      "summary": "閃電彈幕圖騰：看電球亂竄很療癒，適合輕鬆開荒。",
+      "leveling": "Arc／Spark 圖騰戰役全過。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "lightning",
+        "totem",
+        "spark"
+      ]
+    },
+    {
+      "id": "lightning-conduit-inquisitor",
+      "name": "Lightning Conduit Inquisitor",
+      "name_zh": "導雷 · 判官",
+      "ascendancy": "Inquisitor",
+      "ascendancy_zh": "判官",
+      "skill": "Lightning Conduit",
+      "skill_zh": "導雷",
+      "styles": [
+        "法術"
+      ],
+      "damage": [
+        "閃電"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "快速清圖"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "感電後爆發強",
+        "判官穿透舒服",
+        "清圖與 Boss 平衡"
+      ],
+      "cons": [
+        "要先上感電",
+        "兩鍵節奏"
+      ],
+      "summary": "先感電再導雷的閃電法師，爆發手感很好。",
+      "leveling": "Orb of Storms／Ball Lightning 上感電，再導雷。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "lightning",
+        "selfcast"
+      ]
+    },
+    {
+      "id": "kb-clustering-necro",
+      "name": "Kinetic Blast of Clustering Necromancer",
+      "name_zh": "動能爆破（群聚）· 死靈師",
+      "ascendancy": "Necromancer",
+      "ascendancy_zh": "死靈師",
+      "skill": "Kinetic Blast",
+      "skill_zh": "動能爆破",
+      "styles": [
+        "Wander",
+        "法術"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "坦克"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "魔杖清圖爆炸",
+        "死靈師血量／召喚輔助強",
+        "可走腐化之血等變體"
+      ],
+      "cons": [
+        "魔杖 PDPS 要升級",
+        "玩法偏特殊"
+      ],
+      "summary": "死靈師魔杖爆破：坦、清圖花，喜歡 Wander 可選。",
+      "leveling": "早期法術／魔杖，再轉 KB of Clustering。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "wander",
+        "wand",
+        "physical"
+      ]
+    },
+    {
+      "id": "kinetic-blast-hiero",
+      "name": "Kinetic Blast Hierophant Wander",
+      "name_zh": "動能爆破 · 聖宗 Wander",
+      "ascendancy": "Hierophant",
+      "ascendancy_zh": "聖宗",
+      "skill": "Kinetic Blast",
+      "skill_zh": "動能爆破",
+      "styles": [
+        "Wander"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "一鍵",
+        "快速清圖",
+        "高機動"
+      ],
+      "budget": "mid",
+      "difficulty": "medium",
+      "goals": [
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 5,
+      "pros": [
+        "清圖覆蓋極廣",
+        "聖宗魔力／圖騰可混搭"
+      ],
+      "cons": [
+        "中預算較舒服",
+        "魔杖競爭"
+      ],
+      "summary": "經典 Wand 清圖機；有一點預算後很爽。",
+      "leveling": "可用圖騰過渡再轉自打 KB。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "wander",
+        "mapper"
+      ]
+    },
+    {
+      "id": "spectral-helix-deadeye",
+      "name": "Spectral Helix Deadeye",
+      "name_zh": "靈體螺旋 · 銳眼",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Spectral Helix",
+      "skill_zh": "靈體螺旋",
+      "styles": [
+        "遠程",
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "有趣實驗"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "螺旋彈道清圖獨特",
+        "開荒可用",
+        "銳眼投射物強"
+      ],
+      "cons": [
+        "走位要配合螺旋",
+        "不是最穩 meta"
+      ],
+      "summary": "螺旋飛刃清圖，手感特別，想玩點不一樣可以試。",
+      "leveling": "Spectral Throw → Helix。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "projectile",
+        "helix"
+      ]
+    },
+    {
+      "id": "detonate-dead",
+      "name": "Detonate Dead Elementalist / Occultist",
+      "name_zh": "屍體爆破 · 元素使／秘術家",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Detonate Dead",
+      "skill_zh": "屍體爆破",
+      "styles": [
+        "法術"
+      ],
+      "damage": [
+        "火焰",
+        "物理"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "快速清圖"
+      ],
+      "budget": "league_start",
+      "difficulty": "hard",
+      "goals": [
+        "開荒推圖",
+        "打Boss",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "屍體爆炸連鎖清圖",
+        "Boss 可很兇",
+        "天花板高"
+      ],
+      "cons": [
+        "要屍體與節奏",
+        "新手容易卡關"
+      ],
+      "summary": "進階清圖炸彈：爆屍體、看螢幕蒸發；熟了非常強。",
+      "leveling": "召喚屍體＋DD；注意無屍圖層。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "dd",
+        "corpse",
+        "advanced"
+      ]
+    },
+    {
+      "id": "cold-dot-elementalist",
+      "name": "Cold DoT Elementalist",
+      "name_zh": "冰冷 DoT · 元素使",
+      "ascendancy": "Elementalist",
+      "ascendancy_zh": "元素使",
+      "skill": "Vortex",
+      "skill_zh": "漩渦／Creeping Frost",
+      "styles": [
+        "法術",
+        "DoT"
+      ],
+      "damage": [
+        "冰冷"
+      ],
+      "playstyles": [
+        "一鍵",
+        "SSF友善",
+        "新手友善",
+        "快速清圖"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 7,
+      "pros": [
+        "戰役超舒服",
+        "裝備便宜",
+        "可接 Winter Orb"
+      ],
+      "cons": [
+        "單體中等",
+        "後期常轉職"
+      ],
+      "summary": "冰 DoT 穩開荒：丟地上讓怪融掉，SSF 也很香。",
+      "leveling": "Vortex + Creeping Frost／Cold Snap；可轉 Winter Orb。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "cold",
+        "dot",
+        "league-start"
+      ]
+    },
+    {
+      "id": "generals-cry",
+      "name": "General's Cry Slayer / Champion",
+      "name_zh": "將軍戰吼 · 處刑／冠軍",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "General's Cry",
+      "skill_zh": "將軍之吼",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "一鍵",
+        "有趣實驗",
+        "快速清圖"
+      ],
+      "budget": "low",
+      "difficulty": "hard",
+      "goals": [
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "B",
+      "score_bias": 4,
+      "pros": [
+        "戰吼鏡像自動打",
+        "玩法獨特"
+      ],
+      "cons": [
+        "組裝與寶石要求高",
+        "非穩開荒首選"
+      ],
+      "summary": "叫出鏡像幫你近戰的花式玩法；喜歡實驗可以玩。",
+      "leveling": "建議其他近戰開荒，有裝備再轉 General's Cry。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "warcry",
+        "mirage"
+      ]
+    },
+    {
+      "id": "blade-vortex-assassin",
+      "name": "Blade Vortex / Blade Blast Assassin",
+      "name_zh": "飛刃風暴 · 刺客",
+      "ascendancy": "Assassin",
+      "ascendancy_zh": "刺客",
+      "skill": "Blade Vortex",
+      "skill_zh": "飛刃風暴",
+      "styles": [
+        "法術"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "爆發Boss"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "刷圖賺貨幣",
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "貼身法術清圖快",
+        "暴擊刺客爆發"
+      ],
+      "cons": [
+        "要堆暴擊與防禦",
+        "貼身風險"
+      ],
+      "summary": "旋轉飛刃清圖，刺客暴擊流；喜歡近身法術可選。",
+      "leveling": "可從烙印／其他過渡到 BV。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "bv",
+        "crit",
+        "physical"
+      ]
+    },
+    {
+      "id": "dominating-blow",
+      "name": "Dominating Blow Guardian / Necromancer",
+      "name_zh": "支配打擊 · 守護者／死靈",
+      "ascendancy": "Guardian",
+      "ascendancy_zh": "守護者",
+      "skill": "Dominating Blow",
+      "skill_zh": "支配打擊",
+      "styles": [
+        "召喚",
+        "近戰"
+      ],
+      "damage": [
+        "物理"
+      ],
+      "playstyles": [
+        "一鍵",
+        "坦克",
+        "新手友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "打一下出哨兵",
+        "坦",
+        "好理解"
+      ],
+      "cons": [
+        "後期常被幽魂／SRS 取代",
+        "清圖中等"
+      ],
+      "summary": "打擊＋召喚混合：簡單好懂的開荒召喚近戰。",
+      "leveling": "支配打擊全程，堆召喚物與生命。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "minion",
+        "strike"
+      ]
+    },
+    {
+      "id": "tornado-shot-deadeye",
+      "name": "Tornado Shot Deadeye",
+      "name_zh": "龍捲射擊 · 銳眼",
+      "ascendancy": "Deadeye",
+      "ascendancy_zh": "銳眼",
+      "skill": "Tornado Shot",
+      "skill_zh": "龍捲射擊",
+      "styles": [
+        "遠程"
+      ],
+      "damage": [
+        "物理",
+        "冰冷",
+        "閃電"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖"
+      ],
+      "budget": "mid",
+      "difficulty": "medium",
+      "goals": [
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "A",
+      "score_bias": 5,
+      "pros": [
+        "弓箭清圖天花板之一",
+        "銳眼投射物"
+      ],
+      "cons": [
+        "弓要投資",
+        "開荒不如 LA／TR 順"
+      ],
+      "summary": "有預算後的弓箭刷圖王牌；第二隻角色很香。",
+      "leveling": "建議 LA／TR 開荒再轉 TS。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "bow",
+        "mapper",
+        "expensive"
+      ]
+    },
+    {
+      "id": "lightning-strike-slayer",
+      "name": "Lightning Strike Slayer / Champion",
+      "name_zh": "閃電打擊 · 處刑／冠軍",
+      "ascendancy": "Slayer",
+      "ascendancy_zh": "處刑者",
+      "skill": "Lightning Strike",
+      "skill_zh": "閃電打擊",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "閃電",
+        "物理"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "一鍵"
+      ],
+      "budget": "low",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "A",
+      "score_bias": 6,
+      "pros": [
+        "投射物清圖",
+        "打擊手感佳",
+        "可走轉換"
+      ],
+      "cons": [
+        "武器依賴",
+        "要補投射物與命中"
+      ],
+      "summary": "近戰打出閃電矛：清圖漂亮，喜歡打擊投射物就選。",
+      "leveling": "打擊開荒 → Lightning Strike。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "strike",
+        "projectile",
+        "lightning"
+      ]
+    },
+    {
+      "id": "frost-blades-raider",
+      "name": "Frost Blades Raider / Pathfinder",
+      "name_zh": "冰霜之刃 · 襲擊／追獵",
+      "ascendancy": "Raider",
+      "ascendancy_zh": "襲擊者",
+      "skill": "Frost Blades",
+      "skill_zh": "冰霜之刃",
+      "styles": [
+        "近戰"
+      ],
+      "damage": [
+        "冰冷"
+      ],
+      "playstyles": [
+        "高機動",
+        "快速清圖",
+        "一鍵"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "刷圖賺貨幣"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "冰刃投射清圖",
+        "機動高",
+        "開荒可用"
+      ],
+      "cons": [
+        "防禦要自己補",
+        "meta 浮動"
+      ],
+      "summary": "冰冷近戰清圖流，跑圖節奏輕快。",
+      "leveling": "Frost Blades 為主，堆冰傷與攻速。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "strike",
+        "cold"
+      ]
+    },
+    {
+      "id": "eye-of-winter-mines",
+      "name": "Eye of Winter Mines Inquisitor",
+      "name_zh": "凜冬之眼地雷 · 判官",
+      "ascendancy": "Inquisitor",
+      "ascendancy_zh": "判官",
+      "skill": "Eye of Winter",
+      "skill_zh": "凜冬之眼",
+      "styles": [
+        "地雷／陷阱",
+        "法術"
+      ],
+      "damage": [
+        "冰冷"
+      ],
+      "playstyles": [
+        "多按鍵",
+        "爆發Boss",
+        "快速清圖"
+      ],
+      "budget": "league_start",
+      "difficulty": "medium",
+      "goals": [
+        "開荒推圖",
+        "打Boss"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "冰彈分裂清圖",
+        "地雷安全",
+        "判官好用"
+      ],
+      "cons": [
+        "手感看人",
+        "非最熱門礦工"
+      ],
+      "summary": "冰系地雷另一選：凜冬之眼分裂彈幕。",
+      "leveling": "冰地雷／冰陷阱過渡。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "mine",
+        "cold"
+      ]
+    },
+    {
+      "id": "holy-flame-totem",
+      "name": "Holy Flame Totem Chieftain",
+      "name_zh": "神聖火舌圖騰 · 酋長",
+      "ascendancy": "Chieftain",
+      "ascendancy_zh": "酋長",
+      "skill": "Holy Flame Totem",
+      "skill_zh": "神聖火舌圖騰",
+      "styles": [
+        "圖騰"
+      ],
+      "damage": [
+        "火焰"
+      ],
+      "playstyles": [
+        "一鍵",
+        "新手友善",
+        "SSF友善"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 4,
+      "pros": [
+        "超早期就能用",
+        "教學向友善",
+        "可轉 RF"
+      ],
+      "cons": [
+        "後期弱",
+        "多半當過渡"
+      ],
+      "summary": "超早期火焰圖騰，適合新手摸地圖機制，之後轉 RF／其他。",
+      "leveling": "Act1 起圖騰，中後期轉 RF 或 EA。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "totem",
+        "beginner",
+        "fire"
+      ]
+    },
+    {
+      "id": "caustic-arrow-pathfinder",
+      "name": "Caustic Arrow Pathfinder",
+      "name_zh": "腐蝕箭矢 · 追獵者",
+      "ascendancy": "Pathfinder",
+      "ascendancy_zh": "追獵者",
+      "skill": "Caustic Arrow",
+      "skill_zh": "腐蝕箭矢",
+      "styles": [
+        "遠程",
+        "DoT"
+      ],
+      "damage": [
+        "混沌"
+      ],
+      "playstyles": [
+        "一鍵",
+        "SSF友善",
+        "快速清圖"
+      ],
+      "budget": "league_start",
+      "difficulty": "easy",
+      "goals": [
+        "開荒推圖"
+      ],
+      "modes": [
+        "trade",
+        "ssf"
+      ],
+      "tier": "B",
+      "score_bias": 5,
+      "pros": [
+        "Act1 就有",
+        "可接毒雨",
+        "便宜"
+      ],
+      "cons": [
+        "多半過渡技",
+        "單體一般"
+      ],
+      "summary": "毒弓開荒起手式，常作為毒雨前置。",
+      "leveling": "Caustic Arrow 推圖，之後可轉 Toxic Rain。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "bow",
+        "chaos",
+        "dot"
+      ]
+    },
+    {
+      "id": "power-siphon-assassin",
+      "name": "Power Siphon / KB Assassin Wander",
+      "name_zh": "力量抽取 · 刺客 Wander",
+      "ascendancy": "Assassin",
+      "ascendancy_zh": "刺客",
+      "skill": "Power Siphon",
+      "skill_zh": "力量抽取",
+      "styles": [
+        "Wander"
+      ],
+      "damage": [
+        "物理",
+        "混沌"
+      ],
+      "playstyles": [
+        "高機動",
+        "爆發Boss",
+        "快速清圖"
+      ],
+      "budget": "mid",
+      "difficulty": "hard",
+      "goals": [
+        "刷圖賺貨幣",
+        "打Boss"
+      ],
+      "modes": [
+        "trade"
+      ],
+      "tier": "B",
+      "score_bias": 4,
+      "pros": [
+        "暴擊刺客爆發",
+        "魔杖手感"
+      ],
+      "cons": [
+        "要堆暴擊與魔力",
+        "開荒不優先"
+      ],
+      "summary": "刺客魔杖暴擊流，後期刷圖打感強。",
+      "leveling": "建議其他開荒，有預算再轉。",
+      "guide_url": "",
+      "pob_url": "",
+      "tags": [
+        "wander",
+        "crit"
+      ]
+    }
+  ]
+}

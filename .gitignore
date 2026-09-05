@@ -9,11 +9,18 @@ venv/
 
 # Build artifacts
 build/
-dist/
-*.exe
 *.zip
 *.msix
+*.exe
+dist/*
+!dist/PoE查詢工具.exe
+!dist/PoE查詢工具.zip
 
 # Local logs / editor
 nba_logs/
 .vscode/
+poe_affix_data/chinese_pin.json
+poe_affix_data/poe2_version.json
+poe_affix_data/settings.json
+poe_affix_data/class_icons/
+poe_affix_data/item_icons/

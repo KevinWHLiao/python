@@ -1,4 +1,4 @@
-"""Tkinter GUI: pick a slot, then pick an affix to see tiers and item levels."""
+"""Affix lookup GUI: pick a slot, then pick an affix to see tiers and item levels."""
 
 from __future__ import annotations
 
@@ -8,48 +8,65 @@ import tkinter as tk
 import webbrowser
 from tkinter import messagebox, ttk
 
-from . import resolve_data_file
-from .catalog import SOURCE_ORDER, SOURCE_TITLES
+import customtkinter as ctk
+
+from . import game_spec, load_settings, resolve_data_file, save_settings
+from .catalog import SOURCE_TITLES, format_tag_text, format_tag_text_marked, group_categories, source_order_for
+from .search_combo import bind_searchable_combo, choice_matches
 from .sync import sync_catalog
-from .theme import apply_theme
+from .theme import (
+    BG,
+    BG_INPUT,
+    BG_PANEL,
+    CORRUPT,
+    CORRUPT_BG,
+    CORRUPT_T1_BG,
+    CORRUPT_T1_FG,
+    FONT_SMALL,
+    FONT_UI,
+    GOLD,
+    MUTED,
+    PREFIX,
+    SUFFIX,
+    T1_BG,
+    T1_FG,
+    T2_BG,
+    T2_FG,
+    T3_BG,
+    T3_FG,
+    TEXT,
+    TN_FG,
+    GameToggle,
+    content_panel,
+    filter_panel,
+    make_header,
+    make_status_bar,
+    set_progress,
+    setup_appearance,
+    setup_window,
+    tag_color,
+)
 
 ALL = "全部"
-FONT_UI = ("Microsoft JhengHei UI", 10)
-FONT_TITLE = ("Microsoft JhengHei UI", 16, "bold")
-FONT_SECTION = ("Microsoft JhengHei UI", 11, "bold")
-FONT_SMALL = ("Microsoft JhengHei UI", 9)
-
-# PoE-inspired dark palette
-BG = "#101218"
-BG_PANEL = "#171a22"
-BG_RAISED = "#1f2430"
-BG_INPUT = "#141821"
-BG_HEAD = "#2a2418"
-LINE = "#3a3324"
-GOLD = "#e0b15a"
-GOLD_HI = "#ffd37a"
-TEXT = "#ece7da"
-MUTED = "#9b9586"
-PREFIX = "#7ecbff"
-SUFFIX = "#86e0b0"
-CORRUPT = "#d9a5ff"
-T1_BG = "#4a3210"
-T1_FG = "#ffd37a"
-T2_BG = "#322a16"
-T2_FG = "#e8c07a"
-T3_BG = "#1c2738"
-T3_FG = "#9ab8ea"
-TN_FG = "#c9c3b4"
-CORRUPT_BG = "#2c1836"
-CORRUPT_T1_BG = "#4a2048"
-CORRUPT_T1_FG = "#f3c6ff"
+GAME_LABELS = {"poe1": "PoE1", "poe2": "PoE2"}
+GAME_IDS = {label: game_id for game_id, label in GAME_LABELS.items()}
 
 
-def load_catalog() -> dict | None:
-    path = resolve_data_file()
+def load_catalog(game: str = "poe1") -> dict | None:
+    path = resolve_data_file(game)
     if not path:
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    from .catalog import rematerialize_catalog, repair_source_classification
+
+    catalog = json.loads(path.read_text(encoding="utf-8"))
+    fixed = repair_source_classification(rematerialize_catalog(catalog))
+    if fixed is not catalog:
+        try:
+            path.write_text(json.dumps(fixed, ensure_ascii=False), encoding="utf-8")
+        except OSError:
+            pass
+        return fixed
+    return catalog
 
 
 def _tier_number(value) -> int:
@@ -74,30 +91,34 @@ def _tier_tag(tier_value, corrupt: bool = False) -> str:
     return "tn"
 
 
-class AffixApp(tk.Toplevel):
+class AffixApp(ctk.CTkToplevel):
     def __init__(self, master: tk.Misc | None = None, on_back=None) -> None:
         owns_root = master is None
         if owns_root:
-            master = tk.Tk()
+            setup_appearance()
+            master = ctk.CTk()
             master.withdraw()
         super().__init__(master)
         self._owns_root = owns_root
         self._on_back = on_back
-        self.title("流亡黯道 · 裝備詞綴查詢")
+        saved_game = str(load_settings().get("affix_game") or "poe1")
+        self.game_id = saved_game if saved_game in GAME_LABELS else "poe1"
+        spec = game_spec(self.game_id)
+        self.title(f"{spec['title']} · 裝備詞綴查詢")
         self.geometry("1360x820")
         self.minsize(1080, 680)
-        self.configure(bg=BG)
-        self.option_add("*Font", FONT_UI)
-        apply_theme(self)
+        setup_window(self)
         self.protocol("WM_DELETE_WINDOW", self.go_back)
 
         self.catalog: dict | None = None
         self.filtered_groups: list[dict] = []
         self._syncing = False
+        self._ignore_game_change = False
 
         self.slot_var = tk.StringVar(value=ALL)
         self.affix_var = tk.StringVar(value=ALL)
         self.source_var = tk.StringVar(value="基底")
+        self.category_var = tk.StringVar(value=ALL)
         self.search_var = tk.StringVar()
         self.status_var = tk.StringVar(value="尚未載入資料")
         self.summary_var = tk.StringVar(value="請從左側選擇一個詞綴")
@@ -108,6 +129,10 @@ class AffixApp(tk.Toplevel):
         self.affix_headings = {}
         self.tier_sort_desc = True
         self.corrupt_sort_desc = True
+        self._slot_options: list[str] = [ALL]
+        self._affix_options: list[str] = [ALL, "前綴", "後綴", "固定", "汙染"]
+        self._source_options: list[str] = [ALL, "基底"]
+        self._category_options: list[str] = [ALL]
 
         self._build()
         self.search_var.trace_add("write", lambda *_: self.refresh_affix_list())
@@ -133,57 +158,69 @@ class AffixApp(tk.Toplevel):
             tree.tag_configure("odd", background="#151922", foreground=TEXT)
 
     def _build(self) -> None:
-        header = tk.Frame(self, bg=BG_HEAD, height=64)
-        header.pack(fill="x")
-        tk.Frame(self, bg=GOLD, height=3).pack(fill="x")
-        ttk.Button(header, text="← 主選單", command=self.go_back).pack(side="left", padx=(16, 0), pady=12)
-        ttk.Label(header, text="流亡黯道  ·  裝備詞綴", style="Gold.TLabel", background=BG_HEAD).pack(
-            side="left", padx=16, pady=14
+        make_header(
+            self,
+            "裝備詞綴",
+            on_back=self.go_back,
+            right_actions=[
+                ("更新資料", self.start_sync),
+                ("開啟詞綴頁", self.open_source_page),
+            ],
+            hint="可切換 PoE1 / PoE2　　金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
         )
-        ttk.Label(
-            header,
-            text="金色 = 該部位最難出的 T1　　紫色 = 汙染詞",
-            style="Muted.TLabel",
-            background=BG_HEAD,
-            font=FONT_SMALL,
-        ).pack(side="left", padx=(8, 0), pady=14)
-        ttk.Button(header, text="從 PoEDB 更新資料", command=self.start_sync).pack(side="right", padx=(0, 16), pady=12)
-        ttk.Button(
-            header,
-            text="開啟 PoEDB 詞綴頁",
-            command=lambda: webbrowser.open("https://poedb.tw/tw/Modifiers"),
-        ).pack(side="right", padx=(0, 8), pady=12)
+        _, self.progress = make_status_bar(self, self.status_var, with_progress=True)
 
-        filters = ttk.Frame(self, padding=(16, 12, 16, 8))
-        filters.pack(fill="x")
-        ttk.Label(filters, text="部位", style="Muted.TLabel").grid(row=0, column=0, sticky="w", padx=(0, 6))
-        self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, state="readonly", width=22)
-        self.slot_combo.grid(row=0, column=1, padx=(0, 16))
-        self.slot_combo.bind("<<ComboboxSelected>>", lambda _e: self.on_filters_changed())
+        filters = filter_panel(self)
+        ctk.CTkLabel(filters, text="遊戲", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=0, sticky="w", padx=(0, 6))
+        self.game_switch = GameToggle(
+            filters,
+            values=["PoE1", "PoE2"],
+            width=168,
+            height=30,
+            command=self.on_game_changed,
+        )
+        self.game_switch.grid(row=0, column=1, padx=(0, 16))
+        self.game_switch.set(GAME_LABELS[self.game_id])
 
-        ttk.Label(filters, text="前後綴", style="Muted.TLabel").grid(row=0, column=2, sticky="w", padx=(0, 6))
+        ctk.CTkLabel(filters, text="部位", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=2, sticky="w", padx=(0, 6))
+        self.slot_combo = ttk.Combobox(filters, textvariable=self.slot_var, width=22, state="normal")
+        self.slot_combo.grid(row=0, column=3, padx=(0, 16))
+        bind_searchable_combo(self.slot_combo, lambda: self._slot_options, self.on_filters_changed)
+
+        ctk.CTkLabel(filters, text="前後綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=4, sticky="w", padx=(0, 6))
         self.affix_combo = ttk.Combobox(
             filters,
             textvariable=self.affix_var,
-            state="readonly",
             width=10,
-            values=(ALL, "前綴", "後綴", "汙染"),
+            values=self._affix_options,
+            state="normal",
         )
-        self.affix_combo.grid(row=0, column=3, padx=(0, 16))
-        self.affix_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh_affix_list())
+        self.affix_combo.grid(row=0, column=5, padx=(0, 16))
+        bind_searchable_combo(self.affix_combo, lambda: self._affix_options, self.refresh_affix_list)
 
-        ttk.Label(filters, text="來源", style="Muted.TLabel").grid(row=0, column=4, sticky="w", padx=(0, 6))
-        self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, state="readonly", width=16)
-        self.source_combo.grid(row=0, column=5, padx=(0, 16))
-        self.source_combo.bind("<<ComboboxSelected>>", lambda _e: self.refresh_affix_list())
+        ctk.CTkLabel(filters, text="來源", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=6, sticky="w", padx=(0, 6))
+        self.source_combo = ttk.Combobox(filters, textvariable=self.source_var, width=14, state="normal")
+        self.source_combo.grid(row=0, column=7, padx=(0, 16))
+        bind_searchable_combo(self.source_combo, lambda: self._source_options, self.refresh_affix_list)
 
-        ttk.Label(filters, text="篩選詞綴", style="Muted.TLabel").grid(row=0, column=6, sticky="w", padx=(0, 6))
-        search = ttk.Entry(filters, textvariable=self.search_var, width=28)
-        search.grid(row=0, column=7, sticky="ew")
-        filters.columnconfigure(7, weight=1)
+        ctk.CTkLabel(filters, text="分類", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=8, sticky="w", padx=(0, 6))
+        self.category_combo = ttk.Combobox(filters, textvariable=self.category_var, width=12, state="normal")
+        self.category_combo.grid(row=0, column=9, padx=(0, 16))
+        bind_searchable_combo(self.category_combo, lambda: self._category_options, self.refresh_affix_list)
 
-        legend = ttk.Frame(self, padding=(16, 0, 16, 8))
-        legend.pack(fill="x")
+        ctk.CTkLabel(filters, text="篩選詞綴", font=FONT_SMALL, text_color=MUTED).grid(row=0, column=10, sticky="w", padx=(0, 6))
+        search = ttk.Entry(filters, textvariable=self.search_var, width=24)
+        search.grid(row=0, column=11, sticky="ew")
+        filters.grid_columnconfigure(11, weight=1)
+        ctk.CTkLabel(
+            filters,
+            text="遊戲可選 PoE1（poedb.tw）或 PoE2（poe2db.tw）。部位／前後綴／來源／分類可輸入關鍵字（可多字或空格），例如「手套 力」「塑界」；點清單或 Enter 套用",
+            font=FONT_SMALL,
+            text_color=MUTED,
+        ).grid(row=1, column=0, columnspan=12, sticky="w", pady=(8, 0))
+
+        legend = ctk.CTkFrame(self, fg_color="transparent")
+        legend.pack(fill="x", padx=20, pady=(0, 4))
         for text, color in (
             ("T1 最難出", T1_FG),
             ("T2", T2_FG),
@@ -192,12 +229,17 @@ class AffixApp(tk.Toplevel):
             ("前綴", PREFIX),
             ("後綴", SUFFIX),
         ):
-            swatch = tk.Label(legend, text="●", fg=color, bg=BG, font=("Segoe UI", 11))
-            swatch.pack(side="left")
-            tk.Label(legend, text=text, fg=MUTED, bg=BG, font=FONT_SMALL).pack(side="left", padx=(2, 14))
+            ctk.CTkLabel(legend, text=f"● {text}", font=FONT_SMALL, text_color=color).pack(side="left", padx=(0, 14))
+        ctk.CTkLabel(
+            legend,
+            text="多標籤時分類欄會用色點區分；右側詳情為彩色標籤",
+            font=FONT_SMALL,
+            text_color=MUTED,
+        ).pack(side="left", padx=(8, 0))
 
-        paned = ttk.Panedwindow(self, orient="horizontal")
-        paned.pack(fill="both", expand=True, padx=12, pady=(0, 8))
+        body = content_panel(self)
+        paned = ttk.Panedwindow(body, orient="horizontal")
+        paned.pack(fill="both", expand=True, padx=10, pady=10)
 
         left = ttk.Frame(paned, style="Panel.TFrame", padding=10)
         right = ttk.Frame(paned, style="Panel.TFrame", padding=10)
@@ -205,13 +247,14 @@ class AffixApp(tk.Toplevel):
         paned.add(right, weight=2)
 
         ttk.Label(left, text="選擇詞綴　（點欄位標題可排序）", style="Section.TLabel").pack(anchor="w")
-        tk.Frame(left, bg=GOLD, height=2).pack(fill="x", pady=(4, 8))
+        ctk.CTkFrame(left, fg_color=GOLD, corner_radius=0, height=2).pack(fill="x", pady=(4, 8))
         list_wrap = ttk.Frame(left, style="Panel.TFrame")
         list_wrap.pack(fill="both", expand=True)
-        columns = ("label", "affix", "corrupt", "source", "t1", "weight", "tiers", "slots")
+        columns = ("label", "category", "affix", "corrupt", "source", "t1", "weight", "tiers", "slots")
         self.affix_tree = ttk.Treeview(list_wrap, columns=columns, show="headings", selectmode="browse")
         self.affix_headings = {
             "label": "詞綴",
+            "category": "分類",
             "affix": "前後綴",
             "corrupt": "汙染",
             "source": "來源",
@@ -221,7 +264,8 @@ class AffixApp(tk.Toplevel):
             "slots": "部位數",
         }
         widths = {
-            "label": 220,
+            "label": 190,
+            "category": 240,
             "affix": 58,
             "corrupt": 48,
             "source": 78,
@@ -232,8 +276,10 @@ class AffixApp(tk.Toplevel):
         }
         for key, title in self.affix_headings.items():
             self.affix_tree.heading(key, text=title, command=lambda column=key: self.sort_affix_list(column))
-            stretch = key == "label"
-            self.affix_tree.column(key, width=widths[key], stretch=stretch, anchor="center" if key != "label" else "w")
+            stretch = key in {"label", "category"}
+            self.affix_tree.column(
+                key, width=widths[key], stretch=stretch, anchor="w" if key in {"label", "category"} else "center"
+            )
         yscroll = ttk.Scrollbar(list_wrap, orient="vertical", command=self.affix_tree.yview)
         self.affix_tree.configure(yscrollcommand=yscroll.set)
         self.affix_tree.pack(side="left", fill="both", expand=True)
@@ -241,7 +287,9 @@ class AffixApp(tk.Toplevel):
         self.affix_tree.bind("<<TreeviewSelect>>", lambda _e: self.show_selected_affix())
 
         ttk.Label(right, textvariable=self.summary_var, style="Section.TLabel").pack(anchor="w")
-        tk.Frame(right, bg=GOLD, height=2).pack(fill="x", pady=(4, 6))
+        ctk.CTkFrame(right, fg_color=GOLD, corner_radius=0, height=2).pack(fill="x", pady=(4, 6))
+        self.tag_chip_row = ctk.CTkFrame(right, fg_color="transparent")
+        self.tag_chip_row.pack(anchor="w", fill="x", pady=(0, 4))
         ttk.Label(right, textvariable=self.meta_var, style="PanelMuted.TLabel").pack(anchor="w", pady=(0, 8))
 
         ttk.Label(right, text="出現部位", style="PanelMuted.TLabel").pack(anchor="w")
@@ -255,7 +303,7 @@ class AffixApp(tk.Toplevel):
             bg=BG_INPUT,
             fg=TEXT,
             selectbackground="#5a3e14",
-            selectforeground=GOLD_HI,
+            selectforeground="#ffd37a",
             highlightthickness=0,
             bd=0,
             relief="flat",
@@ -292,7 +340,7 @@ class AffixApp(tk.Toplevel):
         tier_scroll.pack(side="right", fill="y")
 
         ttk.Label(right, textvariable=self.corrupt_title_var, style="Section.TLabel").pack(anchor="w", pady=(12, 0))
-        tk.Frame(right, bg=CORRUPT, height=2).pack(fill="x", pady=(4, 8))
+        ctk.CTkFrame(right, fg_color=CORRUPT, corner_radius=0, height=2).pack(fill="x", pady=(4, 8))
         corrupt_wrap = ttk.Frame(right, style="Panel.TFrame")
         corrupt_wrap.pack(fill="both", expand=True)
         corrupt_cols = ("tier", "level", "weight", "chance", "text")
@@ -316,37 +364,66 @@ class AffixApp(tk.Toplevel):
 
         self._tag_trees()
 
-        status = tk.Frame(self, bg=BG_HEAD)
-        status.pack(fill="x")
-        tk.Label(status, textvariable=self.status_var, bg=BG_HEAD, fg=MUTED, font=FONT_SMALL, anchor="w").pack(
-            side="left", padx=16, pady=6
-        )
-        self.progress = ttk.Progressbar(status, mode="determinate", length=220)
-        self.progress.pack(side="right", padx=16, pady=8)
-
     def _startup_load(self) -> None:
-        catalog = load_catalog()
+        self.apply_game(prompt_if_missing=True)
+
+    def open_source_page(self) -> None:
+        webbrowser.open(game_spec(self.game_id)["index_url"])
+
+    def on_game_changed(self, value: str) -> None:
+        if getattr(self, "_ignore_game_change", False):
+            return
+        game = GAME_IDS.get(str(value).strip(), "poe1")
+        if game == self.game_id:
+            return
+        self.game_id = game
+        save_settings({"affix_game": game})
+        spec = game_spec(game)
+        self.title(f"{spec['title']} · 裝備詞綴查詢")
+        self.slot_var.set(ALL)
+        self.source_var.set("基底")
+        self.category_var.set(ALL)
+        self.search_var.set("")
+        self.apply_game(prompt_if_missing=True)
+
+    def apply_game(self, *, prompt_if_missing: bool = False) -> None:
+        spec = game_spec(self.game_id)
+        self.title(f"{spec['title']} · 裝備詞綴查詢")
+        catalog = load_catalog(self.game_id)
         if catalog:
             self.set_catalog(catalog)
             return
-        if messagebox.askyesno(
-            "尚未下載詞綴資料",
-            "第一次使用需要從 https://poedb.tw/tw/Modifiers 下載裝備詞綴。\n現在開始更新嗎？",
+        self.catalog = None
+        self.filtered_groups = []
+        self._slot_options = [ALL]
+        self.slot_combo.configure(values=[ALL])
+        self.refresh_affix_list()
+        if prompt_if_missing and messagebox.askyesno(
+            f"尚未下載{spec['title']}詞綴",
+            f"第一次使用需要從 {spec['index_url']} 下載裝備詞綴。\n現在開始更新嗎？",
         ):
             self.start_sync()
-        else:
-            self.status_var.set("沒有本地資料，請按「從 PoEDB 更新資料」。")
+            return
+        self.status_var.set(f"沒有{spec['label']}本地資料，請按「更新資料」。")
+
+    @staticmethod
+    def _choice_matches(typed: str, candidate: str) -> bool:
+        text = (typed or "").strip()
+        if not text or text == ALL:
+            return True
+        return choice_matches(text, candidate)
 
     def set_catalog(self, catalog: dict) -> None:
         self.catalog = catalog
         slots = [ALL] + [slot["name"] for slot in catalog.get("slots", [])]
+        self._slot_options = slots
         self.slot_combo.configure(values=slots)
         if self.slot_var.get() not in slots:
             self.slot_var.set(ALL)
 
         sources = [ALL, "基底"]
         seen = {"全部", "基底"}
-        for key in SOURCE_ORDER:
+        for key in source_order_for(self.game_id):
             title = SOURCE_TITLES.get(key, key)
             if title not in seen:
                 sources.append(title)
@@ -357,13 +434,41 @@ class AffixApp(tk.Toplevel):
                 if title and title not in seen:
                     sources.append(title)
                     seen.add(title)
+        self._source_options = sources
         self.source_combo.configure(values=sources)
         if self.source_var.get() not in sources:
             self.source_var.set("基底")
 
+        NO_TAG = "無標籤"
+        categories = [ALL]
+        seen_categories = {ALL}
+        has_untagged = False
+        for slot in catalog.get("slots", []):
+            for group in slot.get("groups", []):
+                tags = group_categories(group)
+                if not tags:
+                    has_untagged = True
+                    continue
+                for title in tags:
+                    if title not in seen_categories:
+                        categories.append(title)
+                        seen_categories.add(title)
+        extra_categories = sorted(name for name in categories if name not in {ALL, "其他", NO_TAG})
+        categories = [ALL, *extra_categories]
+        if "其他" in seen_categories:
+            categories.append("其他")
+        if has_untagged:
+            categories.append(NO_TAG)
+        self._category_options = categories
+        self.category_combo.configure(values=categories)
+        if self.category_var.get() not in categories:
+            self.category_var.set(ALL)
+
         synced = catalog.get("synced_at", "")
+        spec = game_spec(self.game_id)
         self.status_var.set(
-            f"已載入 {catalog.get('slot_count', 0)} 個部位、{catalog.get('group_count', 0)} 組詞綴　更新時間 {synced}"
+            f"{spec['label']}　已載入 {catalog.get('slot_count', 0)} 個部位、"
+            f"{catalog.get('group_count', 0)} 組詞綴　更新時間 {synced}"
         )
         self.refresh_affix_list()
 
@@ -426,24 +531,31 @@ class AffixApp(tk.Toplevel):
         slot_filter = self.slot_var.get()
         affix_filter = self.affix_var.get()
         source_filter = self.source_var.get()
+        category_filter = self.category_var.get()
         query = self.search_var.get().strip().lower()
         tokens = [token for token in query.split() if token]
         for slot in self.catalog.get("slots", []):
-            if slot_filter != ALL and slot["name"] != slot_filter:
+            if not self._choice_matches(slot_filter, slot["name"]):
                 continue
             for group in slot.get("groups", []):
                 corrupt = self._is_corrupt(group)
-                if affix_filter == "汙染":
-                    if not corrupt:
+                affix_label = "汙染" if corrupt else (group.get("affix") or "")
+                if not self._choice_matches(affix_filter, affix_label):
+                    continue
+                if affix_filter.strip() != "汙染" and not self._choice_matches(source_filter, group.get("source") or ""):
+                    continue
+                tags = group_categories(group)
+                if category_filter.strip() and category_filter.strip() != ALL:
+                    if category_filter.strip() == "無標籤":
+                        if tags:
+                            continue
+                    elif not any(self._choice_matches(category_filter, tag) for tag in tags):
                         continue
-                elif affix_filter != ALL and group.get("affix") != affix_filter:
-                    continue
-                if affix_filter != "汙染" and source_filter != ALL and group.get("source") != source_filter:
-                    continue
                 haystack = " ".join(
                     [
                         group.get("label", ""),
                         group.get("family", ""),
+                        *tags,
                         group.get("affix", ""),
                         group.get("source", ""),
                         slot["name"],
@@ -456,17 +568,23 @@ class AffixApp(tk.Toplevel):
                 yield slot["name"], group
 
     def current_slot_name(self) -> str | None:
-        slot_filter = self.slot_var.get()
-        if slot_filter and slot_filter != ALL:
-            return slot_filter
+        slot_filter = (self.slot_var.get() or "").strip()
+        slot_names = [slot["name"] for slot in (self.catalog or {}).get("slots", [])]
+        matched = [name for name in slot_names if self._choice_matches(slot_filter, name)] if slot_filter else slot_names
         row = self._selected_row()
-        if not row:
-            return None
-        selection = self.slot_list.curselection()
-        names = list(row["slots"].keys())
-        if selection and selection[0] < len(names):
-            return names[selection[0]]
-        return names[0] if names else None
+        if row:
+            selected_names = list(row["slots"].keys())
+            overlap = [name for name in selected_names if name in matched] if matched else selected_names
+            names = overlap or selected_names
+            selection = self.slot_list.curselection()
+            if selection and selection[0] < len(names):
+                return names[selection[0]]
+            return names[0] if names else None
+        if slot_filter and slot_filter != ALL:
+            if slot_filter in slot_names:
+                return slot_filter
+            return matched[0] if matched else None
+        return None
 
     def refresh_corrupt_panel(self) -> None:
         for item in self.corrupt_tree.get_children():
@@ -516,6 +634,8 @@ class AffixApp(tk.Toplevel):
                     "affix": key[1],
                     "source": key[2],
                     "family": key[3],
+                    "categories": group_categories(group),
+                    "category": format_tag_text(group_categories(group)),
                     "corrupt": self._is_corrupt(group),
                     "slots": {},
                     "max_tiers": 0,
@@ -539,6 +659,7 @@ class AffixApp(tk.Toplevel):
         self.status_var.set(f"符合 {count} 組詞綴。點欄位標題可排序，目前依 {self._affix_sort_label()}。")
         self.summary_var.set("請從左側選擇一個詞綴")
         self.meta_var.set("T1 為該部位最難出的最高階詞綴")
+        self._render_tag_chips([])
         self.slot_list.delete(0, "end")
         for item in self.tier_tree.get_children():
             self.tier_tree.delete(item)
@@ -564,6 +685,8 @@ class AffixApp(tk.Toplevel):
             return row.get("affix") or ""
         if column == "source":
             return row.get("source") or ""
+        if column == "category":
+            return row.get("category") or ""
         return row.get("label") or ""
 
     def _update_affix_headings(self) -> None:
@@ -602,6 +725,7 @@ class AffixApp(tk.Toplevel):
                 iid=str(index),
                 values=(
                     row["label"],
+                    format_tag_text_marked(row.get("categories") or [row.get("category") or "其他"]),
                     row["affix"],
                     "是" if row["corrupt"] else "",
                     row["source"],
@@ -642,11 +766,35 @@ class AffixApp(tk.Toplevel):
         except (ValueError, IndexError):
             return None
 
+    def _render_tag_chips(self, tags: list[str]) -> None:
+        for child in self.tag_chip_row.winfo_children():
+            child.destroy()
+        names = [str(tag) for tag in tags if tag]
+        if not names:
+            return
+        for name in names:
+            color = tag_color(name)
+            chip = ctk.CTkLabel(
+                self.tag_chip_row,
+                text=name,
+                font=FONT_SMALL,
+                text_color="#101318",
+                fg_color=color,
+                corner_radius=6,
+                padx=10,
+                pady=3,
+            )
+            chip.pack(side="left", padx=(0, 6), pady=2)
+
     def show_selected_affix(self) -> None:
         row = self._selected_row()
         if not row:
             return
+        tags = row.get("categories") or [row.get("category") or "其他"]
+        if isinstance(tags, str):
+            tags = [part for part in tags.replace("·", " ").split() if part]
         self.summary_var.set(row["label"])
+        self._render_tag_chips(tags)
         corrupt_mark = "　汙染詞" if row.get("corrupt") else ""
         self.meta_var.set(
             f"{row['affix']}　{row['source']}{corrupt_mark}　家族 {row['family'] or '—'}　"
@@ -712,37 +860,48 @@ class AffixApp(tk.Toplevel):
         if self._syncing:
             return
         self._syncing = True
-        self.progress.configure(value=0, maximum=100)
+        game = self.game_id
+        set_progress(self.progress, 0, 100)
+        try:
+            self.game_switch.configure(state="disabled")
+        except (tk.TclError, ValueError, TypeError):
+            pass
 
         def run() -> None:
             def progress(message: str, current: int, total: int) -> None:
                 self.after(0, lambda: self._on_progress(message, current, total))
 
             try:
-                catalog = sync_catalog(progress=progress)
-                self.after(0, lambda: self._on_sync_done(catalog, None))
+                catalog = sync_catalog(progress=progress, game=game)
+                self.after(0, lambda: self._on_sync_done(catalog, None, game))
             except Exception as error:  # noqa: BLE001
-                self.after(0, lambda: self._on_sync_done(None, error))
+                self.after(0, lambda: self._on_sync_done(None, error, game))
 
         threading.Thread(target=run, daemon=True).start()
 
     def _on_progress(self, message: str, current: int, total: int) -> None:
         self.status_var.set(message)
-        self.progress.configure(maximum=max(total, 1), value=current)
+        set_progress(self.progress, current, total)
 
-    def _on_sync_done(self, catalog: dict | None, error: Exception | None) -> None:
+    def _on_sync_done(self, catalog: dict | None, error: Exception | None, game: str | None = None) -> None:
         self._syncing = False
+        try:
+            self.game_switch.configure(state="normal")
+        except (tk.TclError, ValueError, TypeError):
+            pass
+        spec = game_spec(game or self.game_id)
         if error:
             self.status_var.set(f"更新失敗：{error}")
             messagebox.showerror("更新失敗", str(error))
             return
         assert catalog is not None
         skipped = catalog.get("skipped") or []
-        self.set_catalog(catalog)
         extra = f"\n略過 {len(skipped)} 個沒有詞綴表的頁面。" if skipped else ""
+        if game is None or game == self.game_id:
+            self.set_catalog(catalog)
         messagebox.showinfo(
             "更新完成",
-            f"已從 PoEDB 下載 {catalog.get('slot_count', 0)} 個部位、"
+            f"已從 {spec['site_name']} 下載 {catalog.get('slot_count', 0)} 個部位、"
             f"{catalog.get('group_count', 0)} 組詞綴。{extra}",
         )
 
