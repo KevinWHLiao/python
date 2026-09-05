@@ -248,10 +248,22 @@ class PriceRow:
     details_id: str
     ninja_url: str
     search_blob: str = field(repr=False, default="")
+    icon_url: str = ""
 
     @property
     def display_zh(self) -> str:
         return self.name_zh or "—"
+
+
+def _resolve_icon_url(raw: object) -> str:
+    text = str(raw or "").strip()
+    if not text:
+        return ""
+    if text.startswith("http://") or text.startswith("https://"):
+        return text
+    if text.startswith("/"):
+        return f"https://web.poecdn.com{text}"
+    return f"https://web.poecdn.com/{text}"
 
 
 _cache_lock = threading.Lock()
@@ -407,6 +419,7 @@ def _parse_exchange(game: str, league: League, api_type: str, payload: dict) -> 
                 listings=None,
                 details_id=details_id,
                 ninja_url=_item_url(game, league, slug, details_id),
+                icon_url=_resolve_icon_url(meta.get("image") or meta.get("icon")),
                 search_blob=_search_blob(
                     details_id.replace("-", " "),
                     label,
@@ -482,6 +495,7 @@ def _parse_items(game: str, league: League, api_type: str, payload: dict) -> lis
                 listings=int(line["listingCount"]) if line.get("listingCount") not in (None, "") else None,
                 details_id=details_id,
                 ninja_url=_item_url(game, league, slug, details_id),
+                icon_url=_resolve_icon_url(line.get("icon") or line.get("image")),
                 search_blob=_search_blob(
                     line.get("baseType"),
                     base_zh,

@@ -30,6 +30,7 @@ from .builds import (
     sparkline,
 )
 from . import load_settings, save_settings
+from .builds_icons import preload_class_icons
 from .search_combo import bind_searchable_combo, filter_choices
 from .theme import (
     BG,
@@ -101,6 +102,10 @@ class BuildsApp(ctk.CTkToplevel):
         self._pending_load = False
         self._row_by_id: dict[str, RankRow] = {}
         self._selected: RankRow | None = None
+        self._class_photos: dict[str, tk.PhotoImage] = {}
+        self._class_ctk_icons: dict[str, ctk.CTkImage] = {}
+        self._blank_photo: tk.PhotoImage | None = None
+        self._detail_icon_ref = None
         saved_game = str(load_settings().get("builds_game") or "poe1")
         self.game_id = "poe2" if saved_game == "poe2" else "poe1"
 
@@ -174,7 +179,7 @@ class BuildsApp(ctk.CTkToplevel):
         self.hint_label = muted_hint(
             self,
             "資料來自 poe.ninja Builds（會節流請求，避免被 rate limit）。"
-            "昇華／技能有近 6 日趨勢；流派傳奇與逐日在點選列時再補抓。雙擊列開官網。",
+            "列表會顯示昇華職業頭像；傳奇與流派逐日在點選列時再補抓。雙擊列開官網。",
         )
         self._apply_ladder_options()
 
@@ -198,7 +203,7 @@ class BuildsApp(ctk.CTkToplevel):
             "es",
             "items",
         )
-        self.tree = ttk.Treeview(wrap, columns=columns, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(wrap, columns=columns, show="tree headings", selectmode="browse")
         self.headings = {
             "rank": "排名",
             "name_zh": "昇華／名稱",
@@ -229,6 +234,10 @@ class BuildsApp(ctk.CTkToplevel):
             "es": 64,
             "items": 240,
         }
+        self.tree.heading("#0", text="")
+        self.tree.column("#0", width=40, minwidth=36, stretch=False, anchor="center")
+        style = ttk.Style(self)
+        style.configure("Treeview", rowheight=34)
         for key, title in self.headings.items():
             self.tree.heading(key, text=title, command=lambda column=key: self.sort_by(column))
             stretch = key in {"name_zh", "skill_zh", "items"}
@@ -265,10 +274,14 @@ class BuildsApp(ctk.CTkToplevel):
             scrollbar_button_hover_color=GOLD,
         )
         self.detail_scroll.pack(fill="both", expand=True, padx=8, pady=8)
+        title_row = ctk.CTkFrame(self.detail_scroll, fg_color="transparent")
+        title_row.pack(fill="x", pady=(0, 6))
+        self.detail_icon_label = ctk.CTkLabel(title_row, text="", width=40, height=40)
+        self.detail_icon_label.pack(side="left", padx=(0, 8))
         self.detail_title = ctk.CTkLabel(
-            self.detail_scroll, textvariable=self.detail_title_var, font=FONT_SECTION, text_color=GOLD, anchor="w"
+            title_row, textvariable=self.detail_title_var, font=FONT_SECTION, text_color=GOLD, anchor="w"
         )
-        self.detail_title.pack(fill="x", pady=(0, 6))
+        self.detail_title.pack(side="left", fill="x", expand=True)
         self.detail_stats = ctk.CTkLabel(
             self.detail_scroll,
             textvariable=self.detail_stats_var,
@@ -377,6 +390,9 @@ class BuildsApp(ctk.CTkToplevel):
         self.total = 0
         self.day_totals = {}
         self._selected = None
+        self._class_photos.clear()
+        self._class_ctk_icons.clear()
+        self._detail_icon_ref = None
         self.league_var.set("")
         self.status_var.set(f"正在載入 {GAME_LABELS[game]} 聯盟列表…")
         self._startup()
@@ -498,9 +514,64 @@ class BuildsApp(ctk.CTkToplevel):
         league.character_count = total
         self.refresh()
         self._select_first()
+        self._start_icon_preload()
         if self._pending_load:
             self._pending_load = False
             self.load_ranks()
+
+    def _class_names_for_icons(self) -> list[str]:
+        names: list[str] = []
+        for row in (*self.class_rows, *self.combo_rows):
+            if row.name and row.name not in names:
+                names.append(row.name)
+        return names
+
+    def _start_icon_preload(self) -> None:
+        names = self._class_names_for_icons()
+        if not names:
+            return
+        missing = [name for name in names if name not in self._class_photos]
+        if not missing:
+            return
+        game = self.game_id
+        threading.Thread(target=self._icon_worker, args=(game, missing), daemon=True).start()
+
+    def _icon_worker(self, game: str, names: list[str]) -> None:
+        try:
+            loaded = preload_class_icons(game, names)
+        except Exception:
+            return
+        self.after(0, lambda: self._on_icons_loaded(game, loaded))
+
+    def _on_icons_loaded(self, game: str, loaded: dict[str, bytes]) -> None:
+        if game != self.game_id or not loaded:
+            return
+        try:
+            from PIL import Image, ImageTk
+            import io
+        except Exception:
+            return
+        for name, png in loaded.items():
+            try:
+                image = Image.open(io.BytesIO(png)).convert("RGBA")
+                tree_img = image.resize((28, 28), Image.Resampling.LANCZOS)
+                detail_img = image.resize((40, 40), Image.Resampling.LANCZOS)
+                self._class_photos[name] = ImageTk.PhotoImage(tree_img, master=self)
+                self._class_ctk_icons[name] = ctk.CTkImage(light_image=detail_img, dark_image=detail_img, size=(40, 40))
+            except Exception:
+                continue
+        selected = self._selected
+        self.refresh()
+        if selected:
+            self._restore_selection(selected)
+
+    def _row_icon(self, row: RankRow):
+        if row.kind in {"class", "combo"} and row.name in self._class_photos:
+            return self._class_photos[row.name]
+        if self._blank_photo is None:
+            # 1x1 transparent placeholder keeps column alignment stable.
+            self._blank_photo = tk.PhotoImage(master=self, width=1, height=1)
+        return self._blank_photo
 
     def _fail(self, message: str) -> None:
         self._loading = False
@@ -536,6 +607,7 @@ class BuildsApp(ctk.CTkToplevel):
             item_id = self.tree.insert(
                 "",
                 "end",
+                image=self._row_icon(row),
                 values=(
                     row.rank,
                     row.name_zh,
@@ -593,6 +665,12 @@ class BuildsApp(ctk.CTkToplevel):
         if row.extra_zh:
             title = f"{row.name_zh}  ·  {row.extra_zh}"
         self.detail_title_var.set(f"{row.rank}. {title}")
+        icon = self._class_ctk_icons.get(row.name) if row.kind in {"class", "combo"} else None
+        self._detail_icon_ref = icon
+        if icon is not None:
+            self.detail_icon_label.configure(image=icon, text="")
+        else:
+            self.detail_icon_label.configure(image=None, text="")
         bits = [
             f"占比 {format_percent(row.percent)}",
             f"人數 {format_count(row.count)}",

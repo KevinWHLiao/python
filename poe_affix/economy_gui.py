@@ -25,6 +25,7 @@ from .economy import (
     fetch_prices,
     matches,
 )
+from .item_icons import absolute_icon_url, preload_icon_pngs
 from .search_combo import bind_searchable_combo, choice_matches, filter_choices
 from .theme import (
     FONT_SMALL,
@@ -88,6 +89,10 @@ class EconomyApp(ctk.CTkToplevel):
         self._loading = False
         self._pending_load: bool | None = None
         self._row_urls: dict[str, str] = {}
+        self._row_by_id: dict[str, PriceRow] = {}
+        self._icon_photos: dict[str, tk.PhotoImage] = {}
+        self._blank_photo: tk.PhotoImage | None = None
+        self._icon_job = 0
         saved_game = str(load_settings().get("economy_game") or "poe1")
         self.game_id = saved_game if saved_game in GAME_LABELS else "poe1"
 
@@ -156,7 +161,7 @@ class EconomyApp(ctk.CTkToplevel):
             self,
             (
                 "估價來自 poe.ninja（PoE1：混沌石／神聖石；PoE2：崇高石／神聖石）。名稱顯示中文與英文，兩邊都能搜。"
-                "聯盟／分類可輸入關鍵字後從清單點選。"
+                "列表會顯示品項圖標（首次會下載快取）。聯盟／分類可輸入關鍵字後從清單點選。"
                 f"分類選「全部」時可按「漲幅≥{MIN_GAIN_PERCENT:.0f}%」，只列出全部分類裡漲超過 {MIN_GAIN_PERCENT:.0f}% 的物品。雙擊列可開官網。"
             ),
         )
@@ -168,7 +173,7 @@ class EconomyApp(ctk.CTkToplevel):
         inner = ctk.CTkFrame(wrap, fg_color="transparent")
         inner.pack(fill="both", expand=True, padx=10, pady=10)
         columns = ("name_zh", "name", "category", "primary", "secondary", "change", "extra", "listings")
-        self.tree = ttk.Treeview(inner, columns=columns, show="headings", selectmode="browse")
+        self.tree = ttk.Treeview(inner, columns=columns, show="tree headings", selectmode="browse")
         primary_label, secondary_label = currency_labels(self.game_id)
         self.headings = {
             "name_zh": "中文",
@@ -190,6 +195,10 @@ class EconomyApp(ctk.CTkToplevel):
             "extra": 220,
             "listings": 70,
         }
+        self.tree.heading("#0", text="")
+        self.tree.column("#0", width=40, minwidth=36, stretch=False, anchor="center")
+        style = ttk.Style(self)
+        style.configure("Treeview", rowheight=34)
         for key, title in self.headings.items():
             self.tree.heading(key, text=title, command=lambda column=key: self.sort_by(column))
             stretch = key in {"name_zh", "name", "extra"}
@@ -257,6 +266,8 @@ class EconomyApp(ctk.CTkToplevel):
         self.tree.heading("secondary", text=secondary_label)
         self.tree.delete(*self.tree.get_children(""))
         self._row_urls.clear()
+        self._row_by_id.clear()
+        self._icon_photos.clear()
         self.status_var.set(f"正在連線 poe.ninja（{GAME_LABELS[game]}）…")
         threading.Thread(target=self._load_leagues_worker, args=(game,), daemon=True).start()
 
@@ -359,6 +370,55 @@ class EconomyApp(ctk.CTkToplevel):
         self.top_gainer_var.set("")
         messagebox.showerror("價格查詢失敗", message, parent=self)
 
+    def _row_icon(self, row: PriceRow):
+        url = absolute_icon_url(row.icon_url)
+        if url and url in self._icon_photos:
+            return self._icon_photos[url]
+        if self._blank_photo is None:
+            self._blank_photo = tk.PhotoImage(master=self, width=1, height=1)
+        return self._blank_photo
+
+    def _start_icon_preload(self, rows: list[PriceRow]) -> None:
+        urls = [row.icon_url for row in rows if row.icon_url]
+        missing = [url for url in urls if absolute_icon_url(url) not in self._icon_photos]
+        if not missing:
+            return
+        self._icon_job += 1
+        job = self._icon_job
+        threading.Thread(target=self._icon_worker, args=(job, missing), daemon=True).start()
+
+    def _icon_worker(self, job: int, urls: list[str]) -> None:
+        try:
+            loaded = preload_icon_pngs(urls, size=48, max_workers=8)
+        except Exception:
+            return
+        self.after(0, lambda: self._on_icons_loaded(job, loaded))
+
+    def _on_icons_loaded(self, job: int, loaded: dict[str, bytes]) -> None:
+        if job != self._icon_job or not loaded:
+            return
+        try:
+            from PIL import Image, ImageTk
+            import io
+        except Exception:
+            return
+        for url, png in loaded.items():
+            if url in self._icon_photos:
+                continue
+            try:
+                image = Image.open(io.BytesIO(png)).convert("RGBA").resize((28, 28), Image.Resampling.LANCZOS)
+                self._icon_photos[url] = ImageTk.PhotoImage(image, master=self)
+            except Exception:
+                continue
+        for item_id, row in list(self._row_by_id.items()):
+            url = absolute_icon_url(row.icon_url)
+            photo = self._icon_photos.get(url)
+            if photo is not None:
+                try:
+                    self.tree.item(item_id, image=photo)
+                except tk.TclError:
+                    continue
+
     def refresh(self) -> None:
         query = self.search_var.get()
         category = self.category_var.get() or ALL
@@ -374,6 +434,8 @@ class EconomyApp(ctk.CTkToplevel):
             visible = []
         self.tree.delete(*self.tree.get_children(""))
         self._row_urls.clear()
+        self._row_by_id.clear()
+        visible_for_icons: list[PriceRow] = []
         for row in visible:
             tag = "flat"
             if row.change is not None and row.change > 0.05:
@@ -383,6 +445,7 @@ class EconomyApp(ctk.CTkToplevel):
             item_id = self.tree.insert(
                 "",
                 "end",
+                image=self._row_icon(row),
                 values=(
                     row.display_zh,
                     row.name,
@@ -396,10 +459,13 @@ class EconomyApp(ctk.CTkToplevel):
                 tags=(tag,),
             )
             self._row_urls[item_id] = row.ninja_url
+            self._row_by_id[item_id] = row
+            visible_for_icons.append(row)
         if self._allow_all or self._focus_top_gainer:
             self._sort_change_desc()
         else:
             self._sort_primary_desc()
+        self._start_icon_preload(visible_for_icons)
         if self._focus_top_gainer and visible:
             self._select_top_gainer(visible)
             self._focus_top_gainer = False
